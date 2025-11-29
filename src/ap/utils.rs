@@ -11,6 +11,7 @@ use rsa::{
 };
 use sha2::{Digest, Sha256};
 use time::{OffsetDateTime, format_description};
+use tokio::task;
 use url::Url;
 
 pub async fn deliver_signed(
@@ -62,26 +63,33 @@ pub async fn deliver_signed(
         key_id, signature_b64
     );
 
-    client
-        .post(inbox_url)
-        .header("Date", date)
-        .header("Digest", digest_value)
-        .header("Signature", signature_header)
-        .header("Content-Type", "application/activity+json")
-        .body(body.to_string())
-        .send()
-        .await?;
+    let inbox_url = inbox_url.to_string().clone();
+    let date = date.clone();
+    let digest_value = digest_value.clone();
+    let signature_header = signature_header.clone();
+    let body = body.to_string().clone();
+    task::spawn(async move {
+        let _ = client
+            .post(&inbox_url)
+            .header("Date", date)
+            .header("Digest", digest_value)
+            .header("Signature", signature_header)
+            .header("Content-Type", "application/activity+json")
+            .body(body.to_string())
+            .send()
+            .await;
 
-    // let req = client
-    //     .post(inbox_url)
-    //     .header("Date", date)
-    //     .header("Digest", digest_value)
-    //     .header("Signature", signature_header)
-    //     .header("Content-Type", "application/activity+json")
-    //     .body(body.to_string())
-    //     .build()
-    //     .unwrap();
-    // debug_post(&client, inbox_url, req).await;
+        // let req = client
+        //     .post(inbox_url)
+        //     .header("Date", date)
+        //     .header("Digest", digest_value)
+        //     .header("Signature", signature_header)
+        //     .header("Content-Type", "application/activity+json")
+        //     .body(body.to_string())
+        //     .build()
+        //     .unwrap();
+        // debug_post(&client, inbox_url, req).await;
+    });
 
     Ok(())
 }
