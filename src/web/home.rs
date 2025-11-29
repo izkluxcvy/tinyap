@@ -17,11 +17,11 @@ pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String>
         FROM notes
         JOIN users ON notes.user_id = users.id
         LEFT JOIN follows ON follows.object_actor = users.actor_id
-        WHERE follows.user_id = ?
-        OR users.id = ?
+        AND follows.user_id = $1
+        WHERE follows.user_id = $1
+        OR users.id = $1
         ORDER BY notes.created_at DESC
-        LIMIT ?",
-        home_user.id,
+        LIMIT $2",
         home_user.id,
         state.config.max_timeline_notes
     )
