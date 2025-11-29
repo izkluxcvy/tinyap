@@ -7,6 +7,7 @@ use axum::{
     response::{IntoResponse, Redirect},
 };
 use serde_json::json;
+use uuid::Uuid;
 
 pub async fn follow(
     State(state): State<AppState>,
@@ -89,8 +90,11 @@ async fn follow_remote(user_id: i64, acct: &str, state: &AppState) {
     .await
     .unwrap();
 
+    let follow_id = format!("{}#follow-{}", actor_user.actor_id, Uuid::new_v4());
+
     let follow_json = json!({
         "@context": "https://www.w3.org/ns/activitystreams",
+        "id": follow_id,
         "type": "Follow",
         "actor": actor_user.actor_id,
         "object": object_user.actor_id,
@@ -157,8 +161,11 @@ pub async fn unfollow(
             None => return Redirect::to(&format!("/?message=inbox-not-found")),
         };
 
+        let undo_id = format!("{}#undo-{}", actor_user.actor_id, Uuid::new_v4());
+
         let undo_json = json!({
             "@context": "https://www.w3.org/ns/activitystreams",
+            "id": undo_id,
             "type": "Undo",
             "actor": actor_user.actor_id,
             "object": {

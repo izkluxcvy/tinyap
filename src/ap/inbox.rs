@@ -20,6 +20,7 @@ pub async fn api(
     Path(username): Path<String>,
     Json(activity): Json<Value>,
 ) -> impl IntoResponse {
+    println!("Received activity for {}: {}", username, activity);
     let user = sqlx::query!("SELECT id FROM users WHERE username = ?", username)
         .fetch_optional(&state.db_pool)
         .await
@@ -46,8 +47,15 @@ pub async fn api(
             create::note(&activity, &state).await;
         }
     } else if activity["type"] == "Accept" {
+        let actor = activity["actor"].as_str().unwrap();
         if activity["object"]["type"] == "Follow" {
-            accept::follow(activity, &state).await;
+            let object = activity["object"]["actor"].as_str().unwrap();
+            accept::follow(actor, object, &state).await;
+        } else if activity["object"].is_string() {
+            let object_value = activity["object"].as_str().unwrap();
+            let parts = object_value.split("#").collect::<Vec<&str>>();
+            let object = parts[0];
+            accept::follow(actor, object, &state).await;
         }
     } else if activity["type"] == "Undo" {
         if activity["object"]["type"] == "Follow" {

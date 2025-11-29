@@ -71,6 +71,17 @@ pub async fn deliver_signed(
         .send()
         .await?;
 
+    // let req = client
+    //     .post(inbox_url)
+    //     .header("Date", date)
+    //     .header("Digest", digest_value)
+    //     .header("Signature", signature_header)
+    //     .header("Content-Type", "application/activity+json")
+    //     .body(body.to_string())
+    //     .build()
+    //     .unwrap();
+    // debug_post(&client, inbox_url, req).await;
+
     Ok(())
 }
 
@@ -79,7 +90,7 @@ pub async fn fetch_inbox(actor: &str) -> Option<String> {
 
     let res = client
         .get(actor)
-        .header("Accept", "application/activity+json")
+        .header("Accept", "application/activity+json, application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
         .send()
         .await
         .ok()?;
@@ -129,3 +140,26 @@ pub fn strip_html_tags(html: &str) -> String {
         .trim()
         .to_string()
 }
+
+// async fn debug_post(client: &Client, _url: &str, req: reqwest::Request) {
+//     println!("--- HTTP REQUEST ---");
+//     println!("> {} {}", req.method(), req.url());
+//     for (k, v) in req.headers() {
+//         println!("> {}: {}", k.as_str(), v.to_str().unwrap_or("<invalid>"));
+//     }
+//     if let Some(body) = req.body() {
+//         if let Some(bytes) = body.as_bytes() {
+//             println!("> body: {}", String::from_utf8_lossy(bytes));
+//         }
+//     }
+
+//     let response = client.execute(req).await.unwrap();
+
+//     println!("--- HTTP RESPONSE ---");
+//     println!("< STATUS: {}", response.status());
+//     for (k, v) in response.headers() {
+//         println!("< {}: {}", k.as_str(), v.to_str().unwrap_or("<invalid>"));
+//     }
+//     let text = response.text().await.unwrap();
+//     println!("< body: {}", text);
+// }

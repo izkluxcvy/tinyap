@@ -1,11 +1,8 @@
 use crate::state::AppState;
 
-use serde_json::Value;
-
-pub async fn follow(activity: Value, state: &AppState) {
-    let actor = activity["object"]["actor"].as_str().unwrap(); // : Local User
-    let object = activity["object"]["object"].as_str().unwrap(); // : Remote User
-
+// actor: Remote user who accepts the object's follow request
+// object: Local user
+pub async fn follow(actor: &str, object: &str, state: &AppState) {
     let actor_user = sqlx::query!("SELECT id FROM users WHERE actor_id = ?", actor)
         .fetch_one(&state.db_pool)
         .await
@@ -18,24 +15,20 @@ pub async fn follow(activity: Value, state: &AppState) {
     sqlx::query!(
         "UPDATE follows SET pending = 0
         WHERE user_id = ? AND object_actor = ?",
-        actor_user.id,
-        object
+        object_user.id,
+        actor
     )
     .execute(&state.db_pool)
     .await
     .unwrap();
 
-    let actor_inbox = format!(
-        "https://{}/users/{}/inbox",
-        state.domain,
-        actor_user.id.unwrap()
-    );
+    let object_inbox = format!("{}/inbox", object);
     sqlx::query!(
         "INSERT INTO followers (user_id, actor, inbox)
         VALUES(?, ?, ?)",
-        object_user.id,
-        actor,
-        actor_inbox
+        actor_user.id,
+        object,
+        object_inbox
     )
     .execute(&state.db_pool)
     .await

@@ -103,7 +103,7 @@ pub async fn create_remoteuser(actor_url: &str, state: &AppState) {
         let client = reqwest::Client::new();
         let res = client
             .get(actor_url)
-            .header("Accept", "application/activity+json")
+            .header("Accept", "application/activity+json, application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
             .send()
             .await
             .expect("Failed to fetch remote actor");
@@ -146,7 +146,7 @@ pub async fn update_remoteuser(actor_url: &str, state: &AppState) {
         let client = reqwest::Client::new();
         let res = client
             .get(actor_url)
-            .header("Accept", "application/activity+json")
+            .header("Accept", "application/activity+json, application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
             .send()
             .await
             .expect("Failed to fetch remote actor");
