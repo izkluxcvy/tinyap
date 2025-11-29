@@ -66,16 +66,13 @@ CREATE TABLE notes (
     user_id INTEGER NOT NULL,
     content TEXT NOT NULL,
     in_reply_to TEXT,
-    created_at TEXT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (in_reply_to) REFERENCES notes(ap_id)
+    created_at TEXT NOT NULL
 );
 CREATE TABLE likes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     note_apid TEXT NOT NULL,
     actor TEXT NOT NULL,
-    UNIQUE(note_apid, actor),
-    FOREIGN KEY (note_apid) REFERENCES notes(ap_id)
+    UNIQUE(note_apid, actor)
 );
 CREATE TABLE notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,10 +80,9 @@ CREATE TABLE notifications (
     type TEXT NOT NULL,
     actor TEXT NOT NULL,
     note_uuid TEXT,
-    created_at TEXT NOT NULL,
-    FOREIGN KEY (username) REFERENCES users(username),
-    FOREIGN KEY (note_uuid) REFERENCES notes(uuid)
+    created_at TEXT NOT NULL
 );
+
 
 sqlite> .exit
 ```
