@@ -5,6 +5,14 @@ NoJS, Fast, Lightweight.
 
 Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 
+## Features
+
+- Fetch remote user by accessing /@user@example.com
+- Follow, Like, Undo them
+- Create and deliver note
+- Reply
+- Timeline
+
 ## Requirements
 
 - openssl ([more info](https://docs.rs/openssl/latest/openssl/#automatic))
