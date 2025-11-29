@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <pre><a href="/home">Home</a> | <a href="/notifications">Notifications</a> | <a href="/new">New Note</a> | <a href="/local">Local Timeline</a> | <a href="/profile">Profile</a> | <a href="/logout">Logout</a></pre>
+
+    <h3>{{ title }}</h3>
+
+    <pre>{% for user in users %}<a href="/@{{ user }}">@{{ user }}</a>
+{% endfor %}</pre>
+
+</body>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <h3>Edit Profile</h3>
+    <form action="/profile" method="post">
+        <label for="display_name">Display Name:</label><br>
+        <input type="text" id="display_name" name="display_name" value="{{ display_name }}"><br><br>
+        <label for="bio">Bio:</label><br>
+        <textarea id="bio" name="bio" rows="4" cols="50">{{ bio }}</textarea><br><br>
+        <input type="hidden" name="username" value="{{ username }}">
+        <input type="submit" value="Update Profile">
+    </form>
+
+    <h3>Update Password</h3>
+    <form action="/change_password" method="post">
+        <label for="new_password">New Password:</label><br>
+        <input type="password" id="new_password" name="new_password" required><br><br>
+        <input type="submit" value="Update Password">
+    </form>
+</body>

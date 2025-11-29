@@ -1,0 +1,12 @@
+pub mod follows;
+pub mod home;
+pub mod index;
+pub mod local;
+pub mod login;
+pub mod logout;
+pub mod new;
+pub mod note;
+pub mod notifications;
+pub mod profile;
+pub mod signup;
+pub mod user;

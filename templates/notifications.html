@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <pre><a href="/home">Home</a> | <a href="/notifications">Notifications</a> | <a href="/new">New Note</a> | <a href="/local">Local Timeline</a> | <a href="/profile">Profile</a> | <a href="/logout">Logout</a></pre>
+
+    <h3>Notifications</h3>
+
+    {% for notif in notifs %}
+    {% if notif.type == "like" %}
+    <pre><hr>{{ notif.created_at }}
+{{ notif.actor }} liked <a href="/@{{ notif.username }}/{{ notif.note_uuid }}">your note</a></pre>
+    {% elif notif.type == "follow" %}
+    <pre><hr>{{ notif.created_at }}
+{{ notif.actor }} followed you</pre>
+    {% elif notif.type == "reply" %}
+    <pre><hr>{{ notif.created_at }}
+{{ notif.actor }} replied to <a href="/@{{ notif.username }}/{{ notif.note_uuid }}">your note</a></pre>
+    {% endif %}
+    {% endfor %}
+</body>

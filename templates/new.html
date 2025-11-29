@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <pre><a href="/home">Home</a> | <a href="/notifications">Notifications</a> | <a href="/new">New Note</a> | <a href="/local">Local Timeline</a> | <a href="/profile">Profile</a> | <a href="/logout">Logout</a></pre>
+
+    <h3>New Note</h3>
+
+    <form action="/new" method="post">
+        {% if is_reply %}
+        <p>Replying to note {{ in_reply_to }}</p>
+        <input type="hidden" name="in_reply_to" value="{{ in_reply_to }}">
+        {% endif %}
+        <textarea name="content" rows="4" cols="50" required></textarea>
+        <br>
+        <button type="submit">Post</button>
+    </form>
+</body>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <pre><a href="/home">Home</a> | <a href="/notifications">Notifications</a> | <a href="/new">New Note</a> | <a href="/local">Local Timeline</a> | <a href="/profile">Profile</a> | <a href="/logout">Logout</a></pre>
+
+    <h3>{{ display_name }}@{{ username }}{% if is_local %}<small>@{{ domain }}{% endif %}</small></h3>
+
+    <pre>{{ bio }}
+Joined: {{ created_at }}
+<a href="/@{{ username }}/following">{{ follow_num }}</a> following, <a href="/@{{ username }}/followers">{{ follower_num }}</a> follower</pre>
+    {% if follow_status == "to_follow" %}
+    <form action="/@{{ username }}/follow" method="post">
+        <button type="submit">Follow</button>
+    </form>
+    {% elif follow_status == "self" %}
+    {% else %}
+    <form action="/@{{ username }}/unfollow" method="post">
+        {% if follow_status == "following" %}
+        <button type="submit">Unfollow</button>
+        {% elif follow_status == "pending" %}
+        <button type="submit">Pending..</button>
+        {% endif %}
+    </form>
+    {% endif %}
+
+    {% for note in notes %}
+    <pre><hr><strong><a href="/@{{ username }}">{{ display_name }}@{{ username }}</a></strong>(<a href="/@{{ username }}/{{ note.uuid }}">{{ note.created_at }}</a>)
+{{ note.content }}{% if note.in_reply_to %}<br>[Reply to: {{ note.in_reply_to }}]{% endif %}</pre>
+    {% else %}
+    <pre>No notes yet.</pre>
+    {% endfor %}
+</body>
