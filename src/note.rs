@@ -7,7 +7,9 @@ use axum::{
     response::{IntoResponse, Redirect},
 };
 use serde_json::json;
+use std::sync::Arc;
 use time::OffsetDateTime;
+use tokio::task;
 use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
@@ -107,17 +109,27 @@ pub async fn create_note(
         .await
         .unwrap();
 
-    let private_key = user.private_key.unwrap();
-    for follower in followers {
-        if !follower
-            .inbox
-            .starts_with(&format!("https://{}", state.domain))
-        {
-            utils::deliver_signed(&follower.inbox, &json_body, &private_key, &actor_url)
-                .await
-                .unwrap();
+    // Spawn background task to deliver activities
+    let state = Arc::new(state);
+    let json_body = json_body.clone();
+    let actor_url = actor_url.clone();
+    let private_key = user.private_key.clone().unwrap();
+
+    task::spawn({
+        let state = Arc::clone(&state);
+        async move {
+            for follower in followers {
+                if !follower
+                    .inbox
+                    .starts_with(&format!("https://{}", state.domain))
+                {
+                    utils::deliver_signed(&follower.inbox, &json_body, &private_key, &actor_url)
+                        .await
+                        .unwrap();
+                }
+            }
         }
-    }
+    });
 
     Redirect::to("/home")
 }

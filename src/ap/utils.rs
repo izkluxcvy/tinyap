@@ -19,6 +19,7 @@ pub async fn deliver_signed(
     private_key_pem: &str,
     actor_id: &str,
 ) -> Result<(), reqwest::Error> {
+    println!("Delivering to {}: {}", inbox_url, body);
     let client = Client::new();
 
     let httpdate_format = format_description::parse(

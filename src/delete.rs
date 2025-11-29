@@ -7,6 +7,8 @@ use axum::{
     response::{IntoResponse, Redirect},
 };
 use serde_json::json;
+use std::sync::Arc;
+use tokio::task;
 
 #[derive(serde::Deserialize)]
 pub struct DeleteNoteForm {
@@ -55,21 +57,31 @@ pub async fn note(
     .await
     .unwrap();
 
-    let private_key = note_author.private_key.unwrap();
-    for follower in followers {
-        if !follower
-            .inbox
-            .starts_with(&format!("https://{}", state.domain))
-        {
-            let _ = utils::deliver_signed(
-                &follower.inbox,
-                &json_body,
-                &private_key,
-                &note_author.actor_id,
-            )
-            .await;
+    // Spawn background task to deliver delete activities
+    let state = Arc::new(state);
+    let json_body = json_body.clone();
+    let actor_url = note_author.actor_id.clone();
+    let private_key = note_author.private_key.clone().unwrap();
+
+    task::spawn({
+        let state = Arc::clone(&state);
+        async move {
+            for follower in followers {
+                if !follower
+                    .inbox
+                    .starts_with(&format!("https://{}", state.domain))
+                {
+                    let _ = utils::deliver_signed(
+                        &follower.inbox,
+                        &json_body,
+                        &private_key,
+                        &actor_url,
+                    )
+                    .await;
+                }
+            }
         }
-    }
+    });
 
     Redirect::to("/home").into_response()
 }
