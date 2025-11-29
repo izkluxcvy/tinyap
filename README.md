@@ -83,7 +83,6 @@ CREATE TABLE notifications (
     created_at TEXT NOT NULL
 );
 
-
 sqlite> .exit
 ```
 
