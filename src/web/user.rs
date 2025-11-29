@@ -163,7 +163,11 @@ async fn resolve_acct(acct: &str) -> Option<String> {
 
     let links = res_json["links"].as_array()?;
     for link in links {
-        if link["rel"] == "self" && link["type"] == "application/activity+json" {
+        if link["rel"] == "self"
+            && (link["type"] == "application/activity+json"
+                || link["type"]
+                    == "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
+        {
             return link["href"].as_str().map(|s| s.to_string());
         }
     }
