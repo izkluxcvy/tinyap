@@ -9,7 +9,7 @@
 
     <h3>Note Detail</h3>
     <hr>
-    <pre>{% if reply_note %}<strong><a href="/@{{ reply_note.username }}/{{ reply_note.uuid }}">{{ reply_note.display_name }}@{{ reply_note.username }}</a></strong>(<a href="/@{{ reply_note.username }}/{{ reply_note.uuid }}">{{ reply_note.created_at }}</a>)
+    <pre>{% if reply_note %}<strong><a href="/@{{ reply_note.username }}">{{ reply_note.display_name }}@{{ reply_note.username }}</a></strong>(<a href="/@{{ reply_note.username }}/{{ reply_note.uuid }}">{{ reply_note.created_at }}</a>)
 {{ reply_note.content }}{% if reply_note.in_reply_to %}
 [Reply to: <a href="{{ reply_note.in_reply_to }}">{{reply_note.in_reply_to}}</a>]{% endif %}
 ---Reply---{% endif %}
