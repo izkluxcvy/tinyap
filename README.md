@@ -31,7 +31,7 @@ $ cd tinyap
 
 Create SSL certificate if not exists.
 
-in here create self-signed certificate, but you can use your preferred method, like Let's Encrypt.
+In here create self-signed certificate, but to federate with many servers, getting a certificate signed by CA such as Let's Encrypt is recommended.
 
 ```sh
 $ openssl genrsa -out server.key 2048
