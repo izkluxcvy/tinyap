@@ -40,6 +40,7 @@ pub async fn api(State(state): State<AppState>, Path(username): Path<String>) ->
         ],
         "id": actor_id,
         "type": "Person",
+        "url": format!("https://{}/@{}", state.domain, username),
         "preferredUsername": username,
         "name": user.display_name,
         "summary": user.bio,
