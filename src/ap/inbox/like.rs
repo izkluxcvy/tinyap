@@ -1,5 +1,6 @@
 use crate::ap::utils;
 use crate::state::AppState;
+use crate::user::create_remoteuser;
 
 use serde_json::Value;
 
@@ -30,4 +31,14 @@ pub async fn process(activity: &Value, state: &AppState) {
     .unwrap();
 
     utils::add_notification(&row.username, "like", actor, Some(&row.uuid), state).await;
+
+    // Create local user if not exists
+    let local_user = sqlx::query!("SELECT id FROM users WHERE actor_id = ?", actor)
+        .fetch_optional(&state.db_pool)
+        .await
+        .unwrap();
+
+    if local_user.is_none() {
+        create_remoteuser(actor, state).await;
+    }
 }
