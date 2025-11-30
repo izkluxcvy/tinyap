@@ -29,6 +29,7 @@ async fn main() {
         .route("/notifications", get(web::notifications::page))
         .route("/new", get(web::new::page).post(note::create_note))
         .route("/local", get(web::local::page))
+        .route("/federated", get(web::federated::page))
         .route("/@{username}", get(web::user::page))
         .route("/@{username}/following", get(web::follows::following))
         .route("/@{username}/followers", get(web::follows::followers))

@@ -1,3 +1,4 @@
+pub mod federated;
 pub mod follows;
 pub mod home;
 pub mod index;

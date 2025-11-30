@@ -1,33 +1,19 @@
-use crate::{auth::AuthUser, state::AppState};
+use crate::state::AppState;
 
 use axum::{extract::State, response::Html};
 
-pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String> {
-    let home_user = sqlx::query!(
-        "SELECT id, display_name, username FROM users WHERE id = ?",
-        user.id
-    )
-    .fetch_one(&state.db_pool)
-    .await
-    .expect("Failed to fetch home user from database");
-
-    // Fetch notes from users who home user follows
+pub async fn page(State(state): State<AppState>) -> Html<String> {
     let rows = sqlx::query!(
         "SELECT notes.uuid, notes.content, notes.in_reply_to, notes.created_at, users.display_name, users.username
         FROM notes
         JOIN users ON notes.user_id = users.id
-        LEFT JOIN follows ON follows.object_actor = users.actor_id
-        AND follows.user_id = $1
-        WHERE follows.user_id = $1
-        OR users.id = $1
         ORDER BY notes.created_at DESC
-        LIMIT $2",
-        home_user.id,
+        LIMIT ?",
         state.config.max_timeline_notes
     )
     .fetch_all(&state.db_pool)
     .await
-    .expect("Failed to fetch notes for home page");
+    .unwrap();
 
     let notes: Vec<_> = rows
         .into_iter()
@@ -44,13 +30,7 @@ pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String>
         .collect();
 
     let mut context = tera::Context::new();
-    context.insert(
-        "title",
-        &format!(
-            "Home for <a href=\"/@{}\">{}</a>",
-            home_user.username, home_user.display_name
-        ),
-    );
+    context.insert("title", "Federated Timeline");
     context.insert("notes", &notes);
     context.insert("timezone", &state.config.timezone);
     let rendered = state.tera.render("timeline.html", &context).unwrap();
