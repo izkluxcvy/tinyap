@@ -7,6 +7,7 @@ use axum::{
     response::{IntoResponse, Redirect},
 };
 use serde_json::json;
+use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
 pub struct DeleteNoteForm {
@@ -40,6 +41,7 @@ pub async fn note(
 
     let delete_json = json!({
         "@context": "https://www.w3.org/ns/activitystreams",
+        "id": format!("{}#delete-{}", note_author.actor_id, Uuid::new_v4()),
         "type": "Delete",
         "actor": note_author.actor_id,
         "object": form.ap_id,

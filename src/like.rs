@@ -7,6 +7,7 @@ use axum::{
     response::{IntoResponse, Redirect},
 };
 use serde_json::json;
+use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
 pub struct LikeForm {
@@ -54,6 +55,7 @@ pub async fn like(
     if !note_author.starts_with(&format!("https://{}", state.domain)) {
         let like_json = json!({
             "@context": "https://www.w3.org/ns/activitystreams",
+            "id": format!("{}#like-{}", actor_user.actor_id, Uuid::new_v4()),
             "type": "Like",
             "actor": actor_user.actor_id,
             "object": form.ap_id,
