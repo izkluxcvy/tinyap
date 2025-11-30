@@ -10,7 +10,7 @@
     <h3>{{ display_name }}@{{ username }}{% if is_local %}<small>@{{ domain }}{% endif %}</small></h3>
 
     <pre>{{ bio }}
-Joined: {{ created_at }}
+Joined: {{ created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}
 <a href="/@{{ username }}/following">{{ follow_num }}</a> following, <a href="/@{{ username }}/followers">{{ follower_num }}</a> follower</pre>
     {% if follow_status == "to_follow" %}
     <form action="/@{{ username }}/follow" method="post">
