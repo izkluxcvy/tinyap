@@ -28,7 +28,7 @@ Joined: {{ created_at }}
     {% endif %}
 
     {% for note in notes %}
-    <pre><hr><strong><a href="/@{{ username }}">{{ display_name }}@{{ username }}</a></strong>(<a href="/@{{ username }}/{{ note.uuid }}">{{ note.created_at }}</a>)
+    <pre><hr><strong><a href="/@{{ username }}">{{ display_name }}@{{ username }}</a></strong>(<a href="/@{{ username }}/{{ note.uuid }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
 {{ note.content }}{% if note.in_reply_to %}<br>[Reply to: {{ note.in_reply_to }}]{% endif %}</pre>
     {% else %}
     <pre>No notes yet.</pre>

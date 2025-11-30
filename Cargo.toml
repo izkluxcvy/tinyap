@@ -11,7 +11,7 @@ axum-extra = { version = "0.12", features = ["cookie"] }
 tower-http = { version = "0.6", features = ["fs"] }
 uuid = { version = "1", features = ["v4"] }
 time = "0.3"
-tera = "1"
+tera = { version = "1", features = ["builtins", "date-locale"] }
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
 
 serde = { version = "1", features = ["derive"] }

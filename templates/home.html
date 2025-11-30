@@ -10,7 +10,7 @@
     <h3>Home for <a href="/@{{ username }}">{{ display_name }}</a></h3>
 
     {% for note in notes %}
-    <pre><hr><strong><a href="/@{{ note.username}}">{{ note.display_name }}@{{ note.username }}</a></strong>(<a href="/@{{ note.username }}/{{ note.uuid }}">{{ note.created_at }}</a>)
+    <pre><hr><strong><a href="/@{{ note.username}}">{{ note.display_name }}@{{ note.username }}</a></strong>(<a href="/@{{ note.username }}/{{ note.uuid }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
 {{ note.content }}{% if note.in_reply_to %}<br>[Reply to: {{note.in_reply_to}}]{% endif %}</pre>
     {% else %}
     <pre>No notes yet.</pre>

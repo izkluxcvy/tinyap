@@ -13,6 +13,7 @@ pub struct AppState {
 
 #[derive(Clone)]
 pub struct Config {
+    pub timezone: String,
     pub session_ttl_days: i64,
     pub session_max_per_user: i64,
     pub allow_signup: bool,
@@ -25,6 +26,7 @@ pub async fn init_state() -> AppState {
     let db_pool = SqlitePool::connect(&database_url).await.unwrap();
     let domain = env::var("DOMAIN").expect("DOMAIN must be set");
 
+    let timezone = env::var("TIMEZONE").expect("TIMEZONE must be set");
     let session_ttl_days = env::var("SESSION_TTL_DAYS")
         .expect("SESSION_TTL_DAYS must be set")
         .parse::<i64>()
@@ -43,6 +45,7 @@ pub async fn init_state() -> AppState {
         .expect("MAX_TIMELINE_NOTES must be a valid number");
 
     let config = Config {
+        timezone: timezone,
         session_ttl_days: session_ttl_days,
         session_max_per_user: session_max_per_user,
         allow_signup: allow_signup,

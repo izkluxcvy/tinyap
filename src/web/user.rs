@@ -129,6 +129,7 @@ pub async fn page(
     context.insert("domain", &state.domain);
     context.insert("bio", &user.bio);
     context.insert("created_at", &user.created_at);
+    context.insert("timezone", &state.config.timezone);
     context.insert("follow_num", &follow_num);
     context.insert("follower_num", &follower_num);
     context.insert("follow_status", &follow_status);

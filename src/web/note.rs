@@ -95,6 +95,7 @@ pub async fn page(
     let mut context = tera::Context::new();
     context.insert("note", &note);
     context.insert("reply_note", &reply_note);
+    context.insert("timezone", &state.config.timezone);
     context.insert("is_liked", &is_liked);
     context.insert("like_num", &like_num);
     context.insert("is_you", &is_you);

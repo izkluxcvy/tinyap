@@ -47,6 +47,7 @@ pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String>
     context.insert("display_name", &home_user.display_name);
     context.insert("username", &home_user.username);
     context.insert("notes", &notes);
+    context.insert("timezone", &state.config.timezone);
     let rendered = state.tera.render("home.html", &context).unwrap();
     Html(rendered)
 }

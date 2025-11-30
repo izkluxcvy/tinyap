@@ -32,6 +32,7 @@ pub async fn page(State(state): State<AppState>) -> Html<String> {
 
     let mut context = tera::Context::new();
     context.insert("notes", &notes);
+    context.insert("timezone", &state.config.timezone);
     let rendered = state.tera.render("local.html", &context).unwrap();
     Html(rendered)
 }
