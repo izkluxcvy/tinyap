@@ -10,7 +10,7 @@ use serde_json::json;
 
 pub async fn api(State(state): State<AppState>, Path(uuid): Path<String>) -> impl IntoResponse {
     let note = sqlx::query!(
-        "SELECT notes.content, notes.created_at, users.actor_id
+        "SELECT notes.content, notes.created_at, users.actor_id, users.username
         FROM notes
         JOIN users ON users.id = notes.user_id
         WHERE notes.uuid = ?",
@@ -32,7 +32,7 @@ pub async fn api(State(state): State<AppState>, Path(uuid): Path<String>) -> imp
         "@context": "https://www.w3.org/ns/activitystreams",
         "id": format!("https://{}/notes/{}", state.domain, uuid),
         "type": "Note",
-        "url": format!("https://{}/notes/{}", state.domain, uuid),
+        "url": format!("https://{}/@{}/{}", state.domain, note.username, uuid),
         "attributedTo": note.actor_id,
         "content": note.content,
         "published": note.created_at,
