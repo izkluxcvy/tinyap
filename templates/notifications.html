@@ -11,13 +11,13 @@
 
     {% for notif in notifs %}
     {% if notif.type == "like" %}
-    <pre><hr>{{ notif.created_at }}
+    <pre><hr>{{ notif.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}
 <a href="/@{{ notif.actor }}">@{{ notif.actor }}</a> liked <a href="/@{{ notif.username }}/{{ notif.note_uuid }}">your note</a></pre>
     {% elif notif.type == "follow" %}
-    <pre><hr>{{ notif.created_at }}
+    <pre><hr>{{ notif.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}
 <a href="/@{{ notif.actor }}">@{{ notif.actor }}</a> followed you</pre>
     {% elif notif.type == "reply" %}
-    <pre><hr>{{ notif.created_at }}
+    <pre><hr>{{ notif.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}
 <a href="/@{{ notif.actor }}">@{{ notif.actor }}</a> replied to <a href="/@{{ notif.username }}/{{ notif.note_uuid }}">your note</a></pre>
     {% endif %}
     {% endfor %}
