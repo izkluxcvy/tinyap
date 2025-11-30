@@ -34,6 +34,25 @@ pub async fn api(
             .into_response();
     };
 
+    match activity["actor"].as_str() {
+        Some(actor) => {
+            if actor.contains("localhost/") {
+                return (
+                    StatusCode::BAD_REQUEST,
+                    Json(serde_json::json!({"error": "Localhost not allowed"})),
+                )
+                    .into_response();
+            }
+        }
+        None => {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(serde_json::json!({"error": "actor field missing"})),
+            )
+                .into_response();
+        }
+    }
+
     let user_id = user.id.unwrap();
 
     if activity["type"] == "Follow" {
