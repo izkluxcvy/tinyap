@@ -32,6 +32,7 @@ pub async fn api(State(state): State<AppState>, Path(uuid): Path<String>) -> imp
         "@context": "https://www.w3.org/ns/activitystreams",
         "id": format!("https://{}/notes/{}", state.domain, uuid),
         "type": "Note",
+        "url": format!("https://{}/notes/{}", state.domain, uuid),
         "attributedTo": note.actor_id,
         "content": note.content,
         "published": note.created_at,
