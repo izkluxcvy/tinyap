@@ -15,10 +15,10 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 
 ## Requirements
 
-- openssl ([more info](https://docs.rs/openssl/latest/openssl/#automatic))
+- OpenSSL ([more info](https://docs.rs/openssl/latest/openssl/#automatic))
 - sqlite3
 - Rust
-- HTTP**S** for federation
+- SSL certificate
 
 ## Installation
 
@@ -27,6 +27,16 @@ Clone git repo.
 ```sh
 $ git clone https://github.com/izkluxcvy/tinyap.git
 $ cd tinyap
+```
+
+Create SSL certificate if not exists.
+
+in here create self-signed certificate, but you can use your preferred method, like Let's Encrypt.
+
+```sh
+$ openssl genrsa -out server.key 2048
+$ openssl req -out server.csr -key server.key -new
+$ openssl x509 -req -days 3650 -signkey server.key -in server.csr -out server.crt
 ```
 
 Create database first. (Building first will result in failure.)
@@ -103,7 +113,9 @@ $ vi .env
 ```sh
 DATABASE_URL=sqlite://./tinyap.db
 HOST=127.0.0.1
-PORT=8080
+PORT=8443
+CERT_PATH=./server.crt
+KEY_PATH=./server.key
 DOMAIN=example.com
 TIMEZONE=Asia/Tokyo
 SESSION_TTL_DAYS=90
