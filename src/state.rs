@@ -60,6 +60,12 @@ pub async fn init_state() -> AppState {
     }
 }
 
+pub async fn cert_files() -> (String, String) {
+    let cert_path = env::var("CERT_PATH").expect("CERT_PATH must be set");
+    let key_path = env::var("KEY_PATH").expect("KEY_PATH must be set");
+    (cert_path, key_path)
+}
+
 pub async fn server_address() -> String {
     let host = env::var("HOST").expect("HOST must be set");
     let port = env::var("PORT").expect("PORT must be set");

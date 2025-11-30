@@ -12,7 +12,8 @@ use axum::{
     Router,
     routing::{get, get_service, post},
 };
-use tokio::net::TcpListener;
+use axum_server::tls_rustls::RustlsConfig;
+use std::net::SocketAddr;
 use tower_http::services::ServeFile;
 
 #[tokio::main]
@@ -55,9 +56,20 @@ async fn main() {
         )
         .with_state(app_state);
 
-    println!("Server listening on {}", state::server_address().await);
-    let listener = TcpListener::bind(&state::server_address().await)
+    let (cert_path, key_path) = state::cert_files().await;
+    let tls_config = RustlsConfig::from_pem_file(cert_path, key_path)
         .await
         .unwrap();
-    axum::serve(listener, app).await.unwrap();
+
+    println!("Server listening on {}", state::server_address().await);
+    let addr = SocketAddr::from(
+        state::server_address()
+            .await
+            .parse::<std::net::SocketAddr>()
+            .unwrap(),
+    );
+    axum_server::bind_rustls(addr, tls_config)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }
