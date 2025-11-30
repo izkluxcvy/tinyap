@@ -62,12 +62,7 @@ async fn main() {
         .unwrap();
 
     println!("Server listening on {}", state::server_address().await);
-    let addr = SocketAddr::from(
-        state::server_address()
-            .await
-            .parse::<std::net::SocketAddr>()
-            .unwrap(),
-    );
+    let addr = SocketAddr::from(state::server_address().await.parse::<SocketAddr>().unwrap());
     axum_server::bind_rustls(addr, tls_config)
         .serve(app.into_make_service())
         .await
