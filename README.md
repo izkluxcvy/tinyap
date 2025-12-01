@@ -136,28 +136,26 @@ $ ./tinyap
 
 ## Benchmark
 
-```sh
-$ curl http://localhost:8080/local -w "%{time_total}\n" -o /dev/null -sS
-0.002244
-$ wrk -t16 -c400 -d10s http://localhost:8080/local
-Running 10s test @ http://localhost:8080/local
-  16 threads and 400 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    18.49ms   10.21ms 278.14ms   97.04%
-    Req/Sec     1.41k   485.19    17.05k    98.56%
-  224539 requests in 10.10s, 399.58MB read
-Requests/sec:  22231.70
-Transfer/sec:     39.56MB
+AMD Ryzen 7 5700X (16) @ 4.66 GHz
 
-$ curl http://localhost:8080/@alice -w "%{time_total}\n" -o /dev/null -sS
-0.002189
-$ wrk -t16 -c400 -d10s http://localhost:8080/@alice
-Running 10s test @ http://localhost:8080/@alice
+```sh
+$ wrk -t16 -c400 -d10s https://localhost:8443/local
+Running 10s test @ https://localhost:8443/local
   16 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    35.11ms   63.01ms 816.95ms   96.95%
-    Req/Sec     0.98k   373.83    11.59k    95.87%
-  153806 requests in 10.06s, 237.92MB read
-Requests/sec:  15289.49
-Transfer/sec:     23.65MB
+    Latency    16.33ms    2.29ms  84.80ms   98.01%
+    Req/Sec     1.54k   205.06     5.69k    98.63%
+  245256 requests in 10.07s, 446.50MB read
+Requests/sec:  24343.66
+Transfer/sec:     44.32MB
+
+$ wrk -t16 -c400 -d10s https://localhost:8443/@alice
+Running 10s test @ https://localhost:8443/@alice
+  16 threads and 400 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    24.99ms    3.44ms  86.38ms   86.85%
+    Req/Sec     1.00k   137.86     3.84k    95.63%
+  159868 requests in 10.07s, 256.75MB read
+Requests/sec:  15883.10
+Transfer/sec:     25.51MB
 ```
