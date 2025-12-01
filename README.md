@@ -139,6 +139,8 @@ $ curl http://localhost:8080/local -w "%{time_total}\n" -o /dev/null -sS
 0.002244
 $ wrk -t16 -c400 -d10s http://localhost:8080/local
 Running 10s test @ http://localhost:8080/local
+  16 threads and 400 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency    18.49ms   10.21ms 278.14ms   97.04%
     Req/Sec     1.41k   485.19    17.05k    98.56%
   224539 requests in 10.10s, 399.58MB read
@@ -149,6 +151,8 @@ $ curl http://localhost:8080/@alice -w "%{time_total}\n" -o /dev/null -sS
 0.002189
 $ wrk -t16 -c400 -d10s http://localhost:8080/@alice
 Running 10s test @ http://localhost:8080/@alice
+  16 threads and 400 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency    35.11ms   63.01ms 816.95ms   96.95%
     Req/Sec     0.98k   373.83    11.59k    95.87%
   153806 requests in 10.06s, 237.92MB read
