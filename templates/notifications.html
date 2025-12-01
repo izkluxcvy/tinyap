@@ -19,7 +19,7 @@
 <a href="/@{{ notif.actor }}">@{{ notif.actor }}</a> followed you</pre>
     {% elif notif.type == "reply" %}
     <pre><hr>{{ notif.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}
-<a href="/@{{ notif.actor }}">@{{ notif.actor }}</a> replied to <a href="/@{{ notif.actor }}/{{ notif.note_uuid }}">your note</a></pre>
+<a href="/@{{ notif.actor }}">@{{ notif.actor }}</a> replied to <a href="/@{{ notif.username }}/{{ notif.note_uuid }}">your note</a></pre>
     {% endif %}
     {% endfor %}
 </body>
