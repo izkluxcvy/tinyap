@@ -135,7 +135,7 @@ pub async fn add_notification(
 
 pub fn strip_html_tags(html: &str) -> String {
     let br_re = Regex::new(r"(?i)<br\s*/?>").unwrap();
-    let html = br_re.replace_all(html, "\n");
+    let html = br_re.replace_all(html, "\n").replace("</p><p>", "\n\n");
 
     let tag_re = Regex::new(r"<[^>]+>").unwrap();
 
