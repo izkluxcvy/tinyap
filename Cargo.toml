@@ -3,12 +3,16 @@ name = "tinyap"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+tls = ["axum-server/tls-rustls"]
+
 [dependencies]
 dotenvy = "0.15"
 tokio = { version = "1", features = ["full"] }
 axum = { version = "0.8.7", features = ["json"] }
 axum-extra = { version = "0.12", features = ["cookie"] }
-axum-server = { version = "0.7", features = ["tls-rustls"] }
+axum-server = { version = "0.7", features = ["tls-rustls"], optional = true }
 tower-http = { version = "0.6", features = ["fs"] }
 uuid = { version = "1", features = ["v4"] }
 time = "0.3"

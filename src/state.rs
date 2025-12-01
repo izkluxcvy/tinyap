@@ -60,6 +60,7 @@ pub async fn init_state() -> AppState {
     }
 }
 
+#[cfg(feature = "tls")]
 pub async fn cert_files() -> (String, String) {
     let cert_path = env::var("CERT_PATH").expect("CERT_PATH must be set");
     let key_path = env::var("KEY_PATH").expect("KEY_PATH must be set");
