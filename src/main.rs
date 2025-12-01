@@ -62,13 +62,8 @@ use tokio::net::TcpListener;
 #[tokio::main]
 async fn main() {
     let app = routing().await;
-    println!(
-        "Server listening on http://{}",
-        state::server_address().await
-    );
-    let listener = TcpListener::bind(&state::server_address().await)
-        .await
-        .unwrap();
+    println!("Server listening on http://{}", state::server_address());
+    let listener = TcpListener::bind(&state::server_address()).await.unwrap();
     axum::serve(listener, app).await.unwrap()
 }
 
@@ -82,16 +77,13 @@ use std::net::SocketAddr;
 async fn main() {
     let app = routing().await;
 
-    let (cert_path, key_path) = state::cert_files().await;
+    let (cert_path, key_path) = state::cert_files();
     let tls_config = RustlsConfig::from_pem_file(cert_path, key_path)
         .await
         .unwrap();
 
-    println!(
-        "Server listening on https://{}",
-        state::server_address().await
-    );
-    let addr = SocketAddr::from(state::server_address().await.parse::<SocketAddr>().unwrap());
+    println!("Server listening on https://{}", state::server_address());
+    let addr = SocketAddr::from(state::server_address().parse::<SocketAddr>().unwrap());
     axum_server::bind_rustls(addr, tls_config)
         .serve(app.into_make_service())
         .await
