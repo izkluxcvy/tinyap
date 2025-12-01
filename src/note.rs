@@ -38,13 +38,17 @@ pub async fn create_note(
     let created_at = OffsetDateTime::now_utc()
         .format(&time::format_description::well_known::Rfc3339)
         .unwrap();
+    let content_trimed = form.content.trim();
+    if content_trimed.is_empty() {
+        return Redirect::to("/home");
+    }
     sqlx::query!(
         "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, created_at)
         VALUES (?, ?, ?, ?, ?, ?)",
         uuid,
         ap_id,
         user.id,
-        form.content,
+        content_trimed,
         form.in_reply_to,
         created_at,
     )
