@@ -1,5 +1,4 @@
 body {
-    font-family: sans-serif;
     background: #fafafa;
     color: #222;
 }
@@ -9,10 +8,8 @@ h3 {
 }
 
 pre {
-    white-space: pre-wrap;
     word-wrap: break-word;
     margin: 0;
-    font-family: monospace;
 }
 
 a {
