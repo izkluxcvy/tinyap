@@ -36,7 +36,8 @@ pub async fn api(
 
     match activity["actor"].as_str() {
         Some(actor) => {
-            if actor.contains("localhost/") {
+            if actor.contains("localhost") || actor.contains("127.0.0.1") || actor.contains("[::1]")
+            {
                 return (
                     StatusCode::BAD_REQUEST,
                     Json(serde_json::json!({"error": "Localhost not allowed"})),
