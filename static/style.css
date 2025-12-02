@@ -8,6 +8,7 @@ h3 {
 }
 
 pre {
+    white-space: pre-wrap;
     word-wrap: break-word;
     margin: 0;
 }
