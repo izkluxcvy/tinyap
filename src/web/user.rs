@@ -22,7 +22,7 @@ pub async fn page(
     .await
     .unwrap();
 
-    if existing.is_none() {
+    if existing.is_none() && login_user.id.is_some() {
         let actor_url = resolve_acct(&username).await;
         if let Some(actor_url) = actor_url {
             create_remoteuser(&actor_url, &state).await;
