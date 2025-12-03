@@ -124,13 +124,11 @@ pub async fn create_note(
         let url = Url::parse(&follower.inbox).unwrap();
         let host = url.host_str().expect("Invalid inbox URL").to_string();
         if !already_delivered_hosts.contains(&host) {
-            {
-                utils::deliver_signed(&follower.inbox, &json_body, &private_key, &actor_url)
-                    .await
-                    .unwrap();
-            }
+            utils::deliver_signed(&follower.inbox, &json_body, &private_key, &actor_url)
+                .await
+                .unwrap();
+            already_delivered_hosts.push(host);
         }
-        already_delivered_hosts.push(host);
     }
 
     Redirect::to("/home")

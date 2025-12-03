@@ -7,6 +7,7 @@ use axum::{
     response::{IntoResponse, Redirect},
 };
 use serde_json::json;
+use url::Url;
 use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
@@ -58,18 +59,20 @@ pub async fn note(
     .unwrap();
 
     let private_key = note_author.private_key.unwrap();
+    let mut already_delivered_hosts = vec![state.domain.clone()];
     for follower in followers {
-        if !follower
-            .inbox
-            .starts_with(&format!("https://{}", state.domain))
-        {
-            let _ = utils::deliver_signed(
+        let url = Url::parse(&follower.inbox).unwrap();
+        let host = url.host_str().expect("Invalid inbox URL").to_string();
+        if !already_delivered_hosts.contains(&host) {
+            utils::deliver_signed(
                 &follower.inbox,
                 &json_body,
                 &private_key,
                 &note_author.actor_id,
             )
-            .await;
+            .await
+            .unwrap();
+            already_delivered_hosts.push(host);
         }
     }
 
