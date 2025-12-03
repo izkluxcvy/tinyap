@@ -1,3 +1,5 @@
+use std::vec;
+
 use crate::ap::utils;
 use crate::auth::AuthUser;
 use crate::state::AppState;
@@ -8,6 +10,7 @@ use axum::{
 };
 use serde_json::json;
 use time::OffsetDateTime;
+use url::Url;
 use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
@@ -116,15 +119,18 @@ pub async fn create_note(
         .unwrap();
 
     let private_key = user.private_key.unwrap();
+    let mut already_delivered_hosts = vec![state.domain.clone()];
     for follower in followers {
-        if !follower
-            .inbox
-            .starts_with(&format!("https://{}", state.domain))
-        {
-            utils::deliver_signed(&follower.inbox, &json_body, &private_key, &actor_url)
-                .await
-                .unwrap();
+        let url = Url::parse(&follower.inbox).unwrap();
+        let host = url.host_str().expect("Invalid inbox URL").to_string();
+        if already_delivered_hosts.contains(&host) {
+            {
+                utils::deliver_signed(&follower.inbox, &json_body, &private_key, &actor_url)
+                    .await
+                    .unwrap();
+            }
         }
+        already_delivered_hosts.push(host);
     }
 
     Redirect::to("/home")
