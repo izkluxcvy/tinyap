@@ -28,10 +28,13 @@ pub async fn note(activity: &Value, state: &AppState) {
         update_remoteuser(note_actor, state).await;
     }
 
-    let user = sqlx::query!("SELECT id FROM users WHERE actor_id = ?", note_actor)
-        .fetch_one(&state.db_pool)
-        .await
-        .unwrap();
+    let user = sqlx::query!(
+        "SELECT id, username FROM users WHERE actor_id = ?",
+        note_actor
+    )
+    .fetch_one(&state.db_pool)
+    .await
+    .unwrap();
     let uuid = Uuid::new_v4().to_string();
     let note_content = note["content"].as_str().unwrap();
     let content_clean = utils::strip_html_tags(note_content);
@@ -69,7 +72,7 @@ pub async fn note(activity: &Value, state: &AppState) {
             utils::add_notification(
                 &parent_user.username,
                 "reply",
-                note_actor,
+                &user.username,
                 Some(&uuid),
                 state,
             )

@@ -21,15 +21,10 @@ pub async fn page(State(state): State<AppState>, user: AuthUser) -> Html<String>
 
     let mut notifs: Vec<_> = Vec::new();
     for row in rows {
-        let actor_user = sqlx::query!("SELECT username FROM users WHERE actor_id = ?", row.actor)
-            .fetch_one(&state.db_pool)
-            .await
-            .unwrap();
-
         let mut notif = json!({
             "username": row.username,
             "type": row.r#type,
-            "actor": actor_user.username,
+            "actor": row.actor,
             "created_at": row.created_at,
         });
         if let Some(note_uuid) = row.note_uuid {

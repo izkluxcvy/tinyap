@@ -30,8 +30,6 @@ pub async fn process(activity: &Value, state: &AppState) {
     .await
     .unwrap();
 
-    utils::add_notification(&row.username, "like", actor, Some(&row.uuid), state).await;
-
     // Create local user if not exists
     let local_user = sqlx::query!("SELECT id FROM users WHERE actor_id = ?", actor)
         .fetch_optional(&state.db_pool)
@@ -41,4 +39,18 @@ pub async fn process(activity: &Value, state: &AppState) {
     if local_user.is_none() {
         create_remoteuser(actor, state).await;
     }
+
+    let local_user = sqlx::query!("SELECT username FROM users WHERE actor_id = ?", actor)
+        .fetch_one(&state.db_pool)
+        .await
+        .unwrap();
+
+    utils::add_notification(
+        &row.username,
+        "like",
+        &local_user.username,
+        Some(&row.uuid),
+        state,
+    )
+    .await;
 }

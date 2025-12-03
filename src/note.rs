@@ -73,7 +73,7 @@ pub async fn create_note(
                 utils::add_notification(
                     &parent_note.username,
                     "reply",
-                    &format!("https://{}/users/{}", state.domain, user.username),
+                    &user.username,
                     Some(&parent_note.uuid),
                     &state,
                 )

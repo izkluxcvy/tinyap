@@ -35,14 +35,13 @@ pub async fn accept(
 
     // Create remote user and insert into follows table
     create_remoteuser(actor, state).await;
-    let actor_user_id = sqlx::query!("SELECT id FROM users WHERE actor_id = ?", actor)
+    let actor_user = sqlx::query!("SELECT id, username FROM users WHERE actor_id = ?", actor)
         .fetch_one(&state.db_pool)
         .await
-        .expect("Failed to fetch remote user ID")
-        .id;
+        .expect("Failed to fetch remote use");
     sqlx::query!(
         "INSERT OR IGNORE INTO follows (user_id, object_actor, pending) VALUES (?, ?, ?)",
-        actor_user_id,
+        actor_user.id,
         object,
         0
     )
@@ -70,7 +69,7 @@ pub async fn accept(
         .expect("Failed to deliver Accept activity");
 
     // Add notification
-    utils::add_notification(username, "follow", actor, None, state).await;
+    utils::add_notification(username, "follow", &actor_user.username, None, state).await;
 
     (
         StatusCode::OK,

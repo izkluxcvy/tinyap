@@ -68,7 +68,7 @@ async fn follow_local(user_id: i64, username: &str, state: &AppState) {
     .unwrap();
 
     // Add notification
-    utils::add_notification(username, "follow", &actor_user.actor_id, None, state).await;
+    utils::add_notification(username, "follow", &actor_user.username, None, state).await;
 }
 
 async fn follow_remote(user_id: i64, acct: &str, state: &AppState) {

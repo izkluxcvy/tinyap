@@ -20,7 +20,7 @@ pub async fn like(
     Form(form): Form<LikeForm>,
 ) -> impl IntoResponse {
     let actor_user = sqlx::query!(
-        "SELECT actor_id, private_key FROM users WHERE id = ?",
+        "SELECT actor_id, username, private_key FROM users WHERE id = ?",
         user.id
     )
     .fetch_one(&state.db_pool)
@@ -70,7 +70,7 @@ pub async fn like(
         utils::add_notification(
             &note_author_username,
             "like",
-            &actor_user.actor_id,
+            &actor_user.username,
             Some(&note_uuid),
             &state,
         )
