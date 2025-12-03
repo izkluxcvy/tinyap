@@ -34,4 +34,12 @@ Joined: {{ created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}
     {% else %}
     <pre>No notes yet.</pre>
     {% endfor %}
+
+    {% if page > 1 and notes | length == max_notes %}
+    <pre><a href="/@{{ username }}?p={{ page - 1 }}">Newer Notes</a> | <a href="/@{{ username }}?p={{ page + 1 }}">Older Notes</a></pre>
+    {% elif notes | length == max_notes %}
+    <pre><a href="/@{{ username }}?p={{ page + 1 }}">Older Notes</a></pre>
+    {% elif page > 1 %}
+    <pre><a href="/@{{ username }}?p={{ page - 1 }}">Newer Notes</a></pre>
+    {% endif %}
 </body>

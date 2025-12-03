@@ -3,14 +3,20 @@ use crate::state::AppState;
 use crate::user::create_remoteuser;
 
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     response::{Html, IntoResponse},
 };
 
+#[derive(serde::Deserialize)]
+pub struct PageParam {
+    p: Option<i64>,
+}
+
 pub async fn page(
     State(state): State<AppState>,
     Path(username): Path<String>,
+    Query(PageParam { p }): Query<PageParam>,
     login_user: MaybeAuthUser,
 ) -> impl IntoResponse {
     let existing = sqlx::query!(
@@ -45,12 +51,17 @@ pub async fn page(
         return (StatusCode::NOT_FOUND, "User not found").into_response();
     };
 
+    let offset = (p.unwrap_or(1) - 1) * state.config.max_timeline_notes;
     let rows = sqlx::query!(
         "SELECT uuid, content, created_at, in_reply_to
         FROM notes
         WHERE user_id = ?
-        ORDER BY created_at DESC",
-        user.id
+        ORDER BY created_at DESC
+        LIMIT ?
+        OFFSET ?",
+        user.id,
+        state.config.max_timeline_notes,
+        offset
     )
     .fetch_all(&state.db_pool)
     .await
@@ -134,6 +145,8 @@ pub async fn page(
     context.insert("follower_num", &follower_num);
     context.insert("follow_status", &follow_status);
     context.insert("notes", &notes);
+    context.insert("page", &p.unwrap_or(1));
+    context.insert("max_notes", &state.config.max_timeline_notes);
     let rendered = state.tera.render("user.html", &context).unwrap();
     Html(rendered).into_response()
 }
