@@ -38,6 +38,16 @@ pub async fn note(activity: &Value, state: &AppState) {
     let uuid = Uuid::new_v4().to_string();
     let note_content = note["content"].as_str().unwrap();
     let content_clean = utils::strip_html_tags(note_content);
+    let content_clean = if content_clean.chars().count() > state.config.max_note_chars {
+        let byte_end = content_clean
+            .char_indices()
+            .nth(state.config.max_note_chars)
+            .unwrap()
+            .0;
+        content_clean[..byte_end].to_string()
+    } else {
+        content_clean
+    };
     let note_created_at = note["published"].as_str().unwrap();
     let note_inreplyto = note["inReplyTo"].as_str();
     sqlx::query!(

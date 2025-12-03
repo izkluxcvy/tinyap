@@ -18,6 +18,7 @@ pub struct Config {
     pub session_max_per_user: i64,
     pub allow_signup: bool,
     pub max_timeline_notes: i64,
+    pub max_note_chars: usize,
 }
 
 pub async fn init_state() -> AppState {
@@ -43,6 +44,10 @@ pub async fn init_state() -> AppState {
         .expect("MAX_TIMELINE_NOTES must be set")
         .parse::<i64>()
         .expect("MAX_TIMELINE_NOTES must be a valid number");
+    let max_note_chars = env::var("MAX_NOTE_CHARS")
+        .expect("MAX_NOTE_CHARS must be set")
+        .parse::<usize>()
+        .expect("MAX_NOTE_CHARS must be a valid number");
 
     let config = Config {
         timezone: timezone,
@@ -50,6 +55,7 @@ pub async fn init_state() -> AppState {
         session_max_per_user: session_max_per_user,
         allow_signup: allow_signup,
         max_timeline_notes: max_timeline_notes,
+        max_note_chars: max_note_chars,
     };
 
     AppState {

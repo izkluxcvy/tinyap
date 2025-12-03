@@ -23,6 +23,8 @@ pub async fn page(
                 message_body = "Invalid input. Please try again."
             } else if v == "username_taken" {
                 message_body = "This username is already taken. Please choose another one."
+            } else if v == "exceed_max_note_length" {
+                message_body = "Your note exceeds the maximum allowed length."
             } else {
                 message_body = "";
             }

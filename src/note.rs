@@ -21,6 +21,10 @@ pub async fn create_note(
     user: AuthUser,
     Form(form): Form<NewNoteForm>,
 ) -> impl IntoResponse {
+    if form.content.chars().count() > state.config.max_note_chars {
+        return Redirect::to("/?message=exceed_max_note_length");
+    }
+
     let user = sqlx::query!(
         "SELECT id, username, private_key, is_local FROM users WHERE id = ?",
         user.id
