@@ -1,8 +1,10 @@
 body {
-    background: #2e3440;
-    color: #d8dee9;
+    background: #fafafa;
+    color: #222;
     width: 90vh;
     margin: auto;
+    margin-top: 8px;
+    margin-bottom: 10vh;
 }
 
 @media screen and (max-width: 90vh) {
@@ -22,6 +24,6 @@ pre {
 }
 
 a {
-    color: #81a1c1;
+    color: #325aa0;
     text-decoration: none;
 }
