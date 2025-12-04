@@ -1,6 +1,14 @@
 body {
-    background: #fafafa;
-    color: #222;
+    background: #2e3440;
+    color: #d8dee9;
+    width: 90vh;
+    margin: auto;
+}
+
+@media screen and (max-width: 90vh) {
+    body {
+        width: 98%;
+    }
 }
 
 h3 {
@@ -14,6 +22,6 @@ pre {
 }
 
 a {
-    color: #325aa0;
+    color: #81a1c1;
     text-decoration: none;
 }
