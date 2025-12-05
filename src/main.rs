@@ -44,6 +44,8 @@ pub async fn routing() -> Router {
         // ActivityPub endpoints
         .route("/users/{username}", get(ap::actor::api))
         .route("/.well-known/webfinger", get(ap::webfinger::api))
+        .route("/.well-known/nodeinfo", get(ap::nodeinfo::well_known))
+        .route("/nodeinfo/2.1", get(ap::nodeinfo::nodeinfo))
         .route("/notes/{uuid}", get(ap::note::api))
         .route("/users/{username}/inbox", post(ap::inbox::api))
         .route("/users/{username}/outbox", get(ap::outbox::api))
