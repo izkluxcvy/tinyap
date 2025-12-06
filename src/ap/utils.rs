@@ -94,18 +94,67 @@ pub async fn deliver_signed(
     Ok(())
 }
 
-pub async fn fetch_inbox(actor: &str) -> Option<String> {
-    let client = Client::new();
-
-    let res = client
-        .get(actor)
-        .header("Accept", "application/activity+json, application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
-        .send()
-        .await
-        .ok()?;
+pub async fn fetch_inbox(actor: &str, state: &AppState) -> Option<String> {
+    let res = signed_get(actor, state).await.ok()?;
 
     let json: serde_json::Value = res.json().await.ok()?;
     json["inbox"].as_str().map(|s| s.to_string())
+}
+
+pub async fn signed_get(url: &str, state: &AppState) -> Result<reqwest::Response, reqwest::Error> {
+    let random_user =
+        sqlx::query!("SELECT actor_id, private_key FROM users WHERE is_local = 1 LIMIT 1")
+            .fetch_one(&state.db_pool)
+            .await
+            .expect("Failed to fetch local user");
+    let actor_id = random_user.actor_id;
+    let private_key = random_user.private_key.unwrap();
+
+    let client = Client::new();
+
+    let httpdate_format = format_description::parse(
+        "[weekday repr:short], [day] [month repr:short] [year] [hour repr:24]:[minute]:[second] GMT"
+    ).unwrap();
+    let date = OffsetDateTime::now_utc().format(&httpdate_format).unwrap();
+
+    let url_parsed = Url::parse(url).expect("Invalid URL");
+    let host = url_parsed.host_str().expect("URL has no host");
+    let path_and_query = {
+        let full = url_parsed.path().to_owned();
+        match url_parsed.query() {
+            Some(q) => format!("{}?{}", full, q),
+            None => full,
+        }
+    };
+
+    let signing_string = format!(
+        "(request-target): get {}\nhost: {}\ndate: {}",
+        path_and_query, host, date
+    );
+
+    let private_key = RsaPrivateKey::from_pkcs1_pem(&private_key).expect("Invalid private key");
+    let signing_key = SigningKey::<Sha256>::new(private_key);
+
+    let signature = signing_key.sign(signing_string.as_bytes());
+    let signature_b64 = general_purpose::STANDARD.encode(signature.to_bytes());
+
+    let key_id = format!("{}#main-key", actor_id);
+
+    let signature_header = format!(
+        r#"keyId="{}",algorithm="rsa-sha256",headers="(request-target) host date",signature="{}""#,
+        key_id, signature_b64
+    );
+
+    let response = client
+        .get(url)
+        .header("Host", host)
+        .header("Date", date)
+        .header("Signature", signature_header)
+        .header("Accept", "application/activity+json, application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
+        .send()
+        .await?;
+
+    Ok(response)
 }
 
 pub async fn add_notification(

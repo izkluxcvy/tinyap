@@ -22,7 +22,7 @@ pub async fn accept(
             .into_response();
     }
 
-    let inbox_url = utils::fetch_inbox(actor).await.unwrap();
+    let inbox_url = utils::fetch_inbox(actor, state).await.unwrap();
     sqlx::query!(
         "INSERT OR IGNORE INTO followers (user_id, actor, inbox) VALUES (?, ?, ?)",
         user_id,

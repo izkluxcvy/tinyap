@@ -33,7 +33,7 @@ pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String>
         .into_iter()
         .map(|row| {
             serde_json::json!({
-                "uuid": row.uuid.replace(&format!("{}-boost-", home_user.username), ""),
+                "uuid": row.uuid.replace(&format!("{}-boost-", row.username), ""),
                 "display_name": row.display_name,
                 "username": row.username,
                 "boosted_username": row.boosted_username,

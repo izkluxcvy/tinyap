@@ -133,8 +133,6 @@ pub async fn create_note(
     Redirect::to("/home")
 }
 
-use reqwest::Client;
-
 pub async fn create_remotenote(ap_id: &str, state: &AppState) {
     let existing = sqlx::query!("SELECT id FROM notes WHERE ap_id = ?", ap_id)
         .fetch_optional(&state.db_pool)
@@ -145,13 +143,7 @@ pub async fn create_remotenote(ap_id: &str, state: &AppState) {
         return;
     }
 
-    let client = Client::new();
-    let res = client
-        .get(ap_id)
-        .header("Accept", "application/activity+json, application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
-        .send()
-        .await
-        .unwrap();
+    let res = utils::signed_get(ap_id, state).await.unwrap();
 
     let json: serde_json::Value = res.json().await.unwrap();
     if json["type"] != "Note" {
@@ -176,6 +168,18 @@ pub async fn create_remotenote(ap_id: &str, state: &AppState) {
 
     let uuid = Uuid::new_v4().to_string();
     let content = json["content"].as_str().unwrap();
+    let content_clean = utils::strip_html_tags(content);
+    let content_clean = if content_clean.chars().count() > state.config.max_note_chars {
+        let byte_end = content_clean
+            .char_indices()
+            .nth(state.config.max_note_chars)
+            .unwrap()
+            .0;
+        content_clean[..byte_end].to_string()
+    } else {
+        content_clean
+    };
+    println!("Remote note content: {}", content_clean);
     let in_reply_to = json["inReplyTo"].as_str();
     let created_at = json["published"].as_str().unwrap();
 
@@ -185,7 +189,7 @@ pub async fn create_remotenote(ap_id: &str, state: &AppState) {
         uuid,
         ap_id,
         actor_user.id,
-        content,
+        content_clean,
         in_reply_to,
         created_at,
     )

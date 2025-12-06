@@ -61,7 +61,7 @@ pub async fn like(
             "object": form.ap_id,
         });
 
-        let inbox_url = utils::fetch_inbox(&note_author).await.unwrap();
+        let inbox_url = utils::fetch_inbox(&note_author, &state).await.unwrap();
         let json_body = serde_json::to_string(&like_json).unwrap();
 
         let _ =
@@ -134,7 +134,7 @@ pub async fn unlike(
             },
         });
 
-        let inbox_url = utils::fetch_inbox(&note_author).await.unwrap();
+        let inbox_url = utils::fetch_inbox(&note_author, &state).await.unwrap();
         let json_body = serde_json::to_string(&undo_json).unwrap();
 
         let _ =

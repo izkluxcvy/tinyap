@@ -77,7 +77,7 @@ async fn follow_remote(user_id: i64, acct: &str, state: &AppState) {
         .await
         .unwrap();
 
-    let inbox = match utils::fetch_inbox(&object_user.actor_id).await {
+    let inbox = match utils::fetch_inbox(&object_user.actor_id, state).await {
         Some(url) => url,
         None => return,
     };
@@ -156,7 +156,7 @@ pub async fn unfollow(
 
     let parts: Vec<&str> = username.split('@').collect();
     if parts.len() == 2 {
-        let inbox = match utils::fetch_inbox(&object_user.actor_id).await {
+        let inbox = match utils::fetch_inbox(&object_user.actor_id, &state).await {
             Some(url) => url,
             None => return Redirect::to(&format!("/?message=inbox-not-found")),
         };
