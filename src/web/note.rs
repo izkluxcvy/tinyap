@@ -84,18 +84,18 @@ pub async fn page(
     .count;
 
     let is_boosted: bool;
-    let boost_uuid = format!("{}-boost-{}", username, uuid);
     match user.id {
         Some(user_id) => {
-            is_boosted = sqlx::query!(
-                "SELECT id FROM notes WHERE uuid = ? AND user_id = ?",
-                boost_uuid,
-                user_id
-            )
-            .fetch_optional(&state.db_pool)
-            .await
-            .unwrap()
-            .is_some();
+            let user = sqlx::query!("SELECT username FROM users WHERE id = ?", user_id)
+                .fetch_one(&state.db_pool)
+                .await
+                .unwrap();
+            let boost_uuid = format!("{}-boost-{}", user.username, uuid);
+            is_boosted = sqlx::query!("SELECT id FROM notes WHERE uuid = ?", boost_uuid,)
+                .fetch_optional(&state.db_pool)
+                .await
+                .unwrap()
+                .is_some();
         }
         None => {
             is_boosted = false;

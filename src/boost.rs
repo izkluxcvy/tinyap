@@ -120,7 +120,7 @@ pub async fn unboost(
     Form(form): Form<UnboostForm>,
 ) -> impl IntoResponse {
     let actor_user = sqlx::query!(
-        "SELECT actor_id, private_key FROM users WHERE id = ?",
+        "SELECT username, actor_id, private_key FROM users WHERE id = ?",
         user.id
     )
     .fetch_one(&state.db_pool)
@@ -138,7 +138,7 @@ pub async fn unboost(
     .await
     .unwrap();
 
-    let boost_apid = format!("{}-boost-{}", note.username, form.ap_id);
+    let boost_apid = format!("{}-boost-{}", actor_user.username, form.ap_id);
     sqlx::query!(
         "DELETE FROM notes WHERE ap_id = ? AND user_id = ?",
         boost_apid,
