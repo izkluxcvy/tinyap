@@ -8,7 +8,7 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 ## Features
 
 - Fetch remote user by accessing /@user@example.com
-- Follow, Like, Undo them
+- Follow, Like, Boost, Undo them
 - Create and deliver note
 - Reply
 - Timeline
@@ -72,6 +72,8 @@ CREATE TABLE notes (
     uuid TEXT UNIQUE NOT NULL,
     ap_id TEXT UNIQUE NOT NULL,
     user_id INTEGER NOT NULL,
+    boosted_username TEXT,
+    boosted_created_at TEXT,
     content TEXT NOT NULL,
     in_reply_to TEXT,
     created_at TEXT NOT NULL
