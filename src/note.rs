@@ -1,8 +1,7 @@
-use std::vec;
-
 use crate::ap::utils;
 use crate::auth::AuthUser;
 use crate::state::AppState;
+use crate::user;
 
 use axum::{
     extract::{Form, State},
@@ -132,4 +131,65 @@ pub async fn create_note(
     }
 
     Redirect::to("/home")
+}
+
+use reqwest::Client;
+
+pub async fn create_remotenote(ap_id: &str, state: &AppState) {
+    let existing = sqlx::query!("SELECT id FROM notes WHERE ap_id = ?", ap_id)
+        .fetch_optional(&state.db_pool)
+        .await
+        .unwrap();
+
+    if existing.is_some() {
+        return;
+    }
+
+    let client = Client::new();
+    let res = client
+        .get(ap_id)
+        .header("Accept", "application/activity+json, application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
+        .send()
+        .await
+        .unwrap();
+
+    let json: serde_json::Value = res.json().await.unwrap();
+    if json["type"] != "Note" {
+        return;
+    }
+
+    // Create local user if not exists
+    let actor_url = json["attributedTo"].as_str().unwrap();
+    let existing_user = sqlx::query!("SELECT id FROM users WHERE actor_id = ?", actor_url)
+        .fetch_optional(&state.db_pool)
+        .await
+        .unwrap();
+
+    if existing_user.is_none() {
+        user::create_remoteuser(actor_url, state).await;
+    }
+
+    let actor_user = sqlx::query!("SELECT id FROM users WHERE actor_id = ?", actor_url)
+        .fetch_one(&state.db_pool)
+        .await
+        .unwrap();
+
+    let uuid = Uuid::new_v4().to_string();
+    let content = json["content"].as_str().unwrap();
+    let in_reply_to = json["inReplyTo"].as_str();
+    let created_at = json["published"].as_str().unwrap();
+
+    sqlx::query!(
+        "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)",
+        uuid,
+        ap_id,
+        actor_user.id,
+        content,
+        in_reply_to,
+        created_at,
+    )
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
 }

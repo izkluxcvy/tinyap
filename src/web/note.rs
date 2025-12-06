@@ -38,6 +38,7 @@ pub async fn page(
         "created_at": row.created_at,
     });
 
+    // Like status
     let like_num = sqlx::query!(
         "SELECT COUNT(*) as count FROM likes WHERE note_apid = ?",
         row.ap_id
@@ -69,6 +70,39 @@ pub async fn page(
         }
     }
 
+    // Boost status
+    let boost_uuid = format!("%boost-{}", uuid);
+    let boost_num = sqlx::query!(
+        "SELECT COUNT(*) as count
+        FROM notes
+        WHERE uuid LIKE ?",
+        boost_uuid
+    )
+    .fetch_one(&state.db_pool)
+    .await
+    .unwrap()
+    .count;
+
+    let is_boosted: bool;
+    let boost_uuid = format!("{}-boost-{}", username, uuid);
+    match user.id {
+        Some(user_id) => {
+            is_boosted = sqlx::query!(
+                "SELECT id FROM notes WHERE uuid = ? AND user_id = ?",
+                boost_uuid,
+                user_id
+            )
+            .fetch_optional(&state.db_pool)
+            .await
+            .unwrap()
+            .is_some();
+        }
+        None => {
+            is_boosted = false;
+        }
+    }
+
+    // Replies
     let row = sqlx::query!(
         "SELECT notes.uuid, notes.content, notes.created_at, notes.in_reply_to, users.display_name, users.username
         FROM notes
@@ -123,6 +157,8 @@ pub async fn page(
     context.insert("timezone", &state.config.timezone);
     context.insert("is_liked", &is_liked);
     context.insert("like_num", &like_num);
+    context.insert("is_boosted", &is_boosted);
+    context.insert("boost_num", &boost_num);
     context.insert("is_you", &is_you);
     context.insert("replies", &replies);
     let rendered = state.tera.render("note.html", &context).unwrap();

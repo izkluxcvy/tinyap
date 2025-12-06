@@ -7,6 +7,7 @@ pub async fn page(State(state): State<AppState>) -> Html<String> {
         "SELECT notes.uuid, notes.content, notes.in_reply_to, notes.created_at, users.display_name, users.username
         FROM notes
         JOIN users ON notes.user_id = users.id
+        WHERE notes.boosted_username IS NULL
         ORDER BY notes.created_at DESC
         LIMIT ?",
         state.config.max_timeline_notes

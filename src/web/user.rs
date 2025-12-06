@@ -53,7 +53,7 @@ pub async fn page(
 
     let offset = (p.unwrap_or(1) - 1) * state.config.max_timeline_notes;
     let rows = sqlx::query!(
-        "SELECT uuid, content, created_at, in_reply_to
+        "SELECT boosted_username, boosted_created_at, uuid, content, created_at, in_reply_to
         FROM notes
         WHERE user_id = ?
         ORDER BY created_at DESC
@@ -71,7 +71,9 @@ pub async fn page(
         .into_iter()
         .map(|row| {
             serde_json::json!({
-                "uuid": row.uuid,
+                "uuid": row.uuid.replace(&format!("{}-boost-", username), ""),
+                "boosted_username": row.boosted_username,
+                "boosted_created_at": row.boosted_created_at,
                 "content": row.content,
                 "created_at": row.created_at,
                 "in_reply_to": row.in_reply_to,

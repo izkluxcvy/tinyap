@@ -47,3 +47,19 @@ pub async fn like(activity: Value, state: &AppState) {
     .await
     .unwrap();
 }
+
+pub async fn announce(activity: &Value, state: &AppState) {
+    let actor = activity["object"]["actor"].as_str().unwrap(); // : Remote User
+    let object = activity["object"]["object"].as_str().unwrap(); // : Note
+
+    let actor_user = sqlx::query!("SELECT username FROM users WHERE actor_id = ?", actor)
+        .fetch_one(&state.db_pool)
+        .await
+        .unwrap();
+
+    let boost_apid = format!("{}-boost-{}", actor_user.username, object);
+    sqlx::query!("DELETE FROM notes WHERE ap_id = ?", boost_apid)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
+}

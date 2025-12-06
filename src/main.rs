@@ -1,5 +1,6 @@
 mod ap;
 mod auth;
+mod boost;
 mod delete;
 mod follow;
 mod like;
@@ -33,6 +34,8 @@ pub async fn routing() -> Router {
         .route("/@{username}/{uuid}", get(web::note::page))
         .route("/@{username}/{uuid}/like", post(like::like))
         .route("/@{username}/{uuid}/unlike", post(like::unlike))
+        .route("/@{username}/{uuid}/boost", post(boost::boost))
+        .route("/@{username}/{uuid}/unboost", post(boost::unboost))
         .route("/@{username}/{uuid}/delete", post(delete::note))
         .route("/@{username}/follow", post(follow::follow))
         .route("/@{username}/unfollow", post(follow::unfollow))

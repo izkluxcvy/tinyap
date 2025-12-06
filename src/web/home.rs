@@ -13,7 +13,7 @@ pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String>
 
     // Fetch notes from users who home user follows
     let rows = sqlx::query!(
-        "SELECT notes.uuid, notes.content, notes.in_reply_to, notes.created_at, users.display_name, users.username
+        "SELECT notes.boosted_username, notes.boosted_created_at, notes.uuid, notes.content, notes.in_reply_to, notes.created_at, users.display_name, users.username
         FROM notes
         JOIN users ON notes.user_id = users.id
         LEFT JOIN follows ON follows.object_actor = users.actor_id
@@ -33,9 +33,11 @@ pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String>
         .into_iter()
         .map(|row| {
             serde_json::json!({
-                "uuid": row.uuid,
+                "uuid": row.uuid.replace(&format!("{}-boost-", home_user.username), ""),
                 "display_name": row.display_name,
                 "username": row.username,
+                "boosted_username": row.boosted_username,
+                "boosted_created_at": row.boosted_created_at,
                 "content": row.content,
                 "in_reply_to": row.in_reply_to,
                 "created_at": row.created_at,

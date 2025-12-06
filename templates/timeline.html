@@ -11,8 +11,12 @@
     <h3>{{ title | safe }}</h3>
 
     {% for note in notes %}
+    {% if note.boosted_username %}
+    <pre><hr><strong><a href="/@{{ note.username}}">{{ note.display_name }}@{{ note.username }}</a></strong> boosted:
+<a href="/@{{ note.boosted_username}}">@{{ note.boosted_username }}</a>(<a href="/@{{ note.boosted_username }}/{{ note.uuid }}">{{ note.boosted_created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
+{% else %}
     <pre><hr><strong><a href="/@{{ note.username}}">{{ note.display_name }}@{{ note.username }}</a></strong>(<a href="/@{{ note.username }}/{{ note.uuid }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
-{{ note.content }}{% if note.in_reply_to %}<br>[Reply to: {{note.in_reply_to}}]{% endif %}</pre>
+{% endif %}{{ note.content }}{% if note.in_reply_to %}<br>[Reply to: {{note.in_reply_to}}]{% endif %}</pre>
     {% else %}
     <pre>No notes yet.</pre>
     {% endfor %}

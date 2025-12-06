@@ -1,4 +1,5 @@
 mod accept;
+mod announce;
 mod create;
 mod delete;
 mod follow;
@@ -66,6 +67,8 @@ pub async fn api(
         if activity["object"]["type"] == "Note" {
             create::note(&activity, &state).await;
         }
+    } else if activity["type"] == "Announce" {
+        announce::process(&activity, &state).await;
     } else if activity["type"] == "Accept" {
         let actor = activity["actor"].as_str().unwrap();
         if activity["object"]["type"] == "Follow" {
@@ -82,6 +85,8 @@ pub async fn api(
             undo::follow(activity, &state).await;
         } else if activity["object"]["type"] == "Like" {
             undo::like(activity, &state).await;
+        } else if activity["object"]["type"] == "Announce" {
+            undo::announce(&activity, &state).await;
         }
     } else if activity["type"] == "Delete" {
         let actor = activity["actor"].as_str().unwrap();
