@@ -27,3 +27,7 @@ a {
     color: #325aa0;
     text-decoration: none;
 }
+
+form {
+    display: inline;
+}

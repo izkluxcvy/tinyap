@@ -15,8 +15,8 @@
 [Reply to: {{reply_note.in_reply_to}}]{% endif %}
 <hr>---Reply---{% endif %}
 <strong><a href="/@{{ note.username }}">{{ note.display_name }}@{{ note.username }}</a></strong>(<a href="/@{{ note.username }}/{{ note.uuid }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
-{{ note.content }}
-<a href="/new?in_reply_to={{ note.ap_id }}">Reply</a></pre>
+{{ note.content }}</pre>
+    <a href="/new?in_reply_to={{ note.ap_id }}">Reply</a>
 
     {% if is_liked %}
     <form action="/@{{ note.username }}/{{ note.uuid }}/unlike" method="post">
