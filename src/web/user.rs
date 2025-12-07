@@ -29,7 +29,7 @@ pub async fn page(
     .unwrap();
 
     if existing.is_none() && login_user.id.is_some() {
-        let actor_url = resolve_acct(&username).await;
+        let actor_url = resolve_acct(&username, &state).await;
         if let Some(actor_url) = actor_url {
             create_remoteuser(&actor_url, &state).await;
         } else {
@@ -153,7 +153,7 @@ pub async fn page(
     Html(rendered).into_response()
 }
 
-async fn resolve_acct(acct: &str) -> Option<String> {
+async fn resolve_acct(acct: &str, state: &AppState) -> Option<String> {
     let parts: Vec<&str> = acct.split('@').collect();
     if parts.len() != 2 {
         return None;
@@ -165,17 +165,14 @@ async fn resolve_acct(acct: &str) -> Option<String> {
         "https://{}/.well-known/webfinger?resource=acct:{}",
         domain, acct
     );
-    let client = reqwest::Client::new();
-
-    let res_json: serde_json::Value = client
+    let res = state
+        .http_client
         .get(&url)
         .header("Accept", "application/jrd+json, application/json")
         .send()
         .await
-        .ok()?
-        .json()
-        .await
-        .ok()?;
+        .expect("Failed to send request");
+    let res_json: serde_json::Value = res.json().await.ok()?;
 
     let links = res_json["links"].as_array()?;
     for link in links {

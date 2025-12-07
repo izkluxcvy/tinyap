@@ -1,4 +1,5 @@
 use dotenvy::dotenv;
+use reqwest::Client;
 use sqlx::SqlitePool;
 use std::env;
 use tera::Tera;
@@ -6,6 +7,7 @@ use tera::Tera;
 #[derive(Clone)]
 pub struct AppState {
     pub db_pool: SqlitePool,
+    pub http_client: Client,
     pub domain: String,
     pub tera: Tera,
     pub config: Config,
@@ -25,6 +27,7 @@ pub async fn init_state() -> AppState {
     dotenv().ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let db_pool = SqlitePool::connect(&database_url).await.unwrap();
+    let http_client = Client::builder().user_agent("TinyAP/0.1").build().unwrap();
     let domain = env::var("DOMAIN").expect("DOMAIN must be set");
 
     let timezone = env::var("TIMEZONE").expect("TIMEZONE must be set");
@@ -60,6 +63,7 @@ pub async fn init_state() -> AppState {
 
     AppState {
         db_pool: db_pool,
+        http_client: http_client,
         domain: domain,
         tera: Tera::new("templates/*").unwrap(),
         config: config,

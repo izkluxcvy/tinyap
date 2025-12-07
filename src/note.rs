@@ -135,9 +135,15 @@ pub async fn create_note(
         let url = Url::parse(&follower.inbox).unwrap();
         let host = url.host_str().expect("Invalid inbox URL").to_string();
         if !already_delivered_hosts.contains(&host) {
-            utils::deliver_signed(&follower.inbox, &json_body, &private_key, &actor_url)
-                .await
-                .unwrap();
+            utils::deliver_signed(
+                &follower.inbox,
+                &json_body,
+                &private_key,
+                &actor_url,
+                &state,
+            )
+            .await
+            .unwrap();
             already_delivered_hosts.push(host);
         }
     }
@@ -147,9 +153,15 @@ pub async fn create_note(
         && !parent_actor.starts_with(&format!("https://{}", state.domain))
     {
         let parent_inbox = utils::fetch_inbox(&parent_actor, &state).await;
-        utils::deliver_signed(&parent_inbox.unwrap(), &json_body, &private_key, &actor_url)
-            .await
-            .unwrap();
+        utils::deliver_signed(
+            &parent_inbox.unwrap(),
+            &json_body,
+            &private_key,
+            &actor_url,
+            &state,
+        )
+        .await
+        .unwrap();
     }
 
     Redirect::to("/home")

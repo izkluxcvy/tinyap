@@ -102,7 +102,14 @@ async fn follow_remote(user_id: i64, acct: &str, state: &AppState) {
 
     let json_body = serde_json::to_string(&follow_json).unwrap();
     let private_key = &actor_user.private_key.unwrap();
-    let _ = utils::deliver_signed(&inbox, &json_body, private_key, &actor_user.actor_id).await;
+    let _ = utils::deliver_signed(
+        &inbox,
+        &json_body,
+        private_key,
+        &actor_user.actor_id,
+        &state,
+    )
+    .await;
 
     sqlx::query!(
         "INSERT INTO follows (user_id, object_actor, pending)
@@ -176,7 +183,14 @@ pub async fn unfollow(
         });
         let json_body = serde_json::to_string(&undo_json).unwrap();
         let private_key = &actor_user.private_key.unwrap();
-        let _ = utils::deliver_signed(&inbox, &json_body, private_key, &actor_user.actor_id).await;
+        let _ = utils::deliver_signed(
+            &inbox,
+            &json_body,
+            private_key,
+            &actor_user.actor_id,
+            &state,
+        )
+        .await;
     }
 
     Redirect::to(&format!("/@{}", username))

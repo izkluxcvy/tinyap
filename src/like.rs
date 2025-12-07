@@ -64,8 +64,14 @@ pub async fn like(
         let inbox_url = utils::fetch_inbox(&note_author, &state).await.unwrap();
         let json_body = serde_json::to_string(&like_json).unwrap();
 
-        let _ =
-            utils::deliver_signed(&inbox_url, &json_body, &private_key, &actor_user.actor_id).await;
+        let _ = utils::deliver_signed(
+            &inbox_url,
+            &json_body,
+            &private_key,
+            &actor_user.actor_id,
+            &state,
+        )
+        .await;
     } else {
         utils::add_notification(
             &note_author_username,
@@ -137,8 +143,14 @@ pub async fn unlike(
         let inbox_url = utils::fetch_inbox(&note_author, &state).await.unwrap();
         let json_body = serde_json::to_string(&undo_json).unwrap();
 
-        let _ =
-            utils::deliver_signed(&inbox_url, &json_body, &private_key, &actor_user.actor_id).await;
+        let _ = utils::deliver_signed(
+            &inbox_url,
+            &json_body,
+            &private_key,
+            &actor_user.actor_id,
+            &state,
+        )
+        .await;
     }
 
     Redirect::to(&format!("/@{}/{}", note_author_username, note_uuid))

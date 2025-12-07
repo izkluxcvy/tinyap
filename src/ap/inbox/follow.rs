@@ -64,7 +64,7 @@ pub async fn accept(
         .expect("Failed to fetch user's private key");
 
     let private_key_pem = row.private_key.unwrap();
-    utils::deliver_signed(&inbox_url, &accept_str, &private_key_pem, &object)
+    utils::deliver_signed(&inbox_url, &accept_str, &private_key_pem, &object, &state)
         .await
         .expect("Failed to deliver Accept activity");
 

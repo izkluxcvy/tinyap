@@ -69,6 +69,7 @@ pub async fn note(
                 &json_body,
                 &private_key,
                 &note_author.actor_id,
+                &state,
             )
             .await
             .unwrap();

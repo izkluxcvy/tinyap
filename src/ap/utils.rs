@@ -2,7 +2,6 @@ use crate::state::AppState;
 
 use base64::{Engine as _, engine::general_purpose};
 use regex::Regex;
-use reqwest::Client;
 use rsa::{
     RsaPrivateKey,
     pkcs1::DecodeRsaPrivateKey,
@@ -19,9 +18,9 @@ pub async fn deliver_signed(
     body: &str,
     private_key_pem: &str,
     actor_id: &str,
+    state: &AppState,
 ) -> Result<(), reqwest::Error> {
     println!("Delivering to {}: {}", inbox_url, body);
-    let client = Client::new();
 
     let httpdate_format = format_description::parse(
         "[weekday repr:short], [day] [month repr:short] [year] [hour repr:24]:[minute]:[second] GMT"
@@ -63,6 +62,7 @@ pub async fn deliver_signed(
         key_id, signature_b64
     );
 
+    let client = state.http_client.clone();
     let inbox_url = inbox_url.to_string().clone();
     let date = date.clone();
     let digest_value = digest_value.clone();
@@ -79,7 +79,7 @@ pub async fn deliver_signed(
             .send()
             .await;
     });
-    // let req = client
+    // let req = state.http_client
     //     .post(inbox_url)
     //     .header("Date", date)
     //     .header("Digest", digest_value)
@@ -88,7 +88,7 @@ pub async fn deliver_signed(
     //     .body(body.to_string())
     //     .build()
     //     .unwrap();
-    // debug_post(&client, inbox_url, req).await;
+    // debug_post(&state.http_client, inbox_url, req).await;
 
     Ok(())
 }
@@ -108,8 +108,6 @@ pub async fn signed_get(url: &str, state: &AppState) -> Result<reqwest::Response
             .expect("Failed to fetch local user");
     let actor_id = random_user.actor_id;
     let private_key = random_user.private_key.unwrap();
-
-    let client = Client::new();
 
     let httpdate_format = format_description::parse(
         "[weekday repr:short], [day] [month repr:short] [year] [hour repr:24]:[minute]:[second] GMT"
@@ -144,7 +142,7 @@ pub async fn signed_get(url: &str, state: &AppState) -> Result<reqwest::Response
         key_id, signature_b64
     );
 
-    let response = client
+    let response = state.http_client
         .get(url)
         .header("Host", host)
         .header("Date", date)

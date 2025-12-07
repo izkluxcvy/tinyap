@@ -87,6 +87,7 @@ pub async fn boost(
                 &json_body,
                 &private_key,
                 &actor_user.actor_id,
+                &state,
             )
             .await
             .unwrap();
@@ -179,6 +180,7 @@ pub async fn unboost(
                 &json_body,
                 &private_key,
                 &actor_user.actor_id,
+                &state,
             )
             .await
             .unwrap();
