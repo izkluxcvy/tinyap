@@ -201,8 +201,17 @@ pub async fn create_remotenote(ap_id: &str, state: &AppState) {
         .unwrap();
 
     let uuid = Uuid::new_v4().to_string();
-    let content = json["content"].as_str().unwrap();
-    let content_clean = utils::strip_html_tags(content);
+    let mut content = json["content"].as_str().unwrap().to_string();
+    if let Some(attachments) = json["attachment"].as_array() {
+        content.push_str("\n");
+        for attachment in attachments {
+            if let Some(url) = attachment["url"].as_str() {
+                content.push_str("\n");
+                content.push_str(url);
+            }
+        }
+    }
+    let content_clean = utils::strip_html_tags(&content);
     let content_clean = if content_clean.chars().count() > state.config.max_note_chars {
         let byte_end = content_clean
             .char_indices()
