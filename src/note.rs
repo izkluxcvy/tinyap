@@ -111,8 +111,8 @@ pub async fn create_note(
         note_json["inReplyTo"] = json!(in_reply_to);
         note_json["tag"] = json!([{
             "type": "Mention",
-            "href": parent_actor.unwrap(),
-            "name": parent_username.unwrap(),
+            "href": &parent_actor.clone().unwrap(),
+            "name": &parent_username.unwrap(),
         }]);
     }
     let create_json = json!({
@@ -140,6 +140,14 @@ pub async fn create_note(
                 .unwrap();
             already_delivered_hosts.push(host);
         }
+    }
+
+    // Deliver to parent note author
+    if let Some(parent_actor) = &parent_actor {
+        let parent_inbox = utils::fetch_inbox(&parent_actor, &state).await;
+        utils::deliver_signed(&parent_inbox.unwrap(), &json_body, &private_key, &actor_url)
+            .await
+            .unwrap();
     }
 
     Redirect::to("/home")
@@ -191,7 +199,6 @@ pub async fn create_remotenote(ap_id: &str, state: &AppState) {
     } else {
         content_clean
     };
-    println!("Remote note content: {}", content_clean);
     let in_reply_to = json["inReplyTo"].as_str();
     let created_at = json["published"].as_str().unwrap();
 

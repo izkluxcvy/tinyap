@@ -78,18 +78,17 @@ pub async fn deliver_signed(
             .body(body.to_string())
             .send()
             .await;
-
-        // let req = client
-        //     .post(inbox_url)
-        //     .header("Date", date)
-        //     .header("Digest", digest_value)
-        //     .header("Signature", signature_header)
-        //     .header("Content-Type", "application/activity+json")
-        //     .body(body.to_string())
-        //     .build()
-        //     .unwrap();
-        // debug_post(&client, inbox_url, req).await;
     });
+    // let req = client
+    //     .post(inbox_url)
+    //     .header("Date", date)
+    //     .header("Digest", digest_value)
+    //     .header("Signature", signature_header)
+    //     .header("Content-Type", "application/activity+json")
+    //     .body(body.to_string())
+    //     .build()
+    //     .unwrap();
+    // debug_post(&client, inbox_url, req).await;
 
     Ok(())
 }
