@@ -143,7 +143,9 @@ pub async fn create_note(
     }
 
     // Deliver to parent note author
-    if let Some(parent_actor) = &parent_actor {
+    if let Some(parent_actor) = &parent_actor
+        && !parent_actor.starts_with(&format!("https://{}", state.domain))
+    {
         let parent_inbox = utils::fetch_inbox(&parent_actor, &state).await;
         utils::deliver_signed(&parent_inbox.unwrap(), &json_body, &private_key, &actor_url)
             .await
