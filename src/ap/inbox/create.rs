@@ -65,10 +65,11 @@ pub async fn note(activity: &Value, state: &AppState) {
     .expect("Failed to insert note into database");
 
     if let Some(inreplyto) = note_inreplyto {
-        let parent_note = sqlx::query!("SELECT user_id FROM notes WHERE ap_id = ?", inreplyto)
-            .fetch_optional(&state.db_pool)
-            .await
-            .unwrap();
+        let parent_note =
+            sqlx::query!("SELECT user_id, uuid FROM notes WHERE ap_id = ?", inreplyto)
+                .fetch_optional(&state.db_pool)
+                .await
+                .unwrap();
 
         if let Some(parent_note) = parent_note {
             let parent_user = sqlx::query!(
@@ -83,7 +84,7 @@ pub async fn note(activity: &Value, state: &AppState) {
                 &parent_user.username,
                 "reply",
                 &user.username,
-                Some(&uuid),
+                Some(&parent_note.uuid),
                 state,
             )
             .await;
