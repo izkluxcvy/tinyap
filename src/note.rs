@@ -63,9 +63,11 @@ pub async fn create_note(
     .unwrap();
 
     // Add notification
+    let mut parent_actor: Option<String> = None;
+    let mut parent_username: Option<String> = None;
     if let Some(in_reply_to) = &form.in_reply_to {
         let parent_note = sqlx::query!(
-            "SELECT notes.user_id, notes.uuid, users.username FROM notes
+            "SELECT notes.user_id, notes.uuid, users.username, users.actor_id FROM notes
             JOIN users ON notes.user_id = users.id
             WHERE notes.ap_id = ?",
             in_reply_to
@@ -84,6 +86,9 @@ pub async fn create_note(
                     &state,
                 )
                 .await;
+
+                parent_actor = Some(parent_note.actor_id);
+                parent_username = Some(parent_note.username);
             }
         }
     }
@@ -91,6 +96,7 @@ pub async fn create_note(
     // Deliver Create activity to followers
     let note_url = format!("https://{}/notes/{}", state.domain, uuid);
     let actor_url = format!("https://{}/users/{}", state.domain, user.username);
+    let note_page_url = format!("https://{}/@{}/{}", state.domain, user.username, uuid);
     let mut note_json = json!({
         "@context": "https://www.w3.org/ns/activitystreams",
         "id": note_url,
@@ -99,9 +105,15 @@ pub async fn create_note(
         "content": form.content,
         "to": ["https://www.w3.org/ns/activitystreams#Public"],
         "published": created_at,
+        "url": note_page_url,
     });
     if let Some(in_reply_to) = &form.in_reply_to {
         note_json["inReplyTo"] = json!(in_reply_to);
+        note_json["tag"] = json!([{
+            "type": "Mention",
+            "href": parent_actor.unwrap(),
+            "name": parent_username.unwrap(),
+        }]);
     }
     let create_json = json!({
         "@context": "https://www.w3.org/ns/activitystreams",
