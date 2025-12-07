@@ -11,8 +11,8 @@
     <h3>Note Detail</h3>
     <hr>
     <pre>{% if reply_note %}<strong><a href="/@{{ reply_note.username }}">{{ reply_note.display_name }}@{{ reply_note.username }}</a></strong>(<a href="/@{{ reply_note.username }}/{{ reply_note.uuid }}">{{ reply_note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
-{{ reply_note.content }}{% if reply_note.in_reply_to %}
-[Reply to: {{reply_note.in_reply_to}}]{% endif %}
+{% if reply_note.in_reply_to %}<small>[Reply to: {{reply_note.in_reply_to}}]</small>
+{% endif %}{{ reply_note.content }}
 <hr>---Reply---{% endif %}
 <strong><a href="/@{{ note.username }}">{{ note.display_name }}@{{ note.username }}</a></strong>(<a href="/@{{ note.username }}/{{ note.uuid }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
 {{ note.content }}</pre>
