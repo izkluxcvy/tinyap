@@ -28,6 +28,13 @@ pub async fn api(State(state): State<AppState>, Path(username): Path<String>) ->
     };
 
     let actor_id = user.actor_id;
+    let bio: Option<String> = {
+        if let Some(bio) = user.bio {
+            Some(bio.replace("\r\n", "<br>").replace("\n", "<br>"))
+        } else {
+            None
+        }
+    };
     let mut json_headers = HeaderMap::new();
     json_headers.insert(
         "Content-Type",
@@ -43,7 +50,7 @@ pub async fn api(State(state): State<AppState>, Path(username): Path<String>) ->
         "url": format!("https://{}/@{}", state.domain, username),
         "preferredUsername": username,
         "name": user.display_name,
-        "summary": user.bio,
+        "summary": bio,
         "inbox": format!("{}/inbox", actor_id),
         "outbox": format!("{}/outbox", actor_id),
         "followers": format!("{}/followers", actor_id),
