@@ -1,4 +1,5 @@
 use crate::ap::utils;
+use crate::note::create_remotenote;
 use crate::state::AppState;
 use crate::user::{create_remoteuser, update_remoteuser};
 
@@ -65,6 +66,7 @@ pub async fn note(activity: &Value, state: &AppState) {
     .expect("Failed to insert note into database");
 
     if let Some(inreplyto) = note_inreplyto {
+        create_remotenote(inreplyto, state).await;
         let parent_note =
             sqlx::query!("SELECT user_id, uuid FROM notes WHERE ap_id = ?", inreplyto)
                 .fetch_optional(&state.db_pool)
