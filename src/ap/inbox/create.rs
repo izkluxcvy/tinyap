@@ -37,8 +37,17 @@ pub async fn note(activity: &Value, state: &AppState) {
     .await
     .unwrap();
     let uuid = Uuid::new_v4().to_string();
-    let note_content = note["content"].as_str().unwrap();
-    let content_clean = utils::strip_html_tags(note_content);
+    let mut note_content = note["content"].as_str().unwrap().to_string();
+    if let Some(attachments) = note["attachment"].as_array() {
+        note_content.push_str("\n");
+        for attachment in attachments {
+            if let Some(url) = attachment["url"].as_str() {
+                note_content.push_str("\n");
+                note_content.push_str(url);
+            }
+        }
+    }
+    let content_clean = utils::strip_html_tags(&note_content);
     let content_clean = if content_clean.chars().count() > state.config.max_note_chars {
         let byte_end = content_clean
             .char_indices()
