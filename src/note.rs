@@ -102,7 +102,7 @@ pub async fn create_note(
         "id": note_url,
         "type": "Note",
         "attributedTo": actor_url,
-        "content": form.content,
+        "content": form.content.replace("\r\n", "<br>").replace("\n", "<br>"),
         "to": ["https://www.w3.org/ns/activitystreams#Public"],
         "published": created_at,
         "url": note_page_url,
