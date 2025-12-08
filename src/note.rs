@@ -86,10 +86,9 @@ pub async fn create_note(
                     &state,
                 )
                 .await;
-
-                parent_actor = Some(parent_note.actor_id);
-                parent_username = Some(parent_note.username);
             }
+            parent_actor = Some(parent_note.actor_id);
+            parent_username = Some(parent_note.username);
         }
     }
 
