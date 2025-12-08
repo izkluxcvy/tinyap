@@ -95,6 +95,23 @@ pub async fn boost(
         }
     }
 
+    // Deliver to original note author
+    if !note
+        .actor_id
+        .starts_with(&format!("https://{}", state.domain))
+    {
+        let parent_inbox = utils::fetch_inbox(&note.actor_id, &state).await;
+        utils::deliver_signed(
+            &parent_inbox.unwrap(),
+            &json_body,
+            &private_key,
+            &actor_user.actor_id,
+            &state,
+        )
+        .await
+        .unwrap();
+    }
+
     // Add notification
     if form.ap_id.starts_with(&format!("https://{}", state.domain)) {
         utils::add_notification(
@@ -186,6 +203,23 @@ pub async fn unboost(
             .unwrap();
             already_delivered_hosts.push(host);
         }
+    }
+
+    // Deliver to original note author
+    if !note
+        .username
+        .starts_with(&format!("https://{}", state.domain))
+    {
+        let parent_inbox = utils::fetch_inbox(&note.username, &state).await;
+        utils::deliver_signed(
+            &parent_inbox.unwrap(),
+            &json_body,
+            &private_key,
+            &actor_user.actor_id,
+            &state,
+        )
+        .await
+        .unwrap();
     }
 
     Redirect::to(&format!("/@{}/{}", note.username, note.uuid))
