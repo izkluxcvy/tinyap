@@ -105,6 +105,7 @@ $ vi .env
 CERT_PATH and KEY_PATH is only required when building with `tls` feature.
 
 ```sh
+SITE_NAME=TinyAP
 DATABASE_URL=sqlite://./tinyap.db
 HOST=127.0.0.1
 PORT=8443
