@@ -21,6 +21,7 @@ pub async fn page(
     };
 
     let mut context = tera::Context::new();
+    context.insert("site_name", &state.site_name);
     context.insert("is_reply", &is_reply);
     context.insert("in_reply_to", &in_reply_to);
     let rendered = state.tera.render("new.html", &context).unwrap();

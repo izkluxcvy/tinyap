@@ -136,6 +136,7 @@ pub async fn page(
     .num;
 
     let mut context = tera::Context::new();
+    context.insert("site_name", &state.site_name);
     context.insert("username", &username);
     context.insert("display_name", &user.display_name);
     context.insert("is_local", &user.is_local);

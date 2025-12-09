@@ -14,6 +14,7 @@ pub async fn page(State(state): State<AppState>, user: AuthUser) -> Html<String>
     .unwrap();
 
     let mut context = tera::Context::new();
+    context.insert("site_name", &state.site_name);
     context.insert("username", &row.username);
     context.insert("display_name", &row.display_name);
     context.insert("bio", &row.bio);

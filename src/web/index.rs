@@ -34,6 +34,7 @@ pub async fn page(
         }
     }
     let mut context = tera::Context::new();
+    context.insert("site_name", &state.site_name);
     context.insert("message", message_body);
     let rendered = state.tera.render("index.html", &context).unwrap();
     Html(rendered)

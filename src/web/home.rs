@@ -46,6 +46,7 @@ pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String>
         .collect();
 
     let mut context = tera::Context::new();
+    context.insert("site_name", &state.site_name);
     context.insert(
         "title",
         &format!(

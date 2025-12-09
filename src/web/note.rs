@@ -152,6 +152,7 @@ pub async fn page(
         .collect();
 
     let mut context = tera::Context::new();
+    context.insert("site_name", &state.site_name);
     context.insert("note", &note);
     context.insert("reply_note", &reply_note);
     context.insert("timezone", &state.config.timezone);

@@ -34,6 +34,7 @@ pub async fn page(State(state): State<AppState>, user: AuthUser) -> Html<String>
     }
 
     let mut context = tera::Context::new();
+    context.insert("site_name", &state.site_name);
     context.insert("notifs", &notifs);
     context.insert("timezone", &state.config.timezone);
     let rendered = state.tera.render("notifications.html", &context).unwrap();
