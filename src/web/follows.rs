@@ -24,6 +24,7 @@ pub async fn following(
     let follows: Vec<String> = rows.into_iter().map(|row| row.username).collect();
 
     let mut context = tera::Context::new();
+    context.insert("site_name", &state.site_name);
     context.insert("title", &format!("@{}'s Following", username));
     context.insert("users", &follows);
     let rendered = state.tera.render("follows.html", &context).unwrap();
