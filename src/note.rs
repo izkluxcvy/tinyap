@@ -226,7 +226,7 @@ pub async fn create_remotenote(ap_id: &str, state: &AppState) {
 
     sqlx::query!(
         "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, created_at)
-        VALUES (?, ?, ?, ?, ?, ?)",
+        VALUES (?, ?, ?, ?, ?, (strftime('%Y-%m-%dT%H:%M:%SZ', datetime(?, 'utc'))))",
         uuid,
         ap_id,
         actor_user.id,
