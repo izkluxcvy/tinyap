@@ -71,17 +71,17 @@ pub async fn page(
     }
 
     // Boost status
-    let boost_uuid = format!("%boost-{}", uuid);
-    let boost_num = sqlx::query!(
-        "SELECT COUNT(*) as count
-        FROM notes
-        WHERE uuid LIKE ?",
-        boost_uuid
-    )
-    .fetch_one(&state.db_pool)
-    .await
-    .unwrap()
-    .count;
+    // let boost_uuid = format!("%boost-{}", uuid);
+    // let boost_num = sqlx::query!(
+    //     "SELECT COUNT(*) as count
+    //     FROM notes
+    //     WHERE uuid LIKE ?",
+    //     boost_uuid
+    // )
+    // .fetch_one(&state.db_pool)
+    // .await
+    // .unwrap()
+    // .count;
 
     let is_boosted: bool;
     match user.id {
@@ -159,7 +159,7 @@ pub async fn page(
     context.insert("is_liked", &is_liked);
     context.insert("like_num", &like_num);
     context.insert("is_boosted", &is_boosted);
-    context.insert("boost_num", &boost_num);
+    // context.insert("boost_num", &boost_num);
     context.insert("is_you", &is_you);
     context.insert("replies", &replies);
     let rendered = state.tera.render("note.html", &context).unwrap();

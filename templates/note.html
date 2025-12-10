@@ -34,12 +34,12 @@
     {% if is_boosted %}
     <form action="/@{{ note.username }}/{{ note.uuid }}/unboost" method="post">
         <input type="hidden" name="ap_id" value="{{ note.ap_id }}">
-        <button type="submit">Unboost ({{ boost_num }})</button>
+        <button type="submit">Unboost</button>
     </form>
     {% else %}
     <form action="/@{{ note.username }}/{{ note.uuid }}/boost" method="post">
         <input type="hidden" name="ap_id" value="{{ note.ap_id }}">
-        <button type="submit">Boost ({{ boost_num }})</button>
+        <button type="submit">Boost</button>
     </form>
     {% endif %}
 
