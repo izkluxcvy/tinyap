@@ -22,24 +22,24 @@
     {% if is_liked %}
     <form action="/@{{ note.username }}/{{ note.uuid }}/unlike" method="post">
         <input type="hidden" name="ap_id" value="{{ note.ap_id }}">
-        <button type="submit">Unlike ({{ like_num }})</button>
+        <button type="submit">Unlike ({{ note.like_count }})</button>
     </form>
     {% else %}
     <form action="/@{{ note.username }}/{{ note.uuid }}/like" method="post">
         <input type="hidden" name="ap_id" value="{{ note.ap_id }}">
-        <button type="submit">Like ({{ like_num }})</button>
+        <button type="submit">Like ({{ note.like_count }})</button>
     </form>
     {% endif %}
 
     {% if is_boosted %}
     <form action="/@{{ note.username }}/{{ note.uuid }}/unboost" method="post">
         <input type="hidden" name="ap_id" value="{{ note.ap_id }}">
-        <button type="submit">Unboost</button>
+        <button type="submit">Unboost ({{ note.boost_count }})</button>
     </form>
     {% else %}
     <form action="/@{{ note.username }}/{{ note.uuid }}/boost" method="post">
         <input type="hidden" name="ap_id" value="{{ note.ap_id }}">
-        <button type="submit">Boost</button>
+        <button type="submit">Boost ({{ note.boost_count }})</button>
     </form>
     {% endif %}
 

@@ -18,6 +18,14 @@ pub async fn process(activity: &Value, state: &AppState) {
     .await
     .unwrap();
 
+    sqlx::query!(
+        "UPDATE notes SET like_count = like_count + 1 WHERE ap_id = ?",
+        object
+    )
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+
     // Add notification
     let row = sqlx::query!(
         "SELECT users.username, notes.uuid

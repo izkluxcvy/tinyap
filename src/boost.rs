@@ -59,6 +59,14 @@ pub async fn boost(
     .await
     .unwrap();
 
+    sqlx::query!(
+        "UPDATE notes SET boost_count = boost_count + 1 WHERE ap_id = ?",
+        form.ap_id
+    )
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+
     // Deliver Announce activity to followers
     let boost_json = json!({
         "@context": "https://www.w3.org/ns/activitystreams",
@@ -146,7 +154,7 @@ pub async fn unboost(
     .unwrap();
 
     let note = sqlx::query!(
-        "SELECT users.username, notes.uuid
+        "SELECT users.username, users.actor_id, notes.uuid
         FROM notes
         JOIN users ON notes.user_id = users.id
         WHERE notes.ap_id = ?",
@@ -161,6 +169,14 @@ pub async fn unboost(
         "DELETE FROM notes WHERE ap_id = ? AND user_id = ?",
         boost_apid,
         user.id
+    )
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+
+    sqlx::query!(
+        "UPDATE notes SET boost_count = boost_count - 1 WHERE ap_id = ?",
+        form.ap_id
     )
     .execute(&state.db_pool)
     .await
@@ -207,10 +223,10 @@ pub async fn unboost(
 
     // Deliver to original note author
     if !note
-        .username
+        .actor_id
         .starts_with(&format!("https://{}", state.domain))
     {
-        let parent_inbox = utils::fetch_inbox(&note.username, &state).await;
+        let parent_inbox = utils::fetch_inbox(&note.actor_id, &state).await;
         utils::deliver_signed(
             &parent_inbox.unwrap(),
             &json_body,

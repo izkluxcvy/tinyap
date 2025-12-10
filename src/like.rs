@@ -52,6 +52,14 @@ pub async fn like(
     .await
     .unwrap();
 
+    sqlx::query!(
+        "UPDATE notes SET like_count = like_count + 1 WHERE ap_id = ?",
+        form.ap_id
+    )
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+
     if !note_author.starts_with(&format!("https://{}", state.domain)) {
         let like_json = json!({
             "@context": "https://www.w3.org/ns/activitystreams",
@@ -123,6 +131,14 @@ pub async fn unlike(
         "DELETE FROM likes WHERE note_apid = ? AND actor = ?",
         form.ap_id,
         actor_user.actor_id
+    )
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+
+    sqlx::query!(
+        "UPDATE notes SET like_count = like_count - 1 WHERE ap_id = ?",
+        form.ap_id
     )
     .execute(&state.db_pool)
     .await

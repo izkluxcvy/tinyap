@@ -13,7 +13,7 @@ pub async fn page(
     user: MaybeAuthUser,
 ) -> impl IntoResponse {
     let row = sqlx::query!(
-        "SELECT notes.ap_id, notes.user_id, notes.content, notes.created_at, notes.in_reply_to, users.display_name, users.username, users.actor_id
+        "SELECT notes.ap_id, notes.user_id, notes.content, notes.created_at, notes.like_count, notes.boost_count, notes.in_reply_to, users.display_name, users.username, users.actor_id
         FROM notes
         JOIN users ON notes.user_id = users.id
         WHERE notes.uuid = ?
@@ -36,18 +36,11 @@ pub async fn page(
         "username": row.username,
         "content": row.content,
         "created_at": row.created_at,
+        "like_count": row.like_count,
+        "boost_count": row.boost_count,
     });
 
     // Like status
-    let like_num = sqlx::query!(
-        "SELECT COUNT(*) as count FROM likes WHERE note_apid = ?",
-        row.ap_id
-    )
-    .fetch_one(&state.db_pool)
-    .await
-    .unwrap()
-    .count;
-
     let is_liked: bool;
     let is_you: bool;
     match user.id {
@@ -71,18 +64,6 @@ pub async fn page(
     }
 
     // Boost status
-    // let boost_uuid = format!("%boost-{}", uuid);
-    // let boost_num = sqlx::query!(
-    //     "SELECT COUNT(*) as count
-    //     FROM notes
-    //     WHERE uuid LIKE ?",
-    //     boost_uuid
-    // )
-    // .fetch_one(&state.db_pool)
-    // .await
-    // .unwrap()
-    // .count;
-
     let is_boosted: bool;
     match user.id {
         Some(user_id) => {
@@ -157,9 +138,7 @@ pub async fn page(
     context.insert("reply_note", &reply_note);
     context.insert("timezone", &state.config.timezone);
     context.insert("is_liked", &is_liked);
-    context.insert("like_num", &like_num);
     context.insert("is_boosted", &is_boosted);
-    // context.insert("boost_num", &boost_num);
     context.insert("is_you", &is_you);
     context.insert("replies", &replies);
     let rendered = state.tera.render("note.html", &context).unwrap();

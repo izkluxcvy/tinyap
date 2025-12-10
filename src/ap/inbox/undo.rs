@@ -46,6 +46,14 @@ pub async fn like(activity: Value, state: &AppState) {
     .execute(&state.db_pool)
     .await
     .unwrap();
+
+    sqlx::query!(
+        "UPDATE notes SET like_count = like_count - 1 WHERE ap_id = ?",
+        object
+    )
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
 }
 
 pub async fn announce(activity: &Value, state: &AppState) {
@@ -62,4 +70,12 @@ pub async fn announce(activity: &Value, state: &AppState) {
         .execute(&state.db_pool)
         .await
         .unwrap();
+
+    sqlx::query!(
+        "UPDATE notes SET boost_count = boost_count - 1 WHERE ap_id = ?",
+        object
+    )
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
 }
