@@ -76,7 +76,9 @@ CREATE TABLE notes (
     boosted_created_at TEXT,
     content TEXT NOT NULL,
     in_reply_to TEXT,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    like_count INTEGER NOT NULL DEFAULT 0,
+    boost_count INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE likes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
