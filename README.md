@@ -16,9 +16,9 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 ## Requirements
 
 - OpenSSL ([more info](https://docs.rs/openssl/latest/openssl/#automatic))
-- sqlite3
+- SQLite3
 - Rust
-- http**S**  to federate with many servers
+- Http**S**
 
 ## Installation
 

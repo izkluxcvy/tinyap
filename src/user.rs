@@ -245,6 +245,7 @@ pub async fn login(
         .path("/")
         .http_only(true)
         .same_site(SameSite::Lax)
+        .secure(true)
         .max_age(time::Duration::days(120));
 
     (jar.add(cookie), Redirect::to("/home")).into_response()
