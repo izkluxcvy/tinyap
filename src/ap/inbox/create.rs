@@ -60,7 +60,13 @@ pub async fn note(activity: &Value, state: &AppState) {
     };
     let note_created_at = note["published"].as_str().unwrap();
     let note_inreplyto = note["inReplyTo"].as_str();
-    let note_is_public = note["to"].as_str().unwrap_or("").contains("Public") as i32;
+    let note_is_public = {
+        let to_array = note["to"].as_array().unwrap();
+        to_array
+            .iter()
+            .any(|v| v.as_str().unwrap() == "https://www.w3.org/ns/activitystreams#Public")
+            as i32
+    };
     sqlx::query!(
         "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, created_at, is_public)
         VALUES (?, ?, ?, ?, ?, (strftime('%Y-%m-%dT%H:%M:%SZ', datetime(?, 'utc'))), ?)",
