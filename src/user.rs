@@ -116,8 +116,29 @@ pub async fn create_remoteuser(actor_url: &str, state: &AppState) {
         .to_string();
     let name_and_host = format!("{}@{}", username, host);
     let display_name = actor_json["name"].as_str().unwrap_or(&username).to_string();
-    let bio = actor_json["summary"].as_str().unwrap_or("").to_string();
+    let mut bio = actor_json["summary"].as_str().unwrap_or("").to_string();
+    if let Some(attachments) = actor_json["attachment"].as_array() {
+        bio.push_str("\n");
+        for attachment in attachments {
+            if let (Some(name), Some(value)) =
+                (attachment["name"].as_str(), attachment["value"].as_str())
+            {
+                bio.push_str("\n");
+                bio.push_str(&format!("{}: {}", name, value));
+            }
+        }
+    }
     let bio_clean = utils::strip_html_tags(&bio);
+    let bio_clean = if bio_clean.chars().count() > state.config.max_note_chars {
+        let byte_end = bio_clean
+            .char_indices()
+            .nth(state.config.max_note_chars)
+            .unwrap()
+            .0;
+        bio_clean[..byte_end].to_string()
+    } else {
+        bio_clean
+    };
     let created_at = OffsetDateTime::now_utc()
         .format(&time::format_description::well_known::Rfc3339)
         .unwrap();
@@ -152,8 +173,29 @@ pub async fn update_remoteuser(actor_url: &str, state: &AppState) {
         .unwrap()
         .to_string();
     let display_name = actor_json["name"].as_str().unwrap_or(&username).to_string();
-    let bio = actor_json["summary"].as_str().unwrap_or("").to_string();
+    let mut bio = actor_json["summary"].as_str().unwrap_or("").to_string();
+    if let Some(attachments) = actor_json["attachment"].as_array() {
+        bio.push_str("\n");
+        for attachment in attachments {
+            if let (Some(name), Some(value)) =
+                (attachment["name"].as_str(), attachment["value"].as_str())
+            {
+                bio.push_str("\n");
+                bio.push_str(&format!("{}: {}", name, value));
+            }
+        }
+    }
     let bio_clean = utils::strip_html_tags(&bio);
+    let bio_clean = if bio_clean.chars().count() > state.config.max_note_chars {
+        let byte_end = bio_clean
+            .char_indices()
+            .nth(state.config.max_note_chars)
+            .unwrap()
+            .0;
+        bio_clean[..byte_end].to_string()
+    } else {
+        bio_clean
+    };
 
     sqlx::query!(
         "UPDATE users
