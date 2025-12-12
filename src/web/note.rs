@@ -13,7 +13,7 @@ pub async fn page(
     user: MaybeAuthUser,
 ) -> impl IntoResponse {
     let row = sqlx::query!(
-        "SELECT notes.ap_id, notes.user_id, notes.content, notes.created_at, notes.like_count, notes.boost_count, notes.in_reply_to, users.display_name, users.username, users.actor_id
+        "SELECT notes.ap_id, notes.user_id, notes.content, notes.created_at, notes.is_public, notes.like_count, notes.boost_count, notes.in_reply_to, users.display_name, users.username, users.actor_id
         FROM notes
         JOIN users ON notes.user_id = users.id
         WHERE notes.uuid = ?
@@ -28,6 +28,27 @@ pub async fn page(
     let Some(row) = row else {
         return Redirect::to("/local").into_response();
     };
+
+    if row.is_public == 0 {
+        if let Some(user_id) = user.id {
+            let follow = sqlx::query!(
+                "SELECT id FROM follows
+                WHERE user_id = ?
+                AND object_actor = ?",
+                user_id,
+                row.actor_id
+            )
+            .fetch_optional(&state.db_pool)
+            .await
+            .unwrap();
+
+            if follow.is_none() {
+                return Redirect::to("/local").into_response();
+            }
+        } else {
+            return Redirect::to("/local").into_response();
+        }
+    }
 
     let note = json!({
         "uuid": uuid,

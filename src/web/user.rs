@@ -56,6 +56,7 @@ pub async fn page(
         "SELECT boosted_username, boosted_created_at, uuid, content, created_at, in_reply_to
         FROM notes
         WHERE user_id = ?
+        AND is_public = 1
         ORDER BY created_at DESC
         LIMIT ?
         OFFSET ?",

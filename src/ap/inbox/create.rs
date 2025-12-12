@@ -60,15 +60,17 @@ pub async fn note(activity: &Value, state: &AppState) {
     };
     let note_created_at = note["published"].as_str().unwrap();
     let note_inreplyto = note["inReplyTo"].as_str();
+    let note_is_public = note["to"].as_str().unwrap_or("").contains("Public") as i32;
     sqlx::query!(
-        "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, created_at)
-        VALUES (?, ?, ?, ?, ?, (strftime('%Y-%m-%dT%H:%M:%SZ', datetime(?, 'utc'))))",
+        "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, created_at, is_public)
+        VALUES (?, ?, ?, ?, ?, (strftime('%Y-%m-%dT%H:%M:%SZ', datetime(?, 'utc'))), ?)",
         uuid,
         note_apid,
         user.id,
         content_clean,
         note_inreplyto,
-        note_created_at
+        note_created_at,
+        note_is_public,
     )
     .execute(&state.db_pool)
     .await
