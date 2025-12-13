@@ -3,7 +3,7 @@ use crate::state::AppState;
 
 use axum::{
     extract::{Path, State},
-    response::{Html, IntoResponse, Redirect},
+    response::{Html, IntoResponse},
 };
 use serde_json::json;
 
@@ -26,7 +26,7 @@ pub async fn page(
     .unwrap();
 
     let Some(row) = row else {
-        return Redirect::to("/local").into_response();
+        return "Note not found".into_response();
     };
 
     if row.is_public == 0 {
@@ -43,10 +43,10 @@ pub async fn page(
             .unwrap();
 
             if follow.is_none() {
-                return Redirect::to("/local").into_response();
+                return "Private note".into_response();
             }
         } else {
-            return Redirect::to("/local").into_response();
+            return "Private note".into_response();
         }
     }
 
