@@ -27,14 +27,6 @@ pub async fn process(activity: &Value, state: &AppState) {
     .await
     .unwrap();
 
-    sqlx::query!(
-        "UPDATE notes SET boost_count = boost_count + 1 WHERE ap_id = ?",
-        object
-    )
-    .execute(&state.db_pool)
-    .await
-    .unwrap();
-
     let boost_uuid = format!("{}-boost-{}", actor_user.username, note.uuid);
     let boost_apid = format!("{}-boost-{}", actor_user.username, object);
     let date_now = OffsetDateTime::now_utc().format(&Rfc3339).unwrap();
@@ -49,6 +41,14 @@ pub async fn process(activity: &Value, state: &AppState) {
         note.content,
         note.in_reply_to,
         date_now,
+    )
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+
+    sqlx::query!(
+        "UPDATE notes SET boost_count = boost_count + 1 WHERE ap_id = ?",
+        object
     )
     .execute(&state.db_pool)
     .await
