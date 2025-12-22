@@ -20,8 +20,12 @@ pub async fn note(actor: &str, object: &str, state: &AppState) {
         return;
     }
 
-    sqlx::query!("DELETE FROM notes WHERE ap_id = ?", object)
+    let res = sqlx::query!("DELETE FROM notes WHERE ap_id = ?", object)
         .execute(&state.db_pool)
-        .await
-        .unwrap();
+        .await;
+
+    if let Err(e) = res {
+        println!("maybe already deleted? {}", e);
+        return;
+    }
 }

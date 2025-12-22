@@ -66,10 +66,14 @@ pub async fn announce(activity: &Value, state: &AppState) {
         .unwrap();
 
     let boost_apid = format!("{}-boost-{}", actor_user.username, object);
-    sqlx::query!("DELETE FROM notes WHERE ap_id = ?", boost_apid)
+    let res = sqlx::query!("DELETE FROM notes WHERE ap_id = ?", boost_apid)
         .execute(&state.db_pool)
-        .await
-        .unwrap();
+        .await;
+
+    if let Err(e) = res {
+        println!("maybe already deleted? {}", e);
+        return;
+    }
 
     sqlx::query!(
         "UPDATE notes SET boost_count = boost_count - 1 WHERE ap_id = ?",
