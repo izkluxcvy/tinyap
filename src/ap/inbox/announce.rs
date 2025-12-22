@@ -30,7 +30,7 @@ pub async fn process(activity: &Value, state: &AppState) {
     let boost_uuid = format!("{}-boost-{}", actor_user.username, note.uuid);
     let boost_apid = format!("{}-boost-{}", actor_user.username, object);
     let date_now = OffsetDateTime::now_utc().format(&Rfc3339).unwrap();
-    sqlx::query!(
+    let res = sqlx::query!(
         "INSERT INTO notes (uuid, ap_id, user_id, boosted_username, boosted_created_at, content, in_reply_to, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         boost_uuid,
@@ -43,8 +43,12 @@ pub async fn process(activity: &Value, state: &AppState) {
         date_now,
     )
     .execute(&state.db_pool)
-    .await
-    .unwrap();
+    .await;
+
+    if let Err(e) = res {
+        println!("maybe already inserted? {}", e);
+        return;
+    }
 
     sqlx::query!(
         "UPDATE notes SET boost_count = boost_count + 1 WHERE ap_id = ?",

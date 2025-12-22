@@ -67,7 +67,7 @@ pub async fn note(activity: &Value, state: &AppState) {
             .any(|v| v.as_str().unwrap() == "https://www.w3.org/ns/activitystreams#Public")
             as i32
     };
-    sqlx::query!(
+    let res = sqlx::query!(
         "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, created_at, is_public)
         VALUES (?, ?, ?, ?, ?, (strftime('%Y-%m-%dT%H:%M:%SZ', datetime(?, 'utc'))), ?)",
         uuid,
@@ -79,8 +79,12 @@ pub async fn note(activity: &Value, state: &AppState) {
         note_is_public,
     )
     .execute(&state.db_pool)
-    .await
-    .expect("Failed to insert note into database");
+    .await;
+
+    if let Err(e) = res {
+        println!("maybe already inserted? {}", e);
+        return;
+    }
 
     if let Some(inreplyto) = note_inreplyto {
         create_remotenote(inreplyto, state).await;
