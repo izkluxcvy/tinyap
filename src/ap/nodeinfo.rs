@@ -13,7 +13,7 @@ pub async fn well_known(State(state): axum::extract::State<AppState>) -> impl In
         "links": [
             {
                 "rel": "http://nodeinfo.diaspora.software/ns/schema/2.1",
-                "href": format!("https://{}/.well-known/nodeinfo/2.1", state.domain)
+                "href": format!("https://{}/nodeinfo/2.1", state.domain)
             }
         ]
     });
