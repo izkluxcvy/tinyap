@@ -13,7 +13,7 @@
 
     {% if reply_to_note %}
     <pre><hr><strong><a href="/@{{ reply_to_note.username}}">{{ reply_to_note.display_name }}@{{ reply_to_note.username }}</a></strong>(<a href="/@{{ reply_to_note.username }}/{{ reply_to_note.uuid }}">{{ reply_to_note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
-{% if reply_to_note.in_reply_to %}<small>[Reply to: {{ reply_to_note.in_reply_to }}]</small><br>{% endif %}{{ reply_to_note.content }}
+{% if reply_to_note.in_reply_to %}<small>[Reply to: {% if reply_to_note.reply_to_author %}<a href="/@{{ reply_to_note.reply_to_author }}">@{{ reply_to_note.reply_to_author }}</a>{% else %}{{ reply_to_note.in_reply_to }}{% endif %}]</small><br>{% endif %}{{ reply_to_note.content }}
 ---Reply---</pre>{% endif %}
 
     <form action="/new" method="post">
