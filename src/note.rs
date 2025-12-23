@@ -8,7 +8,7 @@ use axum::{
     response::{IntoResponse, Redirect},
 };
 use serde_json::json;
-use time::OffsetDateTime;
+use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 use url::Url;
 use uuid::Uuid;
 
@@ -41,9 +41,7 @@ pub async fn create_note(
 
     let uuid = Uuid::new_v4().to_string();
     let ap_id = format!("https://{}/notes/{}", state.domain, uuid);
-    let created_at = OffsetDateTime::now_utc()
-        .format(&time::format_description::well_known::Rfc3339)
-        .unwrap();
+    let created_at = OffsetDateTime::now_utc().format(&Rfc3339).unwrap();
     let content_trimed = form.content.trim();
     if content_trimed.is_empty() {
         return Redirect::to("/home");
@@ -241,9 +239,12 @@ pub async fn create_remotenote(ap_id: &str, state: &AppState) {
     let in_reply_to = json["inReplyTo"].as_str();
     let created_at = json["published"].as_str().unwrap();
 
+    let created_at = OffsetDateTime::parse(created_at, &Rfc3339).unwrap();
+    let created_at = created_at.to_utc().format(&Rfc3339).unwrap();
+
     sqlx::query!(
         "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, created_at)
-        VALUES (?, ?, ?, ?, ?, (strftime('%Y-%m-%dT%H:%M:%SZ', datetime(?, 'utc'))))",
+        VALUES (?, ?, ?, ?, ?, ?)",
         uuid,
         ap_id,
         actor_user.id,

@@ -4,6 +4,7 @@ use crate::state::AppState;
 use crate::user::{create_remoteuser, update_remoteuser};
 
 use serde_json::Value;
+use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 use uuid::Uuid;
 
 pub async fn note(activity: &Value, state: &AppState) {
@@ -111,9 +112,11 @@ pub async fn note(activity: &Value, state: &AppState) {
         None
     };
 
+    let note_created_at = OffsetDateTime::parse(note_created_at, &Rfc3339).unwrap();
+    let note_created_at = note_created_at.to_utc().format(&Rfc3339).unwrap();
     let res = sqlx::query!(
         "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, reply_to_author, created_at, is_public)
-        VALUES (?, ?, ?, ?, ?, ?, (strftime('%Y-%m-%dT%H:%M:%SZ', datetime(?, 'utc'))), ?)",
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         uuid,
         note_apid,
         user.id,
