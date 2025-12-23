@@ -10,13 +10,13 @@ use axum::{
 
 #[derive(serde::Deserialize)]
 pub struct PageParam {
-    p: Option<i64>,
+    until: Option<String>,
 }
 
 pub async fn page(
     State(state): State<AppState>,
     Path(username): Path<String>,
-    Query(PageParam { p }): Query<PageParam>,
+    Query(PageParam { until }): Query<PageParam>,
     login_user: MaybeAuthUser,
 ) -> impl IntoResponse {
     let existing = sqlx::query!(
@@ -51,18 +51,18 @@ pub async fn page(
         return (StatusCode::NOT_FOUND, "User not found").into_response();
     };
 
-    let offset = (p.unwrap_or(1) - 1) * state.config.max_timeline_notes;
+    let until = until.unwrap_or("9999-01-01T00:00:00Z".to_string());
     let rows = sqlx::query!(
         "SELECT boosted_username, boosted_created_at, uuid, content, created_at, in_reply_to, reply_to_author
         FROM notes
         WHERE user_id = ?
         AND is_public = 1
+        AND created_at < ?
         ORDER BY created_at DESC
-        LIMIT ?
-        OFFSET ?",
+        LIMIT ?",
         user.id,
+        until,
         state.config.max_timeline_notes,
-        offset
     )
     .fetch_all(&state.db_pool)
     .await
@@ -82,6 +82,12 @@ pub async fn page(
             })
         })
         .collect();
+
+    let until_next = if let Some(last_note) = notes.last() {
+        &last_note["created_at"].as_str().unwrap().to_string()
+    } else {
+        &until
+    };
 
     let follow_status: String;
     match login_user.id {
@@ -150,7 +156,7 @@ pub async fn page(
     context.insert("follower_num", &follower_num);
     context.insert("follow_status", &follow_status);
     context.insert("notes", &notes);
-    context.insert("page", &p.unwrap_or(1));
+    context.insert("until_next", &until_next);
     context.insert("max_notes", &state.config.max_timeline_notes);
     let rendered = state.tera.render("user.html", &context).unwrap();
     Html(rendered).into_response()
