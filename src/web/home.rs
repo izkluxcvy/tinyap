@@ -33,7 +33,7 @@ pub async fn page(
         AND follows.user_id = $1
         WHERE (follows.user_id = $1
         OR users.id = $1)
-        AND notes.created_at < $2
+        AND notes.created_at <= $2
         ORDER BY notes.created_at DESC
         LIMIT $3",
         home_user.id,

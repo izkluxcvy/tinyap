@@ -21,7 +21,7 @@ pub async fn page(
         JOIN users ON notes.user_id = users.id
         WHERE notes.boosted_username IS NULL
         AND notes.is_public = 1
-        AND notes.created_at < ?
+        AND notes.created_at <= ?
         ORDER BY notes.created_at DESC
         LIMIT ?",
         until,

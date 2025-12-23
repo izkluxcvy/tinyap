@@ -57,7 +57,7 @@ pub async fn page(
         FROM notes
         WHERE user_id = ?
         AND is_public = 1
-        AND created_at < ?
+        AND created_at <= ?
         ORDER BY created_at DESC
         LIMIT ?",
         user.id,

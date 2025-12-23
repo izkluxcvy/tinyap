@@ -22,7 +22,7 @@ pub async fn page(
         WHERE users.is_local = 1
         AND notes.boosted_username IS NULL
         AND notes.is_public = 1
-        AND notes.created_at < ?
+        AND notes.created_at <= ?
         ORDER BY notes.created_at DESC
         LIMIT ?",
         until,
