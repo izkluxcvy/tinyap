@@ -32,7 +32,7 @@ $ cd tinyap
 Create database first. (Building first will result in failure.)
 
 ```sh
-$ sqlite3 tinyap.db < scheme.sql
+$ sqlite3 tinyap.db < schema.sql
 ```
 
 Configure your .env file
