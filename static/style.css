@@ -1,6 +1,6 @@
 body {
-    background: #fafafa;
-    color: #222;
+    background: #fdf6e3;
+    color: #073642;
     width: 90vh;
     margin: auto;
     margin-top: 8px;
@@ -24,7 +24,7 @@ pre {
 }
 
 a {
-    color: #325aa0;
+    color: #268bd2;
     text-decoration: none;
 }
 
