@@ -165,6 +165,10 @@ pub async fn add_notification(
         .format(&format_description::well_known::Rfc3339)
         .unwrap();
 
+    if username.split('@').collect::<Vec<&str>>().len() >= 2 {
+        return;
+    }
+
     sqlx::query!(
         "INSERT INTO notifications (username, type, actor, note_uuid, created_at)
         VALUES (?, ?, ?, ?, ?)",

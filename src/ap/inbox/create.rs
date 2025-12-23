@@ -79,7 +79,7 @@ pub async fn note(activity: &Value, state: &AppState) {
 
         if let Some(parent_note) = parent_note {
             let parent_user = sqlx::query!(
-                "SELECT username FROM users WHERE id = ? AND is_local = 1",
+                "SELECT username FROM users WHERE id = ?",
                 parent_note.user_id
             )
             .fetch_one(&state.db_pool)
