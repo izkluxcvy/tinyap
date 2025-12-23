@@ -68,6 +68,35 @@ pub async fn note(activity: &Value, state: &AppState) {
             as i32
     };
 
+    // Reply to
+    if let Some(inreplyto) = note_inreplyto {
+        create_remotenote(inreplyto, state).await;
+        let parent_note =
+            sqlx::query!("SELECT user_id, uuid FROM notes WHERE ap_id = ?", inreplyto)
+                .fetch_optional(&state.db_pool)
+                .await
+                .unwrap();
+
+        if let Some(parent_note) = parent_note {
+            let parent_user = sqlx::query!(
+                "SELECT username FROM users WHERE id = ? AND is_local = 1",
+                parent_note.user_id
+            )
+            .fetch_one(&state.db_pool)
+            .await
+            .unwrap();
+
+            utils::add_notification(
+                &parent_user.username,
+                "reply",
+                &user.username,
+                Some(&parent_note.uuid),
+                state,
+            )
+            .await;
+        }
+    }
+
     let reply_to_author = if let Some(in_reply_to) = note_inreplyto {
         let parent_note = sqlx::query!(
             "SELECT users.username FROM notes JOIN users ON notes.user_id = users.id WHERE notes.ap_id = ?",
@@ -81,6 +110,7 @@ pub async fn note(activity: &Value, state: &AppState) {
     } else {
         None
     };
+
     let res = sqlx::query!(
         "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, reply_to_author, created_at, is_public)
         VALUES (?, ?, ?, ?, ?, ?, (strftime('%Y-%m-%dT%H:%M:%SZ', datetime(?, 'utc'))), ?)",
@@ -99,33 +129,5 @@ pub async fn note(activity: &Value, state: &AppState) {
     if let Err(e) = res {
         println!("maybe already inserted? {}", e);
         return;
-    }
-
-    if let Some(inreplyto) = note_inreplyto {
-        create_remotenote(inreplyto, state).await;
-        let parent_note =
-            sqlx::query!("SELECT user_id, uuid FROM notes WHERE ap_id = ?", inreplyto)
-                .fetch_optional(&state.db_pool)
-                .await
-                .unwrap();
-
-        if let Some(parent_note) = parent_note {
-            let parent_user = sqlx::query!(
-                "SELECT username FROM users WHERE id = ?",
-                parent_note.user_id
-            )
-            .fetch_one(&state.db_pool)
-            .await
-            .unwrap();
-
-            utils::add_notification(
-                &parent_user.username,
-                "reply",
-                &user.username,
-                Some(&parent_note.uuid),
-                state,
-            )
-            .await;
-        }
     }
 }
