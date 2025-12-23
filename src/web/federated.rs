@@ -1,8 +1,20 @@
 use crate::state::AppState;
 
-use axum::{extract::State, response::Html};
+use axum::{
+    extract::{Query, State},
+    response::Html,
+};
 
-pub async fn page(State(state): State<AppState>) -> Html<String> {
+#[derive(serde::Deserialize)]
+pub struct PageParam {
+    p: Option<i64>,
+}
+
+pub async fn page(
+    State(state): State<AppState>,
+    Query(PageParam { p }): Query<PageParam>,
+) -> Html<String> {
+    let offset = (p.unwrap_or(1) - 1) * state.config.max_timeline_notes;
     let rows = sqlx::query!(
         "SELECT notes.uuid, notes.content, notes.in_reply_to, notes.reply_to_author, notes.created_at, users.display_name, users.username
         FROM notes
@@ -10,8 +22,10 @@ pub async fn page(State(state): State<AppState>) -> Html<String> {
         WHERE notes.boosted_username IS NULL
         AND notes.is_public = 1
         ORDER BY notes.created_at DESC
-        LIMIT ?",
-        state.config.max_timeline_notes
+        LIMIT ?
+        OFFSET ?",
+        state.config.max_timeline_notes,
+        offset
     )
     .fetch_all(&state.db_pool)
     .await
@@ -37,6 +51,8 @@ pub async fn page(State(state): State<AppState>) -> Html<String> {
     context.insert("title", "Federated Timeline");
     context.insert("notes", &notes);
     context.insert("timezone", &state.config.timezone);
+    context.insert("page", &p.unwrap_or(1));
+    context.insert("max_notes", &state.config.max_timeline_notes);
     let rendered = state.tera.render("timeline.html", &context).unwrap();
     Html(rendered)
 }

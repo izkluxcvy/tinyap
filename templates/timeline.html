@@ -22,4 +22,12 @@
     {% else %}
     <pre>No notes yet.</pre>
     {% endfor %}
+
+    {% if page > 1 and notes | length == max_notes %}
+    <pre><a href="?p={{ page - 1 }}">Newer Notes</a> | <a href="?p={{ page + 1 }}">Older Notes</a></pre>
+    {% elif notes | length == max_notes %}
+    <pre><a href="?p={{ page + 1 }}">Older Notes</a></pre>
+    {% elif page > 1 %}
+    <pre><a href="?p={{ page - 1 }}">Newer Notes</a></pre>
+    {% endif %}
 </body>

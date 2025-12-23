@@ -1,8 +1,20 @@
 use crate::{auth::AuthUser, state::AppState};
 
-use axum::{extract::State, response::Html};
+use axum::{
+    extract::{Query, State},
+    response::Html,
+};
 
-pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String> {
+#[derive(serde::Deserialize)]
+pub struct PageParam {
+    p: Option<i64>,
+}
+
+pub async fn page(
+    user: AuthUser,
+    State(state): State<AppState>,
+    Query(PageParam { p }): Query<PageParam>,
+) -> Html<String> {
     let home_user = sqlx::query!(
         "SELECT id, display_name, username FROM users WHERE id = ?",
         user.id
@@ -12,6 +24,7 @@ pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String>
     .expect("Failed to fetch home user from database");
 
     // Fetch notes from users who home user follows
+    let offset = (p.unwrap_or(1) - 1) * state.config.max_timeline_notes;
     let rows = sqlx::query!(
         "SELECT notes.boosted_username, notes.boosted_created_at, notes.uuid, notes.content, notes.in_reply_to, notes.reply_to_author, notes.created_at, users.display_name, users.username
         FROM notes
@@ -21,9 +34,11 @@ pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String>
         WHERE follows.user_id = $1
         OR users.id = $1
         ORDER BY notes.created_at DESC
-        LIMIT $2",
+        LIMIT $2
+        OFFSET $3",
         home_user.id,
-        state.config.max_timeline_notes
+        state.config.max_timeline_notes,
+        offset
     )
     .fetch_all(&state.db_pool)
     .await
@@ -57,6 +72,8 @@ pub async fn page(user: AuthUser, State(state): State<AppState>) -> Html<String>
     );
     context.insert("notes", &notes);
     context.insert("timezone", &state.config.timezone);
+    context.insert("page", &p.unwrap_or(1));
+    context.insert("max_notes", &state.config.max_timeline_notes);
     let rendered = state.tera.render("timeline.html", &context).unwrap();
     Html(rendered)
 }
