@@ -106,7 +106,7 @@ pub async fn page(
 
     // Replies
     let row = sqlx::query!(
-        "SELECT notes.uuid, notes.content, notes.created_at, notes.in_reply_to, users.display_name, users.username
+        "SELECT notes.uuid, notes.content, notes.created_at, notes.in_reply_to, notes.reply_to_author, users.display_name, users.username
         FROM notes
         JOIN users ON notes.user_id = users.id
         WHERE notes.ap_id = ?",
@@ -123,6 +123,7 @@ pub async fn page(
             "username": row.username,
             "content": row.content,
             "in_reply_to": row.in_reply_to,
+            "reply_to_author": row.reply_to_author,
             "created_at": row.created_at,
         })),
         None => None,

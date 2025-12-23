@@ -4,7 +4,7 @@ use axum::{extract::State, response::Html};
 
 pub async fn page(State(state): State<AppState>) -> Html<String> {
     let rows = sqlx::query!(
-        "SELECT notes.uuid, notes.content, notes.in_reply_to, notes.created_at, users.display_name, users.username
+        "SELECT notes.uuid, notes.content, notes.in_reply_to, notes.reply_to_author, notes.created_at, users.display_name, users.username
         FROM notes
         JOIN users ON notes.user_id = users.id
         WHERE notes.boosted_username IS NULL
@@ -26,6 +26,7 @@ pub async fn page(State(state): State<AppState>) -> Html<String> {
                 "username": row.username,
                 "content": row.content,
                 "in_reply_to": row.in_reply_to,
+                "reply_to_author": row.reply_to_author,
                 "created_at": row.created_at,
             })
         })

@@ -48,14 +48,31 @@ pub async fn create_note(
     if content_trimed.is_empty() {
         return Redirect::to("/home");
     }
+
+    let reply_to_author: Option<String> = if let Some(in_reply_to) = &form.in_reply_to {
+        let parent_note = sqlx::query!(
+            "SELECT users.username FROM notes
+            JOIN users ON notes.user_id = users.id
+            WHERE notes.ap_id = ?",
+            in_reply_to
+        )
+        .fetch_one(&state.db_pool)
+        .await
+        .unwrap();
+
+        Some(parent_note.username)
+    } else {
+        None
+    };
     sqlx::query!(
-        "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, created_at)
-        VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, reply_to_author, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)",
         uuid,
         ap_id,
         user.id,
         content_trimed,
         form.in_reply_to,
+        reply_to_author,
         created_at,
     )
     .execute(&state.db_pool)

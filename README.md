@@ -76,6 +76,7 @@ CREATE TABLE notes (
     boosted_created_at TEXT,
     content TEXT NOT NULL,
     in_reply_to TEXT,
+    reply_to_author TEXT,
     created_at TEXT NOT NULL,
     is_public INTEGER NOT NULL DEFAULT 1,
     like_count INTEGER NOT NULL DEFAULT 0,

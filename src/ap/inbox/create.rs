@@ -67,14 +67,29 @@ pub async fn note(activity: &Value, state: &AppState) {
             .any(|v| v.as_str().unwrap() == "https://www.w3.org/ns/activitystreams#Public")
             as i32
     };
+
+    let reply_to_author = if let Some(in_reply_to) = note_inreplyto {
+        let parent_note = sqlx::query!(
+            "SELECT users.username FROM notes JOIN users ON notes.user_id = users.id WHERE notes.ap_id = ?",
+            in_reply_to
+        )
+        .fetch_one(&state.db_pool)
+        .await
+        .unwrap();
+
+        Some(parent_note.username)
+    } else {
+        None
+    };
     let res = sqlx::query!(
-        "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, created_at, is_public)
-        VALUES (?, ?, ?, ?, ?, (strftime('%Y-%m-%dT%H:%M:%SZ', datetime(?, 'utc'))), ?)",
+        "INSERT INTO notes (uuid, ap_id, user_id, content, in_reply_to, reply_to_author, created_at, is_public)
+        VALUES (?, ?, ?, ?, ?, ?, (strftime('%Y-%m-%dT%H:%M:%SZ', datetime(?, 'utc'))), ?)",
         uuid,
         note_apid,
         user.id,
         content_clean,
         note_inreplyto,
+        reply_to_author,
         note_created_at,
         note_is_public,
     )

@@ -53,7 +53,7 @@ pub async fn page(
 
     let offset = (p.unwrap_or(1) - 1) * state.config.max_timeline_notes;
     let rows = sqlx::query!(
-        "SELECT boosted_username, boosted_created_at, uuid, content, created_at, in_reply_to
+        "SELECT boosted_username, boosted_created_at, uuid, content, created_at, in_reply_to, reply_to_author
         FROM notes
         WHERE user_id = ?
         AND is_public = 1
@@ -78,6 +78,7 @@ pub async fn page(
                 "content": row.content,
                 "created_at": row.created_at,
                 "in_reply_to": row.in_reply_to,
+                "reply_to_author": row.reply_to_author,
             })
         })
         .collect();

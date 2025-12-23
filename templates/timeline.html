@@ -18,7 +18,7 @@
 <a href="/@{{ note.boosted_username}}">@{{ note.boosted_username }}</a>(<a href="/@{{ note.boosted_username }}/{{ note.uuid }}">{{ note.boosted_created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
 {% else %}
     <pre><hr><strong><a href="/@{{ note.username}}">{{ note.display_name }}@{{ note.username }}</a></strong>(<a href="/@{{ note.username }}/{{ note.uuid }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
-{% endif %}{% if note.in_reply_to %}<small>[Reply to: {{note.in_reply_to}}]</small><br>{% endif %}{{ note.content }}</pre>
+{% endif %}{% if note.in_reply_to %}<small>[Reply to: {% if note.reply_to_author %}<a href="/@{{ note.reply_to_author }}">@{{note.reply_to_author}}</a>{% else %}{{note.in_reply_to}}{% endif %}]</small><br>{% endif %}{{ note.content }}</pre>
     {% else %}
     <pre>No notes yet.</pre>
     {% endfor %}
