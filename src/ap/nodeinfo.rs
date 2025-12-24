@@ -7,6 +7,7 @@ use axum::{
     response::IntoResponse,
 };
 use serde_json::json;
+use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 
 pub async fn well_known(State(state): axum::extract::State<AppState>) -> impl IntoResponse {
     let nodeinfo = json!({
@@ -28,6 +29,27 @@ pub async fn well_known(State(state): axum::extract::State<AppState>) -> impl In
 }
 
 pub async fn nodeinfo(State(state): axum::extract::State<AppState>) -> impl IntoResponse {
+    let total_users = sqlx::query!("SELECT COUNT(*) as count FROM users WHERE is_local = 1")
+        .fetch_one(&state.db_pool)
+        .await
+        .expect("Failed to fetch user count")
+        .count;
+
+    let month_ago = OffsetDateTime::now_utc() - time::Duration::days(30);
+    let month_ago = month_ago.format(&Rfc3339).unwrap();
+    let active_users = sqlx::query!(
+        "SELECT COUNT(DISTINCT users.id) as count
+        FROM users
+        JOIN notes ON notes.user_id = users.id
+        AND users.is_local=1
+        WHERE notes.created_at > ?;",
+        month_ago
+    )
+    .fetch_one(&state.db_pool)
+    .await
+    .expect("Failed to fetch active user count")
+    .count;
+
     let nodeinfo = json!({
         "version": "2.1",
         "software": {
@@ -44,14 +66,13 @@ pub async fn nodeinfo(State(state): axum::extract::State<AppState>) -> impl Into
         "openRegistrations": state.config.allow_signup,
         "usage": {
             "users": {
-                "total": sqlx::query!("SELECT COUNT(*) as count FROM users WHERE is_local = 1")
-                    .fetch_one(&state.db_pool)
-                    .await
-                    .expect("Failed to fetch user count")
-                    .count
+                "total": total_users,
+                "activeMonth": active_users
             },
         },
-        "metadata": {}
+        "metadata": {
+            "nodeName": state.site_name,
+        }
     });
 
     let mut headers = HeaderMap::new();
