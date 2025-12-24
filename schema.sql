@@ -44,6 +44,8 @@ CREATE TABLE notes (
     like_count INTEGER NOT NULL DEFAULT 0,
     boost_count INTEGER NOT NULL DEFAULT 0
 );
+CREATE INDEX idx_notes_created_at ON notes(created_at);
+CREATE INDEX idx_notes_inreplyto ON notes(in_reply_to);
 CREATE TABLE likes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     note_apid TEXT NOT NULL,
@@ -58,3 +60,4 @@ CREATE TABLE notifications (
     note_uuid TEXT,
     created_at TEXT NOT NULL
 );
+CREATE INDEX idx_notifications_username_created_at ON notifications(username, created_at);
