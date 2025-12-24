@@ -17,7 +17,7 @@ pub async fn process(activity: &Value, state: &AppState) {
         .unwrap();
 
     let note = sqlx::query!(
-        "SELECT users.username, notes.uuid, notes.created_at, notes.content, notes.in_reply_to
+        "SELECT users.username, notes.uuid, notes.created_at, notes.content, notes.in_reply_to, notes.reply_to_author
         FROM notes
         JOIN users ON notes.user_id = users.id
         WHERE notes.ap_id = ?",
@@ -31,8 +31,8 @@ pub async fn process(activity: &Value, state: &AppState) {
     let boost_apid = format!("{}-boost-{}", actor_user.username, object);
     let date_now = OffsetDateTime::now_utc().format(&Rfc3339).unwrap();
     let res = sqlx::query!(
-        "INSERT INTO notes (uuid, ap_id, user_id, boosted_username, boosted_created_at, content, in_reply_to, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO notes (uuid, ap_id, user_id, boosted_username, boosted_created_at, content, in_reply_to, reply_to_author, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         boost_uuid,
         boost_apid,
         actor_user.id,
@@ -40,6 +40,7 @@ pub async fn process(activity: &Value, state: &AppState) {
         note.created_at,
         note.content,
         note.in_reply_to,
+        note.reply_to_author,
         date_now,
     )
     .execute(&state.db_pool)
