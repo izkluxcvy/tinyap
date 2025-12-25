@@ -1,13 +1,13 @@
 body {
     background: #fdf6e3;
     color: #073642;
-    width: 90vh;
+    width: 90ch;
     margin: auto;
     margin-top: 8px;
     margin-bottom: 10vh;
 }
 
-@media screen and (max-width: 90vh) {
+@media screen and (max-width: 90ch) {
     body {
         width: 98%;
     }
