@@ -63,7 +63,7 @@ Build and Run
 
 ```sh
 $ cargo build --release
-$ # OR
+$ # or
 $ cargo build --release --features=tls
 $ # for using tinyap as a TLS termination
 
@@ -76,6 +76,8 @@ $ ./tinyap
 ## Benchmark
 
 AMD Ryzen 7 5700X (16) @ 4.66 GHz
+
+MAX_TIMELINE_NOTES=1
 
 ```sh
 $ curl http://localhost:8080/local -w "%{time_total}\n" -o /dev/null -sS
