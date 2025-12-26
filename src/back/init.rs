@@ -39,6 +39,7 @@ pub struct AppState {
     pub db_pool: sqlx::SqlitePool,
     #[cfg(feature = "postgres")]
     pub db_pool: sqlx::PgPool,
+    pub domain: String,
 }
 
 #[cfg(not(any(feature = "sqlite", feature = "postgres")))]
@@ -48,22 +49,25 @@ compile_error!("sqlite or postgres feature must be enabled");
 compile_error!("sqlite and postgres features must be enabled exclusively");
 
 #[cfg(feature = "sqlite")]
-async fn create_db_pool() -> sqlx::SqlitePool {
-    let conf = load_config();
+async fn create_db_pool(conf: &HashMap<String, String>) -> sqlx::SqlitePool {
     let database_url = conf.get("database_url").expect("database_url must be set");
     println!("Connecting to SQLite database...");
     sqlx::SqlitePool::connect(database_url).await.unwrap()
 }
 
 #[cfg(feature = "postgres")]
-async fn create_db_pool() -> sqlx::PgPool {
-    let conf = load_config();
+async fn create_db_pool(conf: &HashMap<String, String>) -> sqlx::PgPool {
     let database_url = conf.get("database_url").expect("database_url must be set");
     println!("Connecting to PostgreSQL database...");
     sqlx::PgPool::connect(database_url).await.unwrap()
 }
 
 pub async fn create_app_state() -> AppState {
-    let db_pool = create_db_pool().await;
-    AppState { db_pool }
+    let conf = load_config();
+    let db_pool = create_db_pool(&conf).await;
+    let domain = conf.get("domain").expect("domain must be set").to_string();
+    AppState {
+        db_pool: db_pool,
+        domain: domain,
+    }
 }
