@@ -4,16 +4,27 @@ use crate::back::utils;
 
 use argon2::{
     Argon2,
-    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    password_hash::{PasswordHasher, SaltString},
 };
 use rand::rngs::OsRng;
 use rsa::{RsaPrivateKey, RsaPublicKey, pkcs1::EncodeRsaPrivateKey, pkcs1::EncodeRsaPublicKey};
 
-pub async fn add_user(state: &AppState, username: &str, password: &str) {
-    let existing = queries::get_userid_by_username(state, username).await;
+pub async fn add_user(state: &AppState, username: &str, password: &str) -> Result<(), String> {
+    if username.is_empty() || password.is_empty() {
+        return Err("Username and password cannot be empty".to_string());
+    }
+
+    if username.len() > 32 {
+        return Err("Username is too long (max 32 characters)".to_string());
+    }
+
+    if !username.bytes().all(|a| u8::is_ascii_alphanumeric(&a)) {
+        return Err("Username can only contain alphanumeric characters".to_string());
+    }
+
+    let existing = queries::get_user_by_username(state, username).await;
     if existing.is_some() {
-        println!("username {} already exists", username);
-        return;
+        return Err("Username already exists".to_string());
     }
 
     let argon2 = Argon2::default();
@@ -51,4 +62,6 @@ pub async fn add_user(state: &AppState, username: &str, password: &str) {
         1,
     )
     .await;
+
+    Ok(())
 }

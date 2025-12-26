@@ -12,3 +12,9 @@ CREATE TABLE users (
     updated_at TEXT NOT NULL,
     is_local INTEGER NOT NULL
 );
+
+CREATE TABLE sessions (
+    session_id TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    expires_at TEXT NOT NULL
+);

@@ -8,6 +8,8 @@ use tokio::net::TcpListener;
 async fn web_routes() -> Router {
     Router::new()
         .route("/", get(web::index::get))
+        .route("/signup", get(web::signup::get).post(web::signup::post))
+        .route("/login", get(web::login::get).post(web::login::post))
         .with_state(init::create_app_state().await)
 }
 

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use tera::Tera;
 
 fn load_config() -> HashMap<String, String> {
     let file = File::open("config.yaml").expect("Failed to open config.yaml");
@@ -39,7 +40,22 @@ pub struct AppState {
     pub db_pool: sqlx::SqlitePool,
     #[cfg(feature = "postgres")]
     pub db_pool: sqlx::PgPool,
+    pub tera: Tera,
     pub domain: String,
+    pub metadata: Metadata,
+    pub config: Config,
+}
+
+#[derive(Clone)]
+pub struct Metadata {
+    pub instance_name: String,
+}
+
+#[derive(Clone)]
+pub struct Config {
+    pub allow_signup: bool,
+    pub session_ttl_days: i64,
+    pub max_sessions_per_user: i64,
 }
 
 #[cfg(not(any(feature = "sqlite", feature = "postgres")))]
@@ -64,10 +80,47 @@ async fn create_db_pool(conf: &HashMap<String, String>) -> sqlx::PgPool {
 
 pub async fn create_app_state() -> AppState {
     let conf = load_config();
+
     let db_pool = create_db_pool(&conf).await;
+
+    let tera = Tera::new("templates/**/*").unwrap();
+
     let domain = conf.get("domain").expect("domain must be set").to_string();
+
+    let instance_name = conf
+        .get("instance_name")
+        .expect("instance_name must be set")
+        .to_string();
+
+    let allow_signup = conf
+        .get("allow_signup")
+        .expect("allow_signup must be set")
+        .parse::<bool>()
+        .expect("allow_signup must be a boolean");
+
+    let session_ttl_days = conf
+        .get("session_ttl_days")
+        .expect("session_ttl_days must be set")
+        .parse::<i64>()
+        .expect("session_ttl_days must be an integer");
+
+    let max_sessions_per_user = conf
+        .get("max_sessions_per_user")
+        .expect("max_sessions_per_user must be set")
+        .parse::<i64>()
+        .expect("max_sessions_per_user must be an integer");
+
     AppState {
         db_pool: db_pool,
+        tera: tera,
         domain: domain,
+        metadata: Metadata {
+            instance_name: instance_name,
+        },
+        config: Config {
+            allow_signup: allow_signup,
+            session_ttl_days: session_ttl_days,
+            max_sessions_per_user: max_sessions_per_user,
+        },
     }
 }

@@ -11,5 +11,9 @@ pub async fn useradd(args: Vec<String>) {
     let password = &args[1];
 
     let state = init::create_app_state().await;
-    user::add_user(&state, username, password).await;
+    let res = user::add_user(&state, username, password).await;
+    match res {
+        Ok(_) => println!("User added successfully."),
+        Err(e) => println!("Error creating user: {}", e),
+    }
 }

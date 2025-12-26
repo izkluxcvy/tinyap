@@ -1,5 +1,14 @@
-database_url: sqlite://./tinyap.db
-host: 127.0.0.1
-port: 8080
-
 domain: example.com
+
+server:
+  database_url: sqlite://./tinyap.db
+  host: 127.0.0.1
+  port: 8080
+
+metadata:
+  instance_name: TinyAP
+
+config:
+  allow_signup: true
+  session_ttl_days: 90
+  max_sessions_per_user: 10

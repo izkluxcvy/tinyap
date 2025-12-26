@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<head>
+    {% include "parts/head.html" %}
+</head>
+
+<body>
+    <h3>Sign Up</h3>
+    {% if allow_signup %}
+    <form action="/signup" method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <label for="confirmation">Confirm Password:</label>
+        <input type="password" id="confirmation" name="confirmation" required><br><br>
+
+        <input type="submit" value="Sign Up">
+    </form>
+    {% else %}
+    <p>Sign up is currently disabled.</p>
+    {% endif %}
+</body>
