@@ -5,14 +5,16 @@ use crate::web;
 use axum::{Router, routing::get};
 use tokio::net::TcpListener;
 
-fn web_routes() -> Router {
-    Router::new().route("/", get(web::index::get))
+async fn web_routes() -> Router {
+    Router::new()
+        .route("/", get(web::index::get))
+        .with_state(init::create_app_state().await)
 }
 
 pub async fn serve() {
     println!("[TinyAP version {}]", VERSION);
 
-    let app = web_routes();
+    let app = web_routes().await;
 
     let server_addr = init::server_address();
     let listener = TcpListener::bind(&server_addr).await.unwrap();

@@ -4,12 +4,12 @@ version = "1.0.0-alpha"
 edition = "2024"
 
 [features]
-default = []
+default = ["sqlite"]
 tls = ["axum-server/tls-rustls"]
+sqlite = ["sqlx/sqlite", "sqlx/runtime-tokio"]
+postgres = ["sqlx/postgres", "sqlx/runtime-tokio"]
 
 [dependencies]
-dotenvy = "0.15"
-
 tokio = { version = "1", features = ["full"] }
 axum = { version = "0.8", features = ["json"] }
 axum-extra = { version = "0.12", features = ["cookie"] }
@@ -17,7 +17,7 @@ axum-server = { version = "0.7", features = ["tls-rustls"], optional = true }
 tower-http = { version = "0.6", features = ["fs"] }
 time = "0.3"
 tera = { version = "1", features = ["builtins", "date-locale"] }
-sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
+sqlx = "0.8"
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

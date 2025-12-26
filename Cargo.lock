@@ -2439,7 +2439,6 @@ dependencies = [
  "axum-extra",
  "axum-server",
  "base64",
- "dotenvy",
  "rand",
  "regex",
  "reqwest",
