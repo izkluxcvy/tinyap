@@ -1,6 +1,6 @@
-use crate::back::auth;
 use crate::back::init::AppState;
 use crate::back::queries;
+use crate::back::user;
 use crate::back::utils;
 
 use axum::{
@@ -27,7 +27,7 @@ pub async fn post(
     jar: CookieJar,
     Form(form): Form<LoginForm>,
 ) -> impl IntoResponse {
-    let Ok(user_id) = auth::verify_user_password(&state, &form.username, &form.password).await
+    let Ok(user_id) = user::verify_user_password(&state, &form.username, &form.password).await
     else {
         return "Incorrect username or password.".into_response();
     };

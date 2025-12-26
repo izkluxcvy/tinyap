@@ -96,3 +96,25 @@ pub async fn delete_old_sessions(
     .await
     .unwrap();
 }
+
+#[derive(sqlx::FromRow)]
+pub struct SessionRecord {
+    pub user_id: i64,
+}
+pub async fn get_session(
+    state: &AppState,
+    session_id: &str,
+    date_now: &str,
+) -> Option<SessionRecord> {
+    let row = query_as(
+        "SELECT user_id FROM sessions
+        WHERE session_id = ?
+        AND expires_at > ?",
+    )
+    .bind(session_id)
+    .bind(date_now)
+    .fetch_optional(&state.db_pool)
+    .await
+    .unwrap();
+    row
+}
