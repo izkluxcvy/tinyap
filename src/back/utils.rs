@@ -174,6 +174,8 @@ pub async fn signed_deliver(
                 .body(body.to_string())
                 .send()
                 .await;
+
+            drop(_permit);
         }
     });
 }
