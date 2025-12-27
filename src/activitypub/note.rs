@@ -22,6 +22,15 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> impl Int
             .into_response();
     };
 
+    // Check if public
+    if note.is_public == 0 {
+        return (
+            StatusCode::FORBIDDEN,
+            Json(json!({"error": "note is private"})),
+        )
+            .into_response();
+    }
+
     // Get author
     let author = queries::user::get_by_id(&state, note.author_id).await;
 

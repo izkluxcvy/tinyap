@@ -27,8 +27,7 @@ pub async fn post(
     jar: CookieJar,
     Form(form): Form<LoginForm>,
 ) -> impl IntoResponse {
-    let Ok(user_id) = user::verify_user_password(&state, &form.username, &form.password).await
-    else {
+    let Ok(user_id) = user::verify_password(&state, &form.username, &form.password).await else {
         return "Incorrect username or password.".into_response();
     };
 

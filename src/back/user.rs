@@ -9,7 +9,7 @@ use argon2::{
 use rand::rngs::OsRng;
 use rsa::{RsaPrivateKey, RsaPublicKey, pkcs1::EncodeRsaPrivateKey, pkcs1::EncodeRsaPublicKey};
 
-pub async fn add_user(state: &AppState, username: &str, password: &str) -> Result<(), String> {
+pub async fn add(state: &AppState, username: &str, password: &str) -> Result<(), String> {
     // Validation
     if username.is_empty() || password.is_empty() {
         return Err("Username and password cannot be empty".to_string());
@@ -70,11 +70,7 @@ pub async fn add_user(state: &AppState, username: &str, password: &str) -> Resul
     Ok(())
 }
 
-pub async fn verify_user_password(
-    state: &AppState,
-    username: &str,
-    password: &str,
-) -> Result<i64, ()> {
+pub async fn verify_password(state: &AppState, username: &str, password: &str) -> Result<i64, ()> {
     let user = queries::user::get_by_username(state, username).await;
     // Check user exists
     let Some(user) = user else {

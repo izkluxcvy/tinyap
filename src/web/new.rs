@@ -1,6 +1,4 @@
 use crate::back::init::AppState;
-use crate::back::queries;
-use crate::back::utils;
 use crate::web::auth::AuthUser;
 
 use axum::{
@@ -26,28 +24,20 @@ pub async fn post(
     user: AuthUser,
     Form(form): Form<NewNoteForm>,
 ) -> impl IntoResponse {
-    let user = queries::user::get_by_id(&state, user.id).await;
-
-    let id = utils::gen_unique_id();
-    let ap_url = utils::local_note_ap_url(&state.domain, id);
-    let content = utils::parse_content(&form.content);
-    let created_at = utils::date_now();
-
-    if content.is_empty() {
-        return "Content cannot be empty".into_response();
-    }
-
-    queries::note::create(
+    let res = crate::back::note::add(
         &state,
-        &id,
-        &ap_url,
-        &user.id,
-        &content,
+        user.id,
+        &form.content,
         None,
-        &created_at,
-        &1,
+        1, // is_public
     )
     .await;
 
-    Redirect::to("/home").into_response()
+    match res {
+        Ok(_) => Redirect::to("/home").into_response(),
+        Err(e) => {
+            println!("Error adding note: {}", e);
+            "Something went wrong".into_response()
+        }
+    }
 }

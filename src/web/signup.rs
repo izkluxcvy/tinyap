@@ -33,7 +33,7 @@ pub async fn post(
         return "Passwords do not match.".into_response();
     }
 
-    let res = user::add_user(&state, &form.username, &form.password).await;
+    let res = user::add(&state, &form.username, &form.password).await;
     match res {
         Ok(_) => Redirect::to("/login").into_response(),
         Err(e) => e.into_response(),

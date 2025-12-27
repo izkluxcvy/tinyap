@@ -31,3 +31,4 @@ CREATE table notes (
     is_public INTEGER NOT NULL,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
 );
+CREATE INDEX idx_notes_author_id ON notes(author_id);

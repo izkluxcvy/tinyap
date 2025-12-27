@@ -66,3 +66,12 @@ pub async fn create(
     .await
     .unwrap();
 }
+
+pub async fn update_date(state: &AppState, id: i64, updated_at: &str) {
+    query("UPDATE users SET updated_at = ? WHERE id = ?")
+        .bind(updated_at)
+        .bind(id)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
+}
