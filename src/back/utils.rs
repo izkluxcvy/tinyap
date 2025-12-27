@@ -60,6 +60,10 @@ pub fn local_user_outbox_url(domain: &str, username: &str) -> String {
     format!("https://{}/users/{}/outbox", domain, username)
 }
 
-pub fn local_note_ap_url(domain: &str, note_id: i64) -> String {
-    format!("https://{}/notes/{}", domain, note_id)
+pub fn note_url(domain: &str, author: &str, id: i64) -> String {
+    format!("https://{}/@{}/{}", domain, author, id)
+}
+
+pub fn local_note_ap_url(domain: &str, id: i64) -> String {
+    format!("https://{}/notes/{}", domain, id)
 }

@@ -9,6 +9,7 @@ async fn activitypub_routes() -> Router<init::AppState> {
     Router::new()
         .route("/.well-known/webfinger", get(ap::webfinger::get))
         .route("/users/{username}", get(ap::actor::get))
+        .route("/notes/{id}", get(ap::note::get))
 }
 
 #[cfg(feature = "web")]
