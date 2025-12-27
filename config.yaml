@@ -12,6 +12,7 @@ config:
   allow_signup: true
   session_ttl_days: 90
   max_sessions_per_user: 10
+  deliver_queue_size: 10
 
 web_config:
   timezone: Asia/Tokyo

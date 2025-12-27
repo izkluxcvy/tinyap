@@ -1,7 +1,19 @@
+// Compile-time checks for database feature flags
+#[cfg(not(any(feature = "sqlite", feature = "postgres")))]
+compile_error!("sqlite or postgres feature must be enabled");
+
+#[cfg(all(feature = "sqlite", feature = "postgres"))]
+compile_error!("sqlite and postgres features must be enabled exclusively");
+
+use crate::VERSION;
+
+use reqwest::Client;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::sync::Arc;
 use tera::Tera;
+use tokio::sync::Semaphore;
 
 fn load_config() -> HashMap<String, String> {
     let file = File::open("config.yaml").expect("Failed to open config.yaml");
@@ -43,6 +55,8 @@ pub struct AppState {
     #[cfg(feature = "postgres")]
     pub db_pool: sqlx::PgPool,
     pub tera: Tera,
+    pub deliver_queue: Arc<Semaphore>,
+    pub http_client: Client,
     pub domain: String,
     pub metadata: Metadata,
     pub config: Config,
@@ -68,13 +82,6 @@ pub struct WebConfig {
     pub timezone: String,
     pub max_timeline_items: i64,
 }
-
-// Compile-time checks for database feature flags
-#[cfg(not(any(feature = "sqlite", feature = "postgres")))]
-compile_error!("sqlite or postgres feature must be enabled");
-
-#[cfg(all(feature = "sqlite", feature = "postgres"))]
-compile_error!("sqlite and postgres features must be enabled exclusively");
 
 #[cfg(feature = "sqlite")]
 async fn create_db_pool(conf: &HashMap<String, String>) -> sqlx::SqlitePool {
@@ -122,6 +129,18 @@ pub async fn create_app_state() -> AppState {
         .parse::<i64>()
         .expect("max_sessions_per_user must be an integer");
 
+    let deliver_queue_size = conf
+        .get("deliver_queue_size")
+        .expect("deliver_queue_size must be set")
+        .parse::<usize>()
+        .expect("deliver_queue_size must be an integer");
+
+    let http_client = Client::builder()
+        .user_agent(&format!("TinyAP/{}", VERSION))
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+        .unwrap();
+
     #[cfg(feature = "web")]
     let timezone = conf
         .get("timezone")
@@ -138,6 +157,8 @@ pub async fn create_app_state() -> AppState {
     AppState {
         db_pool: db_pool,
         tera: tera,
+        deliver_queue: Arc::new(Semaphore::new(deliver_queue_size)),
+        http_client: http_client,
         domain: domain,
         metadata: Metadata {
             instance_name: instance_name,

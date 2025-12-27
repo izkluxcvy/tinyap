@@ -1,7 +1,6 @@
 use crate::back::follow;
 use crate::back::init::AppState;
 use crate::back::queries;
-use crate::back::utils;
 use crate::web::auth::AuthUser;
 
 use axum::{
@@ -25,6 +24,8 @@ pub async fn post_follow(
         Ok(_) => {
             if followee.is_local == 1 {
                 follow::approve(&state, auth_user.id, followee.id).await;
+            } else {
+                follow::deliver_follow(&state, auth_user.id, followee.id).await;
             }
             return Redirect::to(&format!("/@{}", followee_username)).into_response();
         }
