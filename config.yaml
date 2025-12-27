@@ -9,12 +9,12 @@ metadata:
   instance_name: TinyAP
 
 config:
-  allow_signup: true
-  session_ttl_days: 90
-  max_sessions_per_user: 10
   max_note_chars: 2000
   deliver_queue_size: 10
 
 web_config:
-  timezone: Asia/Tokyo
+  allow_signup: true
+  session_ttl_days: 90
+  max_sessions_per_user: 10
   max_timeline_items: 50
+  timezone: Asia/Tokyo

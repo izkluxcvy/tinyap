@@ -9,7 +9,7 @@ use axum::{
 pub async fn get(State(state): State<AppState>) -> Html<String> {
     let mut context = tera::Context::new();
     context.insert("instance_name", &state.metadata.instance_name);
-    context.insert("allow_signup", &state.config.allow_signup);
+    context.insert("allow_signup", &state.web_config.allow_signup);
     let rendered = state.tera.render("signup.html", &context).unwrap();
     Html(rendered)
 }
@@ -25,7 +25,7 @@ pub async fn post(
     State(state): State<AppState>,
     Form(form): Form<SignupForm>,
 ) -> impl IntoResponse {
-    if !state.config.allow_signup {
+    if !state.web_config.allow_signup {
         return "Signup is not allowed.".into_response();
     }
 
