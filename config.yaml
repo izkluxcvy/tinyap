@@ -12,3 +12,7 @@ config:
   allow_signup: true
   session_ttl_days: 90
   max_sessions_per_user: 10
+
+web_config:
+  timezone: Asia/Tokyo
+  max_timeline_items: 50

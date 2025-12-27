@@ -12,6 +12,7 @@ CREATE TABLE users (
     updated_at TEXT NOT NULL,
     is_local INTEGER NOT NULL
 );
+CREATE INDEX idx_users_is_local ON users(is_local);
 
 CREATE TABLE sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

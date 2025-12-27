@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+
+<head>
+    {% include "parts/head.html" %}
+    <title>{{ title }} - {{ instance_name }}</title>
+</head>
+
+<body>
+    <h3>{{ title }}</h3>
+
+    {% for note in notes %}
+    <pre><hr><a href="/@{{ note.username }}">{{ note.display_name }}@{{ note.username }}</a> (<a href="/@{{ note.username }}/{{ note.id }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
+{{ note.content | safe }}</pre>
+    {% endfor %}
+</body>

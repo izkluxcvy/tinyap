@@ -9,8 +9,10 @@ pub async fn add(
     attachments: Option<&str>,
     is_public: i64,
 ) -> Result<(), String> {
+    // Get author
     let author = queries::user::get_by_id(state, author_id).await;
 
+    // Create note
     let id = utils::gen_unique_id();
     let ap_url = utils::local_note_ap_url(&state.domain, id);
     let content = utils::parse_content(content);
@@ -30,6 +32,9 @@ pub async fn add(
         &is_public,
     )
     .await;
+
+    // Update updated_at
+    queries::user::update_date(state, author.id, &created_at).await;
 
     Ok(())
 }

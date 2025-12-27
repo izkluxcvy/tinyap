@@ -46,6 +46,8 @@ pub struct AppState {
     pub domain: String,
     pub metadata: Metadata,
     pub config: Config,
+    #[cfg(feature = "web")]
+    pub web_config: WebConfig,
 }
 
 #[derive(Clone)]
@@ -58,6 +60,13 @@ pub struct Config {
     pub allow_signup: bool,
     pub session_ttl_days: i64,
     pub max_sessions_per_user: i64,
+}
+
+#[cfg(feature = "web")]
+#[derive(Clone)]
+pub struct WebConfig {
+    pub timezone: String,
+    pub max_timeline_items: i64,
 }
 
 // Compile-time checks for database feature flags
@@ -113,6 +122,19 @@ pub async fn create_app_state() -> AppState {
         .parse::<i64>()
         .expect("max_sessions_per_user must be an integer");
 
+    #[cfg(feature = "web")]
+    let timezone = conf
+        .get("timezone")
+        .expect("timezone must be set")
+        .to_string();
+
+    #[cfg(feature = "web")]
+    let max_timeline_items = conf
+        .get("max_timeline_items")
+        .expect("max_timeline_items must be set")
+        .parse::<i64>()
+        .expect("max_timeline_items must be an integer");
+
     AppState {
         db_pool: db_pool,
         tera: tera,
@@ -124,6 +146,11 @@ pub async fn create_app_state() -> AppState {
             allow_signup: allow_signup,
             session_ttl_days: session_ttl_days,
             max_sessions_per_user: max_sessions_per_user,
+        },
+        #[cfg(feature = "web")]
+        web_config: WebConfig {
+            timezone: timezone,
+            max_timeline_items: max_timeline_items,
         },
     }
 }

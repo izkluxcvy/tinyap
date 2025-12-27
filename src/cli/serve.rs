@@ -20,6 +20,7 @@ async fn web_routes() -> Router<init::AppState> {
         .route("/signup", get(web::signup::get).post(web::signup::post))
         .route("/login", get(web::login::get).post(web::login::post))
         .route("/new", get(web::new::get).post(web::new::post))
+        .route("/local", get(web::local::get))
 }
 
 pub async fn serve() {
