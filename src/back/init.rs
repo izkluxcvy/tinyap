@@ -7,6 +7,7 @@ compile_error!("sqlite and postgres features must be enabled exclusively");
 
 use crate::VERSION;
 
+use regex::Regex;
 use reqwest::Client;
 use std::collections::HashMap;
 use std::fs::File;
@@ -58,10 +59,16 @@ pub struct AppState {
     pub deliver_queue: Arc<Semaphore>,
     pub http_client: Client,
     pub domain: String,
+    pub re: Re,
     pub metadata: Metadata,
     pub config: Config,
     #[cfg(feature = "web")]
     pub web_config: WebConfig,
+}
+
+#[derive(Clone)]
+pub struct Re {
+    pub tag: Regex,
 }
 
 #[derive(Clone)]
@@ -74,6 +81,7 @@ pub struct Config {
     pub allow_signup: bool,
     pub session_ttl_days: i64,
     pub max_sessions_per_user: i64,
+    pub max_note_chars: usize,
 }
 
 #[cfg(feature = "web")]
@@ -129,6 +137,12 @@ pub async fn create_app_state() -> AppState {
         .parse::<i64>()
         .expect("max_sessions_per_user must be an integer");
 
+    let max_note_chars = conf
+        .get("max_note_chars")
+        .expect("max_note_chars must be set")
+        .parse::<usize>()
+        .expect("max_note_chars must be an integer");
+
     let deliver_queue_size = conf
         .get("deliver_queue_size")
         .expect("deliver_queue_size must be set")
@@ -160,6 +174,9 @@ pub async fn create_app_state() -> AppState {
         deliver_queue: Arc::new(Semaphore::new(deliver_queue_size)),
         http_client: http_client,
         domain: domain,
+        re: Re {
+            tag: Regex::new(r"<[^>]+>").unwrap(),
+        },
         metadata: Metadata {
             instance_name: instance_name,
         },
@@ -167,6 +184,7 @@ pub async fn create_app_state() -> AppState {
             allow_signup: allow_signup,
             session_ttl_days: session_ttl_days,
             max_sessions_per_user: max_sessions_per_user,
+            max_note_chars: max_note_chars,
         },
         #[cfg(feature = "web")]
         web_config: WebConfig {

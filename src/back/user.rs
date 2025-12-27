@@ -8,6 +8,8 @@ use argon2::{
 };
 use rand::rngs::OsRng;
 use rsa::{RsaPrivateKey, RsaPublicKey, pkcs1::EncodeRsaPrivateKey, pkcs1::EncodeRsaPublicKey};
+use serde_json::Value;
+use url::Url;
 
 pub async fn add(state: &AppState, username: &str, password: &str) -> Result<(), String> {
     // Validation
@@ -54,11 +56,11 @@ pub async fn add(state: &AppState, username: &str, password: &str) -> Result<(),
     queries::user::create(
         state,
         username,
-        &password_hash,
+        Some(&password_hash),
         &ap_url,
         &inbox_url,
-        &private_key_pem,
-        &public_key_pem,
+        Some(&private_key_pem),
+        Some(&public_key_pem),
         username,
         "",
         &created_at,
@@ -90,4 +92,98 @@ pub async fn verify_password(state: &AppState, username: &str, password: &str) -
         Ok(_) => Ok(user.id),
         Err(_) => Err(()),
     }
+}
+
+pub async fn fetch_remote(
+    state: &AppState,
+    sender_ap_url: &str,
+    private_key: &str,
+    ap_url: &str,
+) -> Result<(String, String, String, String, String), String> {
+    // Fetch
+    let Ok(res) = utils::signed_get(state, sender_ap_url, private_key, ap_url).await else {
+        return Err("Failed to fetch remote user".to_string());
+    };
+
+    // Validation
+    let Ok(res_json) = res.json::<Value>().await else {
+        return Err("Fetched object is not valid JSON".to_string());
+    };
+
+    if res_json["type"] != "Person" {
+        return Err("Fetched object is not a Person".to_string());
+    }
+
+    let Some(username) = res_json["preferredUsername"].as_str() else {
+        return Err("Fetched object does not have a preferredUsername".to_string());
+    };
+
+    let Some(ap_url) = res_json["id"].as_str() else {
+        return Err("Fetched object does not have an id".to_string());
+    };
+
+    let Some(inbox_url) = res_json["inbox"].as_str() else {
+        return Err("Fetched object does not have an inbox".to_string());
+    };
+
+    let display_name = res_json["name"].as_str().unwrap_or(username);
+
+    // Merge attachments to bio
+    let mut bio = res_json["summary"].as_str().unwrap_or("").to_string();
+    if let Some(attachments) = res_json["attachment"].as_array() {
+        bio.push_str("\n");
+        for attachment in attachments {
+            if let (Some(name), Some(url)) =
+                (attachment["name"].as_str(), attachment["url"].as_str())
+            {
+                bio.push_str(&format!("\n{}: {}", name, url));
+            }
+        }
+    }
+    let bio = utils::strip_content(state, &bio);
+    let bio = utils::parse_content(&bio);
+
+    let url = Url::parse(ap_url).unwrap();
+    let host = url.host_str().unwrap();
+
+    let username = format!("{}@{}", username, host);
+
+    Ok((
+        username,
+        ap_url.to_string(),
+        inbox_url.to_string(),
+        display_name.to_string(),
+        bio,
+    ))
+}
+
+pub async fn add_remote(
+    state: &AppState,
+    sender_ap_url: &str,
+    private_key: &str,
+    ap_url: &str,
+) -> Result<(), String> {
+    let Ok((username, ap_url, inbox_url, display_name, bio)) =
+        fetch_remote(state, sender_ap_url, private_key, ap_url).await
+    else {
+        return Err("Failed to fetch remote user".to_string());
+    };
+
+    queries::user::create(
+        state,
+        &username,
+        None,
+        &ap_url,
+        &inbox_url,
+        None,
+        None,
+        &display_name,
+        &bio,
+        &utils::date_now(),
+        &utils::date_now(),
+        0,
+    )
+    .await;
+
+    Ok(())
 }

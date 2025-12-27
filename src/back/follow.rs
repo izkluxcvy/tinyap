@@ -26,14 +26,14 @@ pub async fn deliver_follow(state: &AppState, follower_id: i64, followee_id: i64
     let followee = queries::user::get_by_id(&state, followee_id).await;
 
     let follow_id = format!("{}#follow-{}", follower.ap_url, utils::gen_unique_id());
-    let follow_json = json!({
+    let follow_activity = json!({
         "@context": "https://www.w3.org/ns/activitystreams",
         "id": follow_id,
         "type": "Follow",
         "actor": follower.ap_url,
         "object": followee.ap_url,
     });
-    let json_body = follow_json.to_string();
+    let json_body = follow_activity.to_string();
 
     let private_key = follower.private_key.unwrap();
     utils::signed_deliver(

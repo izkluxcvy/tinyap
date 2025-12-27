@@ -58,7 +58,29 @@ pub fn gen_unique_id() -> i64 {
 
     (timestamp << RANDOM_BITS) | random
 }
+pub fn strip_content(state: &AppState, content: &str) -> String {
+    let content = content.trim();
+    let content = state.re.tag.replace_all(content, "");
+    let content = content
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&#39;", "'");
 
+    let content = if content.chars().count() > state.config.max_note_chars {
+        let byte_end = content
+            .char_indices()
+            .nth(state.config.max_note_chars)
+            .unwrap()
+            .0;
+        content[..byte_end].to_string()
+    } else {
+        content
+    };
+
+    content
+}
 pub fn parse_content(content: &str) -> String {
     let escaped = tera::escape_html(content);
     escaped
@@ -88,12 +110,16 @@ pub fn local_note_ap_url(domain: &str, id: i64) -> String {
     format!("https://{}/notes/{}", domain, id)
 }
 
-async fn sign_header(
+pub async fn signed_deliver(
+    state: &AppState,
     sender_ap_url: &str,
-    private_key_pem: &str,
-    url: &str,
+    private_key: &str,
+    recipient_inbox: &str,
     body: &str,
-) -> (String, String, String) {
+) {
+    println!("Delivering to {}:\n{}", recipient_inbox, body);
+
+    // Sign
     let date = date_now_http_format();
 
     let digest_value = {
@@ -103,15 +129,15 @@ async fn sign_header(
         format!("SHA-256={}", general_purpose::STANDARD.encode(hash))
     };
 
-    let url_parsed = Url::parse(url).unwrap();
+    let url_parsed = Url::parse(recipient_inbox).unwrap();
     let host = url_parsed.host_str().unwrap();
 
     let signing_string = format!(
         "(request-target): post {}\nhost: {}\ndate: {}\ndigest: {}",
-        url, host, date, digest_value
+        recipient_inbox, host, date, digest_value
     );
 
-    let private_key = RsaPrivateKey::from_pkcs1_pem(private_key_pem).unwrap();
+    let private_key = RsaPrivateKey::from_pkcs1_pem(private_key).unwrap();
     let signing_key = SigningKey::<Sha256>::new(private_key);
 
     let signature = signing_key.sign(signing_string.as_bytes());
@@ -123,21 +149,7 @@ async fn sign_header(
         key_id, signature_b64
     );
 
-    (date, digest_value, signed_header)
-}
-
-pub async fn signed_deliver(
-    state: &AppState,
-    sender_ap_url: &str,
-    private_key: &str,
-    recipient_inbox: &str,
-    body: &str,
-) {
-    println!("Delivering to {}:\n{}", recipient_inbox, body);
-    let (date, digest, signature) =
-        sign_header(sender_ap_url, private_key, recipient_inbox, body).await;
-
-    // Background queue
+    // Deliver in background queue
     task::spawn({
         let deliver_queue = state.deliver_queue.clone();
         let http_client = state.http_client.clone();
@@ -149,11 +161,53 @@ pub async fn signed_deliver(
             let _res = http_client
                 .post(inbox)
                 .header("Date", date)
-                .header("Digest", digest)
-                .header("Signature", signature)
+                .header("Digest", digest_value)
+                .header("Signature", signed_header)
                 .body(body.to_string())
                 .send()
                 .await;
         }
     });
+}
+
+pub async fn signed_get(
+    state: &AppState,
+    sender_ap_url: &str,
+    private_key: &str,
+    url: &str,
+) -> Result<reqwest::Response, reqwest::Error> {
+    // Sign
+    let date = date_now_http_format();
+
+    let url_parsed = Url::parse(url).unwrap();
+    let host = url_parsed.host_str().unwrap();
+
+    let signing_string = format!(
+        "(request-target): get {}\nhost: {}\ndate: {}",
+        url, host, date
+    );
+
+    let private_key = RsaPrivateKey::from_pkcs1_pem(private_key).unwrap();
+    let signing_key = SigningKey::<Sha256>::new(private_key);
+
+    let signature = signing_key.sign(signing_string.as_bytes());
+    let signature_b64 = general_purpose::STANDARD.encode(signature.to_bytes());
+
+    let key_id = format!("{}#main-key", sender_ap_url);
+    let signed_header = format!(
+        r#"keyId="{}",algorithm="rsa-sha256",headers="(request-target) host date",signature="{}""#,
+        key_id, signature_b64
+    );
+
+    // Get
+    let response = state.http_client
+        .get(url)
+        .header("Host", host)
+        .header("Date", date)
+        .header("Signature", signed_header)
+        .header("Accept", "application/activity+json, application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
+        .send()
+        .await?;
+
+    Ok(response)
 }

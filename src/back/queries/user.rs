@@ -25,6 +25,14 @@ pub async fn get_by_username(state: &AppState, username: &str) -> Option<UserRec
         .unwrap()
 }
 
+pub async fn get_by_ap_url(state: &AppState, ap_url: &str) -> Option<UserRecord> {
+    query_as("SELECT * FROM users WHERE ap_url = ?")
+        .bind(ap_url)
+        .fetch_optional(&state.db_pool)
+        .await
+        .unwrap()
+}
+
 pub async fn get_by_id(state: &AppState, id: i64) -> UserRecord {
     query_as("SELECT * FROM users WHERE id = ?")
         .bind(id)
@@ -36,11 +44,11 @@ pub async fn get_by_id(state: &AppState, id: i64) -> UserRecord {
 pub async fn create(
     state: &AppState,
     username: &str,
-    password_hash: &str,
+    password_hash: Option<&str>,
     ap_url: &str,
     inbox_url: &str,
-    private_key: &str,
-    public_key: &str,
+    private_key: Option<&str>,
+    public_key: Option<&str>,
     display_name: &str,
     bio: &str,
     created_at: &str,

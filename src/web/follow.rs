@@ -22,11 +22,15 @@ pub async fn post_follow(
     let res = follow::follow(&state, auth_user.id, followee.id).await;
     match res {
         Ok(_) => {
+            // When local user
             if followee.is_local == 1 {
                 follow::approve(&state, auth_user.id, followee.id).await;
+
+            // When remote user
             } else {
                 follow::deliver_follow(&state, auth_user.id, followee.id).await;
             }
+
             return Redirect::to(&format!("/@{}", followee_username)).into_response();
         }
         Err(e) => return e.into_response(),
