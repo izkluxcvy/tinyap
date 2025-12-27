@@ -34,9 +34,9 @@ pub async fn post(
 
     let session_id = utils::gen_secure_token();
     let expires_at = utils::date_plus_days(state.config.session_ttl_days);
-    queries::create_session(&state, &session_id, &user_id, &expires_at).await;
+    queries::session::create(&state, &session_id, &user_id, &expires_at).await;
     let date_now = utils::date_now();
-    queries::delete_old_sessions(
+    queries::session::delete_old(
         &state,
         &user_id,
         &state.config.max_sessions_per_user,

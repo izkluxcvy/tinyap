@@ -58,6 +58,7 @@ pub struct Config {
     pub max_sessions_per_user: i64,
 }
 
+// Compile-time checks for database feature flags
 #[cfg(not(any(feature = "sqlite", feature = "postgres")))]
 compile_error!("sqlite or postgres feature must be enabled");
 

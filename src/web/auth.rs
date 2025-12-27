@@ -23,7 +23,7 @@ impl FromRequestParts<AppState> for AuthUser {
         };
 
         let session_id = cookie.value();
-        let session = queries::get_session(state, session_id, &utils::date_now()).await;
+        let session = queries::session::get(state, session_id, &utils::date_now()).await;
         let Some(session) = session else {
             return Err(Redirect::to("/?message=login_required"));
         };

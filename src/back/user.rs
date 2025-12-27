@@ -10,6 +10,7 @@ use rand::rngs::OsRng;
 use rsa::{RsaPrivateKey, RsaPublicKey, pkcs1::EncodeRsaPrivateKey, pkcs1::EncodeRsaPublicKey};
 
 pub async fn add_user(state: &AppState, username: &str, password: &str) -> Result<(), String> {
+    // Validation
     if username.is_empty() || password.is_empty() {
         return Err("Username and password cannot be empty".to_string());
     }
@@ -22,11 +23,12 @@ pub async fn add_user(state: &AppState, username: &str, password: &str) -> Resul
         return Err("Username can only contain alphanumeric characters".to_string());
     }
 
-    let existing = queries::get_user_by_username(state, username).await;
+    let existing = queries::user::get_by_username(state, username).await;
     if existing.is_some() {
         return Err("Username already exists".to_string());
     }
 
+    // Hash password
     let argon2 = Argon2::default();
     let salt = SaltString::generate(&mut OsRng);
     let password_hash = argon2
@@ -34,6 +36,7 @@ pub async fn add_user(state: &AppState, username: &str, password: &str) -> Resul
         .unwrap()
         .to_string();
 
+    // Generate RSA key pair
     let private_key = RsaPrivateKey::new(&mut OsRng, 2048).unwrap();
     let public_key = RsaPublicKey::from(&private_key);
 
@@ -43,11 +46,12 @@ pub async fn add_user(state: &AppState, username: &str, password: &str) -> Resul
         .to_string();
     let public_key_pem = public_key.to_pkcs1_pem(Default::default()).unwrap();
 
+    // Create user
     let ap_url = format!("https://{}/users/{}", state.domain, username);
     let inbox_url = format!("{}/inbox", ap_url);
     let created_at = utils::date_now();
 
-    queries::create_user(
+    queries::user::create(
         state,
         username,
         &password_hash,
@@ -71,15 +75,18 @@ pub async fn verify_user_password(
     username: &str,
     password: &str,
 ) -> Result<i64, ()> {
-    let user = queries::get_user_by_username(state, username).await;
+    let user = queries::user::get_by_username(state, username).await;
+    // Check user exists
     let Some(user) = user else {
         return Err(());
     };
 
+    // Check password hash exists (is local)
     let Some(stored_hash) = user.password_hash else {
         return Err(());
     };
 
+    // Verify password
     let argon2 = Argon2::default();
     let parsed_hash = PasswordHash::new(&stored_hash).unwrap();
 

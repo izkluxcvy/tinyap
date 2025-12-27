@@ -14,7 +14,19 @@ CREATE TABLE users (
 );
 
 CREATE TABLE sessions (
-    session_id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL UNIQUE,
     user_id INTEGER NOT NULL,
-    expires_at TEXT NOT NULL
+    expires_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE table notes (
+    id BIGINT PRIMARY KEY,
+    ap_id TEXT NOT NULL UNIQUE,
+    author_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    is_public INTEGER NOT NULL,
+    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
 );

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+
+<head>
+    {% include "parts/head.html" %}
+</head>
+
+<body>
+    <h3>New Note</h3>
+    <form action="/new" method="post">
+        <textarea name="content" rows="5" required></textarea><br><br>
+
+        <button type="submit">Post</button>
+    </form>
+</body>
