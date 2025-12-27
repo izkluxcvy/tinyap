@@ -43,6 +43,14 @@ pub fn parse_content(content: &str) -> String {
     escaped
 }
 
-pub fn local_note_apid(domain: &str, note_id: i64) -> String {
+pub fn local_user_ap_url(domain: &str, username: &str) -> String {
+    format!("https://{}/users/{}", domain, username)
+}
+
+pub fn local_user_inbox_url(domain: &str, username: &str) -> String {
+    format!("https://{}/users/{}/inbox", domain, username)
+}
+
+pub fn local_note_ap_url(domain: &str, note_id: i64) -> String {
     format!("https://{}/notes/{}", domain, note_id)
 }

@@ -29,7 +29,7 @@ pub async fn post(
     let user = queries::user::get_by_id(&state, user.id).await;
 
     let id = utils::gen_unique_id();
-    let ap_id = utils::local_note_apid(&state.domain, id);
+    let ap_url = utils::local_note_ap_url(&state.domain, id);
     let content = utils::parse_content(&form.content);
     let created_at = utils::date_now();
 
@@ -37,7 +37,7 @@ pub async fn post(
         return "Content cannot be empty".into_response();
     }
 
-    queries::note::create(&state, &id, &ap_id, &user.id, &content, &created_at, &1).await;
+    queries::note::create(&state, &id, &ap_url, &user.id, &content, &created_at, &1).await;
 
     Redirect::to("/home").into_response()
 }

@@ -12,7 +12,7 @@ pub async fn create(
     is_public: &i64,
 ) {
     query(
-        "INSERT INTO notes (id, ap_id, author_id, content, created_at, is_public)
+        "INSERT INTO notes (id, ap_url, author_id, content, created_at, is_public)
         VALUES (?, ?, ?, ?, ?, ?)",
     )
     .bind(id)

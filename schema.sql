@@ -23,7 +23,7 @@ CREATE TABLE sessions (
 
 CREATE table notes (
     id BIGINT PRIMARY KEY,
-    ap_id TEXT NOT NULL UNIQUE,
+    ap_url TEXT NOT NULL UNIQUE,
     author_id INTEGER NOT NULL,
     content TEXT NOT NULL,
     created_at TEXT NOT NULL,

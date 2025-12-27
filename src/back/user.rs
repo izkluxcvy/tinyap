@@ -47,8 +47,8 @@ pub async fn add_user(state: &AppState, username: &str, password: &str) -> Resul
     let public_key_pem = public_key.to_pkcs1_pem(Default::default()).unwrap();
 
     // Create user
-    let ap_url = format!("https://{}/users/{}", state.domain, username);
-    let inbox_url = format!("{}/inbox", ap_url);
+    let ap_url = utils::local_user_ap_url(&state.domain, username);
+    let inbox_url = utils::local_user_inbox_url(&state.domain, username);
     let created_at = utils::date_now();
 
     queries::user::create(
