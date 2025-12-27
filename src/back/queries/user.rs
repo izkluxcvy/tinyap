@@ -11,7 +11,7 @@ pub struct UserRecord {
     pub inbox_url: String,
     pub private_key: Option<String>,
     pub public_key: Option<String>,
-    pub display_name: Option<String>,
+    pub display_name: String,
     pub bio: String,
     pub created_at: String,
     pub updated_at: String,

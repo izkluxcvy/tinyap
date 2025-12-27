@@ -6,7 +6,9 @@ use axum::{Router, routing::get};
 use tokio::net::TcpListener;
 
 async fn activitypub_routes() -> Router<init::AppState> {
-    Router::new().route("/.well-known/webfinger", get(ap::webfinger::get))
+    Router::new()
+        .route("/.well-known/webfinger", get(ap::webfinger::get))
+        .route("/users/{username}", get(ap::actor::get))
 }
 
 #[cfg(feature = "web")]
