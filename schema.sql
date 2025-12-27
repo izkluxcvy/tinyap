@@ -22,6 +22,16 @@ CREATE TABLE sessions (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE follows (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    follower_id INTEGER NOT NULL,
+    followee_id INTEGER NOT NULL,
+    pending INTEGER NOT NULL,
+    UNIQUE(follower_id, followee_id),
+    FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (followee_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE table notes (
     id BIGINT PRIMARY KEY,
     ap_url TEXT NOT NULL UNIQUE,
@@ -32,4 +42,3 @@ CREATE table notes (
     is_public INTEGER NOT NULL,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
 );
-CREATE INDEX idx_notes_author_id ON notes(author_id);

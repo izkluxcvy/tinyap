@@ -2,7 +2,7 @@ use crate::back::init::AppState;
 
 use sqlx::{query, query_as};
 
-#[derive(sqlx::FromRow)]
+#[derive(sqlx::FromRow, serde::Serialize)]
 pub struct UserRecord {
     pub id: i64,
     pub username: String,

@@ -33,3 +33,32 @@ impl FromRequestParts<AppState> for AuthUser {
         })
     }
 }
+
+pub struct MaybeAuthUser {
+    pub id: Option<i64>,
+}
+
+impl FromRequestParts<AppState> for MaybeAuthUser {
+    type Rejection = ();
+
+    async fn from_request_parts(
+        parts: &mut Parts,
+        state: &AppState,
+    ) -> Result<Self, Self::Rejection> {
+        let jar = CookieJar::from_headers(&parts.headers);
+
+        let Some(cookie) = jar.get("session_id") else {
+            return Ok(MaybeAuthUser { id: None });
+        };
+
+        let session_id = cookie.value();
+        let session = queries::session::get(state, session_id, &utils::date_now()).await;
+        let Some(session) = session else {
+            return Ok(MaybeAuthUser { id: None });
+        };
+
+        Ok(MaybeAuthUser {
+            id: Some(session.user_id),
+        })
+    }
+}

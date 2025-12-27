@@ -1,0 +1,59 @@
+use crate::back::init::AppState;
+use crate::back::queries;
+use crate::web::auth::MaybeAuthUser;
+
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    response::{Html, IntoResponse},
+};
+
+pub async fn get(
+    State(state): State<AppState>,
+    Path(username): Path<String>,
+    auth_user: MaybeAuthUser,
+) -> impl IntoResponse {
+    // Get user
+    let user = queries::user::get_by_username(&state, &username).await;
+
+    let Some(user) = user else {
+        return (StatusCode::NOT_FOUND, "User not found").into_response();
+    };
+
+    // Get notes by user
+    let notes =
+        queries::timeline::get_user(&state, user.id, state.web_config.max_timeline_items).await;
+
+    // Check if auth user follows this user
+    // 0: not following, 1: following, 2: pending, 3: self
+    let following_status: u8;
+    if let Some(auth_user_id) = auth_user.id {
+        let follow = queries::follow::get(&state, auth_user_id, user.id).await;
+        if let Some(follow) = follow {
+            if follow.pending == 1 {
+                following_status = 2;
+            } else {
+                following_status = 1;
+            }
+        } else {
+            if auth_user_id == user.id {
+                following_status = 3;
+            } else {
+                following_status = 0;
+            }
+        }
+    } else {
+        following_status = 0;
+    }
+
+    // Rendering
+    let mut context = tera::Context::new();
+    context.insert("instance_name", &state.metadata.instance_name);
+    context.insert("timezone", &state.web_config.timezone);
+    context.insert("domain", &state.domain);
+    context.insert("user", &user);
+    context.insert("following_status", &following_status);
+    context.insert("notes", &notes);
+    let rendered = state.tera.render("user.html", &context).unwrap();
+    Html(rendered).into_response()
+}
