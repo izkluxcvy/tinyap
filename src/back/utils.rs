@@ -131,10 +131,17 @@ pub async fn signed_deliver(
 
     let url_parsed = Url::parse(recipient_inbox).unwrap();
     let host = url_parsed.host_str().unwrap();
+    let path_and_query = {
+        let full = url_parsed.path();
+        match url_parsed.query() {
+            Some(q) => format!("{}?{}", &full, q),
+            None => full.to_string(),
+        }
+    };
 
     let signing_string = format!(
         "(request-target): post {}\nhost: {}\ndate: {}\ndigest: {}",
-        recipient_inbox, host, date, digest_value
+        path_and_query, host, date, digest_value
     );
 
     let private_key = RsaPrivateKey::from_pkcs1_pem(private_key).unwrap();
@@ -163,6 +170,7 @@ pub async fn signed_deliver(
                 .header("Date", date)
                 .header("Digest", digest_value)
                 .header("Signature", signed_header)
+                .header("Content-Type", "application/activity+json")
                 .body(body.to_string())
                 .send()
                 .await;
@@ -181,10 +189,17 @@ pub async fn signed_get(
 
     let url_parsed = Url::parse(url).unwrap();
     let host = url_parsed.host_str().unwrap();
+    let path_and_query = {
+        let full = url_parsed.path();
+        match url_parsed.query() {
+            Some(q) => format!("{}?{}", &full, q),
+            None => full.to_string(),
+        }
+    };
 
     let signing_string = format!(
         "(request-target): get {}\nhost: {}\ndate: {}",
-        url, host, date
+        path_and_query, host, date
     );
 
     let private_key = RsaPrivateKey::from_pkcs1_pem(private_key).unwrap();
