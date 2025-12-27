@@ -1,3 +1,4 @@
+pub mod follow;
 pub mod init;
 pub mod note;
 pub mod queries;

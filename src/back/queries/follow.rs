@@ -4,7 +4,6 @@ use sqlx::{query, query_as};
 
 #[derive(sqlx::FromRow)]
 pub struct FollowRecord {
-    pub id: i64,
     pub follower_id: i64,
     pub followee_id: i64,
     pub pending: i64,
@@ -12,7 +11,7 @@ pub struct FollowRecord {
 
 pub async fn get(state: &AppState, follower_id: i64, followee_id: i64) -> Option<FollowRecord> {
     query_as(
-        "SELECT * FROM follows
+        "SELECT follower_id, followee_id, pending FROM follows
         WHERE follower_id = ?
         AND followee_id = ?",
     )
@@ -21,4 +20,42 @@ pub async fn get(state: &AppState, follower_id: i64, followee_id: i64) -> Option
     .fetch_optional(&state.db_pool)
     .await
     .unwrap()
+}
+
+pub async fn create(state: &AppState, follower_id: i64, followee_id: i64) {
+    query(
+        "INSERT INTO follows (follower_id, followee_id, pending)
+        VALUES (?, ?, 1)",
+    )
+    .bind(follower_id)
+    .bind(followee_id)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}
+
+pub async fn approve(state: &AppState, follower_id: i64, followee_id: i64) {
+    query(
+        "UPDATE follows SET pending = 0
+        WHERE follower_id = ?
+        AND followee_id = ?",
+    )
+    .bind(follower_id)
+    .bind(followee_id)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}
+
+pub async fn delete(state: &AppState, follower_id: i64, followee_id: i64) {
+    query(
+        "DELETE FROM follows
+        WHERE follower_id = ?
+        AND followee_id = ?",
+    )
+    .bind(follower_id)
+    .bind(followee_id)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
 }

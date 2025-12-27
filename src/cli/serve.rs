@@ -2,7 +2,10 @@ use crate::VERSION;
 use crate::activitypub as ap;
 use crate::back::init;
 
-use axum::{Router, routing::get};
+use axum::{
+    Router,
+    routing::{get, post},
+};
 use tokio::net::TcpListener;
 
 async fn activitypub_routes() -> Router<init::AppState> {
@@ -20,6 +23,8 @@ async fn web_routes() -> Router<init::AppState> {
         .route("/signup", get(web::signup::get).post(web::signup::post))
         .route("/login", get(web::login::get).post(web::login::post))
         .route("/@{username}", get(web::user::get))
+        .route("/@{username}/follow", post(web::follow::post_follow))
+        .route("/@{username}/unfollow", post(web::follow::post_unfollow))
         .route("/new", get(web::new::get).post(web::new::post))
         .route("/local", get(web::local::get))
 }
