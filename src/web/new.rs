@@ -37,7 +37,17 @@ pub async fn post(
         return "Content cannot be empty".into_response();
     }
 
-    queries::note::create(&state, &id, &ap_url, &user.id, &content, &created_at, &1).await;
+    queries::note::create(
+        &state,
+        &id,
+        &ap_url,
+        &user.id,
+        &content,
+        None,
+        &created_at,
+        &1,
+    )
+    .await;
 
     Redirect::to("/home").into_response()
 }

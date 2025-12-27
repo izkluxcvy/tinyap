@@ -20,13 +20,14 @@ pub fn gen_secure_token() -> String {
         .collect()
 }
 
-//
-// Generate a unique 64-bit ID with timestamp and random bits
-// |                       64 bits ID                       |
-// | 0 |      44 bits timestamp      |    19 bits random    |
-//
-// No worries until year 2500
-//
+/*
+*  Generate a unique 64-bit ID with timestamp and random bits
+*
+*  [                       64 bits ID                       ]
+*  [ 0 |      44 bits timestamp      |    19 bits random    ]
+*
+*  No worries until year 2500
+*/
 const EPOCH: i64 = 1735689600000; // 2025-01-01
 const RANDOM_BITS: i8 = 19;
 pub fn gen_unique_id() -> i64 {

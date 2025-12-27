@@ -19,8 +19,10 @@ fn load_config() -> HashMap<String, String> {
         let key = parts[0].trim().to_string();
         let value = parts[1]
             .trim()
-            .replace("\"", "")
-            .replace("'", "")
+            .trim_start_matches("\"")
+            .trim_end_matches("\"")
+            .trim_start_matches("'")
+            .trim_end_matches("'")
             .to_string();
         conf.insert(key, value);
     }

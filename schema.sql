@@ -26,6 +26,7 @@ CREATE table notes (
     ap_url TEXT NOT NULL UNIQUE,
     author_id INTEGER NOT NULL,
     content TEXT NOT NULL,
+    attachments TEXT,
     created_at TEXT NOT NULL,
     is_public INTEGER NOT NULL,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE

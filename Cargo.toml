@@ -4,7 +4,8 @@ version = "1.0.0-alpha"
 edition = "2024"
 
 [features]
-default = ["sqlite"]
+default = ["sqlite", "web"]
+web = []
 tls = ["axum-server/tls-rustls"]
 sqlite = ["sqlx/sqlite", "sqlx/runtime-tokio"]
 postgres = ["sqlx/postgres", "sqlx/runtime-tokio"]
