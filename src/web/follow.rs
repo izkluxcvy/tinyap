@@ -51,6 +51,9 @@ pub async fn post_unfollow(
     let res = follow::unfollow(&state, auth_user.id, followee.id).await;
     match res {
         Ok(_) => {
+            if followee.is_local == 0 {
+                follow::deliver_unfollow(&state, auth_user.id, followee.id).await;
+            }
             return Redirect::to(&format!("/@{}", followee_username)).into_response();
         }
         Err(e) => return e.into_response(),

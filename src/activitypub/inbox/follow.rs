@@ -39,11 +39,8 @@ pub async fn follow(state: &AppState, activity: &Value) {
     };
 
     // Follow
-    let res = follow::follow(&state, follower.id, followee.id).await;
-    if res.is_err() {
-        return;
-    }
-    follow::accept(&state, follower.id, followee.id).await;
+    let _ = follow::follow(&state, follower.id, followee.id).await;
+    let _ = follow::accept(&state, follower.id, followee.id).await;
 
     // Return Accept activity
     let accept_id = format!("{}#accept-{}", follower.ap_url, utils::gen_unique_id());
