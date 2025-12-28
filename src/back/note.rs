@@ -126,6 +126,7 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
             .unwrap()
     };
 
+    // Fetch parent note recursively
     if let Some(in_reply_to) = &in_reply_to {
         let existing = queries::note::get_by_ap_url(state, &in_reply_to).await;
         if existing.is_none() {
