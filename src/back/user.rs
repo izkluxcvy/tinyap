@@ -96,41 +96,38 @@ pub async fn verify_password(state: &AppState, username: &str, password: &str) -
 
 pub async fn fetch_remote(
     state: &AppState,
-    sender_ap_url: &str,
-    private_key: &str,
     ap_url: &str,
 ) -> Result<(String, String, String, String, String), String> {
     // Fetch
-    let Ok(res) = utils::signed_get(state, sender_ap_url, private_key, ap_url).await else {
+    let Ok(res) = utils::signed_get(state, ap_url).await else {
         return Err("Failed to fetch remote user".to_string());
     };
 
     // Validation
-    let Ok(res_json) = res.json::<Value>().await else {
+    let Ok(user_json) = res.json::<Value>().await else {
         return Err("Fetched object is not valid JSON".to_string());
     };
 
-    if res_json["type"] != "Person" {
+    if user_json["type"] != "Person" {
         return Err("Fetched object is not a Person".to_string());
     }
 
-    let Some(username) = res_json["preferredUsername"].as_str() else {
+    let Some(username) = user_json["preferredUsername"].as_str() else {
         return Err("Fetched object does not have a preferredUsername".to_string());
     };
 
-    let Some(ap_url) = res_json["id"].as_str() else {
+    let Some(ap_url) = user_json["id"].as_str() else {
         return Err("Fetched object does not have an id".to_string());
     };
 
-    let Some(inbox_url) = res_json["inbox"].as_str() else {
+    let Some(inbox_url) = user_json["inbox"].as_str() else {
         return Err("Fetched object does not have an inbox".to_string());
     };
 
-    let display_name = res_json["name"].as_str().unwrap_or(username);
-
+    let display_name = user_json["name"].as_str().unwrap_or(username);
     // Merge attachments to bio
-    let mut bio = res_json["summary"].as_str().unwrap_or("").to_string();
-    if let Some(attachments) = res_json["attachment"].as_array() {
+    let mut bio = user_json["summary"].as_str().unwrap_or("").to_string();
+    if let Some(attachments) = user_json["attachment"].as_array() {
         bio.push_str("\n");
         for attachment in attachments {
             if let (Some(name), Some(url)) =
@@ -157,14 +154,8 @@ pub async fn fetch_remote(
     ))
 }
 
-pub async fn add_remote(
-    state: &AppState,
-    sender_ap_url: &str,
-    private_key: &str,
-    ap_url: &str,
-) -> Result<(), String> {
-    let Ok((username, ap_url, inbox_url, display_name, bio)) =
-        fetch_remote(state, sender_ap_url, private_key, ap_url).await
+pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
+    let Ok((username, ap_url, inbox_url, display_name, bio)) = fetch_remote(state, ap_url).await
     else {
         return Err("Failed to fetch remote user".to_string());
     };
@@ -184,6 +175,17 @@ pub async fn add_remote(
         0,
     )
     .await;
+
+    Ok(())
+}
+
+pub async fn update_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
+    let Ok((_username, ap_url, _inbox_url, display_name, bio)) = fetch_remote(state, ap_url).await
+    else {
+        return Err("Failed to fetch remote user".to_string());
+    };
+
+    queries::user::update_profile(state, &ap_url, &display_name, &bio).await;
 
     Ok(())
 }

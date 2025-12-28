@@ -12,6 +12,7 @@ postgres = ["sqlx/postgres", "sqlx/runtime-tokio"]
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
+async-recursion = "1"
 axum = { version = "0.8", features = ["json"] }
 axum-extra = { version = "0.12", features = ["cookie"] }
 axum-server = { version = "0.7", features = ["tls-rustls"], optional = true }

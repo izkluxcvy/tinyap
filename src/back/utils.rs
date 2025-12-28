@@ -1,4 +1,5 @@
 use crate::back::init::AppState;
+use crate::back::queries;
 
 use base64::{Engine as _, engine::general_purpose};
 use rand::distributions::{Alphanumeric, Distribution};
@@ -33,6 +34,10 @@ pub fn date_now_http_format() -> String {
     now.format(&format).unwrap()
 }
 
+pub fn date_from_rfc3339(date_str: &str) -> OffsetDateTime {
+    OffsetDateTime::parse(date_str, &Rfc3339).unwrap()
+}
+
 // Generate a secure token with 64 random alphanumeric characters
 pub fn gen_secure_token() -> String {
     (0..64)
@@ -48,11 +53,20 @@ pub fn gen_secure_token() -> String {
 *
 *  No worries until year 2500
 */
-const EPOCH: i64 = 1735689600000; // 2025-01-01
+const EPOCH: i64 = 1514732400000; // 2018-01-01
 const RANDOM_BITS: i8 = 19;
 pub fn gen_unique_id() -> i64 {
     let now_ms = (OffsetDateTime::now_utc().unix_timestamp_nanos() / 1_000_000) as i64;
     let timestamp = now_ms - EPOCH;
+
+    let random = thread_rng().gen_range(0..(1 << RANDOM_BITS));
+
+    (timestamp << RANDOM_BITS) | random
+}
+pub fn gen_unique_id_from_date(date: &str) -> i64 {
+    let date = date_from_rfc3339(date);
+    let date_ms = (date.unix_timestamp_nanos() / 1_000_000) as i64;
+    let timestamp = date_ms - EPOCH;
 
     let random = thread_rng().gen_range(0..(1 << RANDOM_BITS));
 
@@ -186,12 +200,10 @@ pub async fn signed_deliver(
     });
 }
 
-pub async fn signed_get(
-    state: &AppState,
-    sender_ap_url: &str,
-    private_key: &str,
-    url: &str,
-) -> Result<reqwest::Response, reqwest::Error> {
+pub async fn signed_get(state: &AppState, url: &str) -> Result<reqwest::Response, reqwest::Error> {
+    let sender = queries::user::get_temp_sign_user(state).await;
+    let sender_ap_url = &sender.ap_url;
+    let private_key = sender.private_key.unwrap();
     // Sign
     let date = date_now_http_format();
 
@@ -210,7 +222,7 @@ pub async fn signed_get(
         path_and_query, host, date
     );
 
-    let private_key = RsaPrivateKey::from_pkcs1_pem(private_key).unwrap();
+    let private_key = RsaPrivateKey::from_pkcs1_pem(&private_key).unwrap();
     let signing_key = SigningKey::<Sha256>::new(private_key);
 
     let signature = signing_key.sign(signing_string.as_bytes());

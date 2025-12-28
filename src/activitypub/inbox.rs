@@ -1,4 +1,5 @@
 mod accept;
+mod create;
 mod follow;
 mod undo;
 
@@ -40,6 +41,7 @@ pub async fn post(State(state): State<AppState>, Json(activity): Json<Value>) ->
                 _ => {}
             }
         }
+        "Create" => create::note(&state, &activity).await,
         _ => {}
     }
 

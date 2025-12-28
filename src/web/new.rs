@@ -1,4 +1,5 @@
 use crate::back::init::AppState;
+use crate::back::note;
 use crate::web::auth::AuthUser;
 
 use axum::{
@@ -24,10 +25,14 @@ pub async fn post(
     user: AuthUser,
     Form(form): Form<NewNoteForm>,
 ) -> impl IntoResponse {
-    let res = crate::back::note::add(
+    let res = note::add(
         &state,
         user.id,
+        None,
+        None,
         &form.content,
+        None,
+        None,
         None,
         1, // is_public
     )

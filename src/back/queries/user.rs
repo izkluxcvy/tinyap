@@ -75,6 +75,28 @@ pub async fn create(
     .unwrap();
 }
 
+#[derive(sqlx::FromRow)]
+pub struct TempSignUserRecord {
+    pub ap_url: String,
+    pub private_key: Option<String>,
+}
+pub async fn get_temp_sign_user(state: &AppState) -> TempSignUserRecord {
+    query_as("SELECT ap_url, private_key FROM users WHERE is_local = 1 LIMIT 1")
+        .fetch_one(&state.db_pool)
+        .await
+        .unwrap()
+}
+
+pub async fn update_profile(state: &AppState, ap_url: &str, display_name: &str, bio: &str) {
+    query("UPDATE users SET display_name = ?, bio = ? WHERE ap_url = ?")
+        .bind(display_name)
+        .bind(bio)
+        .bind(ap_url)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
+}
+
 pub async fn update_date(state: &AppState, id: i64, updated_at: &str) {
     query("UPDATE users SET updated_at = ? WHERE id = ?")
         .bind(updated_at)

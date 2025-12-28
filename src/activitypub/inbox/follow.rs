@@ -26,8 +26,7 @@ pub async fn follow(state: &AppState, activity: &Value) {
         if let Some(follower) = queries::user::get_by_ap_url(&state, follower_ap_url).await {
             follower
         } else {
-            let res =
-                user::add_remote(&state, &followee.ap_url, &private_key, follower_ap_url).await;
+            let res = user::add_remote(&state, follower_ap_url).await;
             if res.is_err() {
                 return;
             }
