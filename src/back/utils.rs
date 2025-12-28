@@ -166,7 +166,7 @@ pub async fn signed_deliver(
         async move {
             let _permit = deliver_queue.acquire().await.unwrap();
 
-            let _res = http_client
+            let res = http_client
                 .post(inbox)
                 .header("Date", date)
                 .header("Digest", digest_value)
@@ -177,6 +177,11 @@ pub async fn signed_deliver(
                 .await;
 
             drop(_permit);
+
+            match res {
+                Ok(_) => {}
+                Err(e) => println!("Error delivering: {}", e),
+            }
         }
     });
 }

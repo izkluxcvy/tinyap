@@ -36,5 +36,8 @@ pub async fn add(
     // Update updated_at
     queries::user::update_date(state, author.id, &created_at).await;
 
+    // Increment note count
+    queries::user::increment_note_count(state, author.id).await;
+
     Ok(())
 }

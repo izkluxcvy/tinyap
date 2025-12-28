@@ -83,3 +83,11 @@ pub async fn update_date(state: &AppState, id: i64, updated_at: &str) {
         .await
         .unwrap();
 }
+
+pub async fn increment_note_count(state: &AppState, id: i64) {
+    query("UPDATE users SET note_count = note_count + 1 WHERE id = ?")
+        .bind(id)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
+}

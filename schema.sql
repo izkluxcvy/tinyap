@@ -10,7 +10,8 @@ CREATE TABLE users (
     bio TEXT DEFAULT '',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
-    is_local INTEGER NOT NULL
+    is_local INTEGER NOT NULL,
+    note_count INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX idx_users_is_local ON users(is_local);
 
@@ -36,9 +37,16 @@ CREATE table notes (
     id BIGINT PRIMARY KEY,
     ap_url TEXT NOT NULL UNIQUE,
     author_id INTEGER NOT NULL,
+    boosted_id BIGINT,
+    boosted_username TEXT,
     content TEXT NOT NULL,
     attachments TEXT,
+    in_reply_to TEXT,
+    parent_author_username TEXT,
     created_at TEXT NOT NULL,
     is_public INTEGER NOT NULL,
-    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+    like_count INTEGER NOT NULL DEFAULT 0,
+    boost_count INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (boosted_id) REFERENCES notes(id) ON DELETE CASCADE
 );
