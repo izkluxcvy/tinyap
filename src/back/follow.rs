@@ -46,8 +46,8 @@ pub async fn deliver_follow(state: &AppState, follower_id: i64, followee_id: i64
     .await;
 }
 
-pub async fn approve(state: &AppState, follower_id: i64, followee_id: i64) {
-    queries::follow::approve(&state, follower_id, followee_id).await;
+pub async fn accept(state: &AppState, follower_id: i64, followee_id: i64) {
+    queries::follow::accept(&state, follower_id, followee_id).await;
 }
 
 pub async fn unfollow(state: &AppState, follower_id: i64, followee_id: i64) -> Result<(), String> {

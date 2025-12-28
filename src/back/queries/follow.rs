@@ -34,7 +34,7 @@ pub async fn create(state: &AppState, follower_id: i64, followee_id: i64) {
     .unwrap();
 }
 
-pub async fn approve(state: &AppState, follower_id: i64, followee_id: i64) {
+pub async fn accept(state: &AppState, follower_id: i64, followee_id: i64) {
     query(
         "UPDATE follows SET pending = 0
         WHERE follower_id = ?

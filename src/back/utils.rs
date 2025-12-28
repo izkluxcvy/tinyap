@@ -58,6 +58,7 @@ pub fn gen_unique_id() -> i64 {
 
     (timestamp << RANDOM_BITS) | random
 }
+
 pub fn strip_content(state: &AppState, content: &str) -> String {
     let content = content.trim();
     let content = state.re.tag.replace_all(content, "");

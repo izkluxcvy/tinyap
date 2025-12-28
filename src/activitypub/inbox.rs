@@ -1,3 +1,4 @@
+mod accept;
 mod follow;
 
 use crate::back::init::AppState;
@@ -28,6 +29,7 @@ pub async fn post(State(state): State<AppState>, Json(activity): Json<Value>) ->
 
     match activity_type {
         "Follow" => follow::follow(&state, &activity).await,
+        "Accept" => accept::follow(&state, &activity).await,
         _ => {}
     }
 

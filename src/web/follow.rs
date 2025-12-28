@@ -24,7 +24,7 @@ pub async fn post_follow(
         Ok(_) => {
             // When local user
             if followee.is_local == 1 {
-                follow::approve(&state, auth_user.id, followee.id).await;
+                follow::accept(&state, auth_user.id, followee.id).await;
 
             // When remote user
             } else {
