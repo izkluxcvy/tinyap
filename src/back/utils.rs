@@ -34,10 +34,6 @@ pub fn date_now_http_format() -> String {
     now.format(&format).unwrap()
 }
 
-pub fn date_from_rfc3339(date_str: &str) -> OffsetDateTime {
-    OffsetDateTime::parse(date_str, &Rfc3339).unwrap()
-}
-
 // Generate a secure token with 64 random alphanumeric characters
 pub fn gen_secure_token() -> String {
     (0..64)
@@ -58,15 +54,6 @@ const RANDOM_BITS: i8 = 19;
 pub fn gen_unique_id() -> i64 {
     let now_ms = (OffsetDateTime::now_utc().unix_timestamp_nanos() / 1_000_000) as i64;
     let timestamp = now_ms - EPOCH;
-
-    let random = thread_rng().gen_range(0..(1 << RANDOM_BITS));
-
-    (timestamp << RANDOM_BITS) | random
-}
-pub fn gen_unique_id_from_date(date: &str) -> i64 {
-    let date = date_from_rfc3339(date);
-    let date_ms = (date.unix_timestamp_nanos() / 1_000_000) as i64;
-    let timestamp = date_ms - EPOCH;
 
     let random = thread_rng().gen_range(0..(1 << RANDOM_BITS));
 

@@ -47,7 +47,7 @@ pub async fn note(state: &AppState, activity: &Value) {
     let author = queries::user::get_by_ap_url(state, &author_ap_url)
         .await
         .unwrap();
-    let note_id = utils::gen_unique_id_from_date(&created_at);
+    let note_id = utils::gen_unique_id();
     queries::note::create(
         state,
         note_id,

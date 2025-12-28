@@ -39,6 +39,7 @@ CREATE table notes (
     author_id INTEGER NOT NULL,
     boosted_id BIGINT,
     boosted_username TEXT,
+    boosted_created_at TEXT,
     content TEXT NOT NULL,
     attachments TEXT,
     in_reply_to TEXT,
@@ -50,3 +51,4 @@ CREATE table notes (
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (boosted_id) REFERENCES notes(id) ON DELETE CASCADE
 );
+CREATE INDEX idx_notes_created_at ON notes(created_at);

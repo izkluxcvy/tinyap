@@ -110,7 +110,7 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
     };
 
     // Create
-    let note_id = utils::gen_unique_id_from_date(&created_at);
+    let note_id = utils::gen_unique_id();
     queries::note::create(
         state,
         note_id,

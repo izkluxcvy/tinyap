@@ -9,6 +9,7 @@ pub struct NoteRecord {
     pub author_id: i64,
     pub boosted_id: Option<i64>,
     pub boosted_username: Option<String>,
+    pub boosted_created_at: Option<String>,
     pub content: String,
     pub attachments: Option<String>,
     pub in_reply_to: Option<String>,
