@@ -226,6 +226,8 @@ pub async fn parse_from_json(
         return Err("Note object missing published date".to_string());
     };
 
+    let created_at = utils::date_to_utc(created_at);
+
     let is_public = {
         let Some(to_array) = note_json["to"].as_array() else {
             return Err("Note object missing to field".to_string());
@@ -243,7 +245,7 @@ pub async fn parse_from_json(
         content,
         attachments,
         in_reply_to,
-        created_at.to_string(),
+        created_at,
         is_public,
     ))
 }
