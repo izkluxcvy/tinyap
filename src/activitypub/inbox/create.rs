@@ -2,7 +2,6 @@ use crate::back::init::AppState;
 use crate::back::note;
 use crate::back::queries;
 use crate::back::user;
-use crate::back::utils;
 
 use serde_json::Value;
 
@@ -47,11 +46,9 @@ pub async fn note(state: &AppState, activity: &Value) {
     let author = queries::user::get_by_ap_url(state, &author_ap_url)
         .await
         .unwrap();
-    let note_id = utils::gen_unique_id();
-    queries::note::create(
+
+    let _ = note::add(
         state,
-        note_id,
-        &note_ap_url,
         author.id,
         None,
         None,

@@ -14,6 +14,7 @@ pub async fn add(
     attachments: Option<&str>,
     in_reply_to: Option<&str>,
     parent_author_username: Option<&str>,
+    created_at: &str,
     is_public: i64,
 ) -> Result<(), String> {
     // Get author
@@ -26,7 +27,6 @@ pub async fn add(
     if content.is_empty() {
         return Err("Content cannot be empty".to_string());
     }
-    let created_at = utils::date_now();
 
     queries::note::create(
         state,

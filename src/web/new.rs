@@ -1,5 +1,6 @@
 use crate::back::init::AppState;
 use crate::back::note;
+use crate::back::utils;
 use crate::web::auth::AuthUser;
 
 use axum::{
@@ -25,6 +26,7 @@ pub async fn post(
     user: AuthUser,
     Form(form): Form<NewNoteForm>,
 ) -> impl IntoResponse {
+    let created_at = utils::date_now();
     let res = note::add(
         &state,
         user.id,
@@ -34,6 +36,7 @@ pub async fn post(
         None,
         None,
         None,
+        &created_at,
         1, // is_public
     )
     .await;
