@@ -167,7 +167,7 @@ pub async fn signed_deliver(
         async move {
             let _permit = deliver_queue.acquire().await.unwrap();
 
-            let res = http_client
+            let _res = http_client
                 .post(inbox)
                 .header("Date", date)
                 .header("Digest", digest_value)
@@ -179,12 +179,48 @@ pub async fn signed_deliver(
 
             drop(_permit);
 
-            match res {
-                Ok(_) => {}
-                Err(e) => println!("Error delivering: {}", e),
-            }
+            // let status = _res.as_ref().unwrap().status();
+            // let body = _res.unwrap().text().await.unwrap();
+            // println!("{}, response: {}", status, body);
         }
     });
+}
+
+pub async fn deliver_to_followers(
+    state: &AppState,
+    sender_id: i64,
+    parent_inbox: Option<String>,
+    body: &str,
+) {
+    let sender = queries::user::get_by_id(state, sender_id).await;
+    let private_key = sender.private_key.unwrap();
+
+    let followers = queries::follow::get_followers(state, sender_id).await;
+    let mut already_delivered_hosts = vec![state.domain.clone()];
+    for follower in followers {
+        let url_parsed = Url::parse(&follower.inbox_url).unwrap();
+        let host = url_parsed.host_str().unwrap().to_string();
+        if !already_delivered_hosts.contains(&host) {
+            signed_deliver(
+                state,
+                &sender.ap_url,
+                &private_key,
+                &follower.inbox_url,
+                body,
+            )
+            .await;
+            already_delivered_hosts.push(host);
+        }
+    }
+
+    // Also deliver to parent author if exists
+    if let Some(parent_inbox) = parent_inbox {
+        let url_parsed = Url::parse(&parent_inbox).unwrap();
+        let host = url_parsed.host_str().unwrap().to_string();
+        if !already_delivered_hosts.contains(&host) {
+            signed_deliver(state, &sender.ap_url, &private_key, &parent_inbox, body).await;
+        }
+    }
 }
 
 pub async fn signed_get(state: &AppState, url: &str) -> Result<reqwest::Response, reqwest::Error> {

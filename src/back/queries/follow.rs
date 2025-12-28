@@ -22,6 +22,25 @@ pub async fn get(state: &AppState, follower_id: i64, followee_id: i64) -> Option
     .unwrap()
 }
 
+#[derive(sqlx::FromRow)]
+pub struct FollowerRecord {
+    pub inbox_url: String,
+}
+
+pub async fn get_followers(state: &AppState, followee_id: i64) -> Vec<FollowerRecord> {
+    query_as(
+        "SELECT users.inbox_url
+        FROM follows
+        JOIN users ON follows.follower_id = users.id
+        WHERE follows.followee_id = ?
+        AND follows.pending = 0",
+    )
+    .bind(followee_id)
+    .fetch_all(&state.db_pool)
+    .await
+    .unwrap()
+}
+
 pub async fn create(state: &AppState, follower_id: i64, followee_id: i64) {
     query(
         "INSERT INTO follows (follower_id, followee_id, pending)

@@ -42,7 +42,7 @@ pub async fn follow(state: &AppState, activity: &Value) {
     let _ = follow::accept(&state, follower.id, followee.id).await;
 
     // Return Accept activity
-    let accept_id = format!("{}#accept-{}", follower.ap_url, utils::gen_unique_id());
+    let accept_id = format!("{}#accept-{}", followee.ap_url, utils::gen_unique_id());
     let accept_activity = json!({
         "@context": "https://www.w3.org/ns/activitystreams",
         "id": accept_id,

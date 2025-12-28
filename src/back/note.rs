@@ -3,25 +3,22 @@ use crate::back::queries;
 use crate::back::user;
 use crate::back::utils;
 
-use serde_json::Value;
+use serde_json::{Value, json};
 
 pub async fn add(
     state: &AppState,
+    id: i64,
     author_id: i64,
     boosted_id: Option<i64>,
-    boosted_username: Option<&str>,
+    boosted_username: Option<String>,
     content: &str,
-    attachments: Option<&str>,
-    in_reply_to: Option<&str>,
-    parent_author_username: Option<&str>,
+    attachments: Option<String>,
+    in_reply_to: Option<String>,
+    parent_author_username: Option<String>,
     created_at: &str,
     is_public: i64,
 ) -> Result<(), String> {
-    // Get author
-    let author = queries::user::get_by_id(state, author_id).await;
-
     // Create note
-    let id = utils::gen_unique_id();
     let ap_url = utils::local_note_ap_url(&state.domain, id);
     let content = utils::parse_content(content);
     if content.is_empty() {
@@ -32,7 +29,7 @@ pub async fn add(
         state,
         id,
         &ap_url,
-        author.id,
+        author_id,
         boosted_id,
         boosted_username,
         &content,
@@ -45,12 +42,52 @@ pub async fn add(
     .await;
 
     // Update updated_at
-    queries::user::update_date(state, author.id, &created_at).await;
+    queries::user::update_date(state, author_id, &created_at).await;
 
     // Increment note count
-    queries::user::increment_note_count(state, author.id).await;
+    queries::user::increment_note_count(state, author_id).await;
 
     Ok(())
+}
+
+pub async fn create_activity(state: &AppState, id: i64, author_id: i64) -> Value {
+    let note = queries::note::get_by_id(state, id).await.unwrap();
+    let author = queries::user::get_by_id(state, author_id).await;
+    let note_page_url = utils::note_url(&state.domain, &author.username, id);
+
+    let mut note_object = json!({
+        "@context": "https://www.w3.org/ns/activitystreams",
+        "id": note.ap_url,
+        "type": "Note",
+        "attributedTo": author.ap_url,
+        "content": note.content,
+        "to": ["https://www.w3.org/ns/activitystreams#Public"],
+        "published": note.created_at,
+        "url": note_page_url,
+    });
+    if let Some(in_reply_to) = &note.in_reply_to {
+        let parent = queries::note::get_by_ap_url(state, in_reply_to)
+            .await
+            .unwrap();
+        let parent_author = queries::user::get_by_id(state, parent.author_id).await;
+        note_object["inReplyTo"] = json!(in_reply_to);
+        note_object["tag"] = json!({
+            "type": "Mention",
+            "href": parent.ap_url,
+            "name": parent_author.username,
+        });
+    }
+
+    let create_id = format!("{}#create-{}", author.ap_url, utils::gen_unique_id());
+    let create_activity = json!({
+        "@context": "https://www.w3.org/ns/activitystreams",
+        "id": create_id,
+        "type": "Create",
+        "actor": author.ap_url,
+        "object": note_object,
+    });
+
+    create_activity
 }
 
 #[async_recursion::async_recursion]
@@ -119,9 +156,9 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
         None,
         None,
         &content,
-        attachments.as_deref(),
-        in_reply_to.as_deref(),
-        parent_author_username.as_deref(),
+        attachments,
+        in_reply_to,
+        parent_author_username,
         &created_at,
         is_public,
     )

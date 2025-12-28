@@ -18,7 +18,7 @@ pub struct NoteRecord {
     pub is_public: i64,
 }
 
-pub async fn get_by_id(state: &AppState, id: &i64) -> Option<NoteRecord> {
+pub async fn get_by_id(state: &AppState, id: i64) -> Option<NoteRecord> {
     query_as("SELECT * FROM notes WHERE id = ?")
         .bind(id)
         .fetch_optional(&state.db_pool)
@@ -40,11 +40,11 @@ pub async fn create(
     ap_url: &str,
     author_id: i64,
     boosted_id: Option<i64>,
-    boosted_username: Option<&str>,
+    boosted_username: Option<String>,
     content: &str,
-    attachments: Option<&str>,
-    in_reply_to: Option<&str>,
-    parent_author_username: Option<&str>,
+    attachments: Option<String>,
+    in_reply_to: Option<String>,
+    parent_author_username: Option<String>,
     created_at: &str,
     is_public: i64,
 ) {
