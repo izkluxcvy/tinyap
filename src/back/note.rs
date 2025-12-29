@@ -13,7 +13,7 @@ pub async fn add(
     boosted_username: Option<String>,
     content: &str,
     attachments: Option<String>,
-    in_reply_to: Option<String>,
+    parent_id: Option<i64>,
     parent_author_username: Option<String>,
     created_at: &str,
     is_public: i64,
@@ -34,7 +34,7 @@ pub async fn add(
         boosted_username,
         &content,
         attachments,
-        in_reply_to,
+        parent_id,
         parent_author_username,
         &created_at,
         is_public,
@@ -65,12 +65,10 @@ pub async fn create_activity(state: &AppState, id: i64, author_id: i64) -> Value
         "published": note.created_at,
         "url": note_page_url,
     });
-    if let Some(in_reply_to) = &note.in_reply_to {
-        let parent = queries::note::get_by_ap_url(state, in_reply_to)
-            .await
-            .unwrap();
+    if let Some(parent_id) = note.parent_id {
+        let parent = queries::note::get_by_id(state, parent_id).await.unwrap();
         let parent_author = queries::user::get_by_id(state, parent.author_id).await;
-        note_object["inReplyTo"] = json!(in_reply_to);
+        note_object["inReplyTo"] = json!(parent.ap_url);
         note_object["tag"] = json!({
             "type": "Mention",
             "href": parent.ap_url,
@@ -135,14 +133,18 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
     }
 
     // Get parent author username
-    let parent_author_username = if let Some(in_reply_to) = &in_reply_to {
+    let parent_id: Option<i64>;
+    let parent_author_username: Option<String>;
+    if let Some(in_reply_to) = &in_reply_to {
         let parent = queries::note::get_by_ap_url(state, &in_reply_to)
             .await
             .unwrap();
+        parent_id = Some(parent.id);
         let parent_author = queries::user::get_by_id(state, parent.author_id).await;
-        Some(parent_author.username)
+        parent_author_username = Some(parent_author.username);
     } else {
-        None
+        parent_id = None;
+        parent_author_username = None;
     };
 
     // Create
@@ -156,7 +158,7 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
         None,
         &content,
         attachments,
-        in_reply_to,
+        parent_id,
         parent_author_username,
         &created_at,
         is_public,

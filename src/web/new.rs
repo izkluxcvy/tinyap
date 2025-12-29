@@ -11,7 +11,7 @@ use axum::{
 
 #[derive(serde::Deserialize)]
 pub struct NewNoteQuery {
-    pub in_reply_to: Option<String>,
+    pub parent_id: Option<i64>,
 }
 
 pub async fn get(
@@ -21,7 +21,7 @@ pub async fn get(
 ) -> Html<String> {
     let mut context = tera::Context::new();
     context.insert("instance_name", &state.metadata.instance_name);
-    context.insert("in_reply_to", &query.in_reply_to);
+    context.insert("parent_id", &query.parent_id);
     let rendered = state.tera.render("new.html", &context).unwrap();
 
     Html(rendered)
@@ -30,7 +30,7 @@ pub async fn get(
 #[derive(serde::Deserialize)]
 pub struct NewNoteForm {
     pub content: String,
-    pub in_reply_to: Option<String>,
+    pub parent_id: Option<i64>,
 }
 
 pub async fn post(
@@ -43,8 +43,8 @@ pub async fn post(
 
     // in_reply_to handling
     let parent_inbox: Option<String>;
-    let parent_author_username = if let Some(in_reply_to) = &form.in_reply_to {
-        let Some(parent) = queries::note::get_by_ap_url(&state, in_reply_to).await else {
+    let parent_author_username = if let Some(parent_id) = form.parent_id {
+        let Some(parent) = queries::note::get_by_id(&state, parent_id).await else {
             return "Parent note not found".into_response();
         };
         let parent_author = queries::user::get_by_id(&state, parent.author_id).await;
@@ -64,7 +64,7 @@ pub async fn post(
         None,
         &form.content,
         None,
-        form.in_reply_to,
+        form.parent_id,
         parent_author_username,
         &created_at,
         1, // is_public

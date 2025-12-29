@@ -33,14 +33,18 @@ pub async fn note(state: &AppState, activity: &Value) {
         let _ = note::add_remote(state, &in_reply_to).await;
     }
 
-    let parent_author_username = if let Some(in_reply_to) = &in_reply_to {
+    let parent_id: Option<i64>;
+    let parent_author_username: Option<String>;
+    if let Some(in_reply_to) = &in_reply_to {
         let parent = queries::note::get_by_ap_url(state, in_reply_to)
             .await
             .unwrap();
+        parent_id = Some(parent.id);
         let parent_author = queries::user::get_by_id(state, parent.author_id).await;
-        Some(parent_author.username)
+        parent_author_username = Some(parent_author.username);
     } else {
-        None
+        parent_id = None;
+        parent_author_username = None;
     };
 
     // Create note
@@ -57,7 +61,7 @@ pub async fn note(state: &AppState, activity: &Value) {
         None,
         &content,
         attachments,
-        in_reply_to,
+        parent_id,
         parent_author_username,
         &created_at,
         is_public,

@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod follow;
 pub mod index;
+pub mod like;
 pub mod local;
 pub mod login;
 pub mod new;

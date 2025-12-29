@@ -8,8 +8,8 @@
     <h3>New Note</h3>
     <form action="/new" method="post">
         <textarea name="content" rows="5" required></textarea><br><br>
-        {% if in_reply_to %}
-        <input type="hidden" name="in_reply_to" value="{{ in_reply_to }}">
+        {% if parent_id %}
+        <input type="hidden" name="parent_id" value="{{ parent_id }}">
         {% endif %}
         <button type="submit">Post</button>
     </form>

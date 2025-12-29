@@ -12,7 +12,7 @@ pub struct NoteRecord {
     pub boosted_created_at: Option<String>,
     pub content: String,
     pub attachments: Option<String>,
-    pub in_reply_to: Option<String>,
+    pub parent_id: Option<i64>,
     pub parent_author_username: Option<String>,
     pub created_at: String,
     pub is_public: i64,
@@ -43,7 +43,7 @@ pub async fn create(
     boosted_username: Option<String>,
     content: &str,
     attachments: Option<String>,
-    in_reply_to: Option<String>,
+    parent_id: Option<i64>,
     parent_author_username: Option<String>,
     created_at: &str,
     is_public: i64,
@@ -59,7 +59,7 @@ pub async fn create(
     .bind(boosted_username)
     .bind(content)
     .bind(attachments)
-    .bind(in_reply_to)
+    .bind(parent_id)
     .bind(parent_author_username)
     .bind(created_at)
     .bind(is_public)

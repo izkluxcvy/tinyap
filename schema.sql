@@ -42,13 +42,14 @@ CREATE table notes (
     boosted_created_at TEXT,
     content TEXT NOT NULL,
     attachments TEXT,
-    in_reply_to TEXT,
+    parent_id BIGINT,
     parent_author_username TEXT,
     created_at TEXT NOT NULL,
     is_public INTEGER NOT NULL,
     like_count INTEGER NOT NULL DEFAULT 0,
     boost_count INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (boosted_id) REFERENCES notes(id) ON DELETE CASCADE
+    FOREIGN KEY (boosted_id) REFERENCES notes(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES notes(id) ON DELETE CASCADE
 );
 CREATE INDEX idx_notes_created_at ON notes(created_at);
