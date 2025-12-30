@@ -19,9 +19,17 @@ pub async fn get(
     Query(query): Query<NewNoteQuery>,
     _user: AuthUser,
 ) -> Html<String> {
+    let parent = if let Some(parent_id) = query.parent_id {
+        queries::note::get_with_author_by_id(&state, parent_id).await
+    } else {
+        None
+    };
+
     let mut context = tera::Context::new();
     context.insert("instance_name", &state.metadata.instance_name);
     context.insert("parent_id", &query.parent_id);
+    context.insert("parent", &parent);
+    context.insert("timezone", &state.web_config.timezone);
     let rendered = state.tera.render("new.html", &context).unwrap();
 
     Html(rendered)

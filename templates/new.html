@@ -6,6 +6,12 @@
 
 <body>
     <h3>New Note</h3>
+
+    {% if parent %}
+    <pre><a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.display_name }}@{{ parent.username }}</a> (<a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
+{{ parent.content | safe }}
+---Reply---</pre>
+    {% endif %}
     <form action="/new" method="post">
         <textarea name="content" rows="5" required></textarea><br><br>
         {% if parent_id %}

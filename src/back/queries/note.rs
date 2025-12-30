@@ -34,6 +34,54 @@ pub async fn get_by_ap_url(state: &AppState, ap_url: &str) -> Option<NoteRecord>
         .unwrap()
 }
 
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct NoteWithAuthorRecord {
+    pub display_name: String,
+    pub username: String,
+    pub id: i64,
+    pub boosted_id: Option<i64>,
+    pub boosted_username: Option<String>,
+    pub boosted_created_at: Option<String>,
+    pub content: String,
+    pub attachments: Option<String>,
+    pub parent_id: Option<i64>,
+    pub parent_author_username: Option<String>,
+    pub created_at: String,
+    pub is_public: i64,
+}
+
+pub async fn get_with_author_by_id(state: &AppState, id: i64) -> Option<NoteWithAuthorRecord> {
+    query_as(
+        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public
+        FROM notes AS n
+        JOIN users AS u ON n.author_id = u.id
+        WHERE n.id = ?"
+    )
+    .bind(id)
+    .fetch_optional(&state.db_pool)
+    .await
+    .unwrap()
+}
+
+pub async fn get_replies_by_parent_id(
+    state: &AppState,
+    parent_id: i64,
+) -> Vec<NoteWithAuthorRecord> {
+    query_as(
+        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public
+        FROM notes AS n
+        JOIN users AS u ON n.author_id = u.id
+        WHERE n.parent_id = ?
+        AND n.is_public = 1
+        AND n.boosted_id IS NULL
+        ORDER BY n.created_at ASC",
+    )
+    .bind(parent_id)
+    .fetch_all(&state.db_pool)
+    .await
+    .unwrap()
+}
+
 pub async fn create(
     state: &AppState,
     id: i64,
@@ -49,7 +97,7 @@ pub async fn create(
     is_public: i64,
 ) {
     query(
-        "INSERT INTO notes (id, ap_url, author_id, boosted_id, boosted_username, content, attachments, in_reply_to, parent_author_username, created_at, is_public)
+        "INSERT INTO notes (id, ap_url, author_id, boosted_id, boosted_username, content, attachments, parent_id, parent_author_username, created_at, is_public)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(id)

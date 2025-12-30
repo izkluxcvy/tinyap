@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+
+<head>
+    {% include "parts/head.html" %}
+    <title>{{ note.display_name }}@{{ note.username }}: {{ note.content }} - {{ instance_name }}</title>
+</head>
+
+<body>
+    <h3>Note Detail</h3>
+
+    <hr>
+    <pre>{% if parent %}<a href="/@{{ parent.username }}">{{ parent.display_name }}@{{ parent.username }}</a> (<a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
+{% if parent.parent_id %}<small>Reply to <a href="/@{{ parent.parent_author_username }}">@{{ parent.parent_author_username }}</a></small>
+{% endif %}{{ parent.content | safe }}
+<hr>---Reply---
+{% endif %}<a href="/@{{ note.username }}">{{ note.display_name }}@{{ note.username }}</a> (<a href="/@{{ note.username }}/{{ note.id }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
+{{ note.content | safe }}</pre>
+
+    <a href="/new?parent_id={{ note.id }}">Reply</a>
+
+    {% if replies %}
+    <pre><hr>---Replies---</pre>
+    {% for reply in replies %}
+    <pre><a href="/@{{ reply.username }}">{{ reply.display_name }}@{{ reply.username }}</a> (<a href="/@{{ reply.username }}/{{ reply.id }}">{{ reply.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
+{{ reply.content | safe }}</pre>
+    {% endfor %}
+    {% endif %}
+</body>

@@ -10,7 +10,8 @@
 
     {% for note in notes %}
     <pre><hr><a href="/@{{ note.username }}">{{ note.display_name }}@{{ note.username }}</a> (<a href="/@{{ note.username }}/{{ note.id }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
-{{ note.content | safe }}</pre>
+{% if note.parent_id %}<small>Reply to <a href="/@{{ note.parent_author_username }}">@{{ note.parent_author_username }}</a></small>
+{% endif %}{{ note.content | safe }}</pre>
     {% else %}
     <pre>No notes yet.</pre>
     {% endfor %}

@@ -31,6 +31,19 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> impl Int
             .into_response();
     }
 
+    let parent_ap_url = if let Some(parent_id) = note.parent_id {
+        let Some(parent) = queries::note::get_by_id(&state, parent_id).await else {
+            return (
+                StatusCode::NOT_FOUND,
+                Json(json!({"error": "parent note not found"})),
+            )
+                .into_response();
+        };
+        Some(parent.ap_url)
+    } else {
+        None
+    };
+
     // Get author
     let author = queries::user::get_by_id(&state, note.author_id).await;
 
@@ -47,6 +60,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> impl Int
         "url": &utils::note_url(&state.domain, &author.username, note.id),
         "attributedTo": &author.ap_url,
         "content": &note.content,
+        "inReplyTo": &parent_ap_url,
         "published": &note.created_at,
         "to": ["https://www.w3.org/ns/activitystreams#Public"],
     });
