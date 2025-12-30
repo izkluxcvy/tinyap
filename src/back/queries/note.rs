@@ -7,13 +7,8 @@ pub struct NoteRecord {
     pub id: i64,
     pub ap_url: String,
     pub author_id: i64,
-    pub boosted_id: Option<i64>,
-    pub boosted_username: Option<String>,
-    pub boosted_created_at: Option<String>,
     pub content: String,
-    pub attachments: Option<String>,
     pub parent_id: Option<i64>,
-    pub parent_author_username: Option<String>,
     pub created_at: String,
     pub is_public: i64,
 }

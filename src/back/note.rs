@@ -212,7 +212,7 @@ pub async fn parse_from_json(
         for attachment in note_attachments {
             if let Some(url) = attachment["url"].as_str() {
                 attachments.as_mut().unwrap().push_str(url);
-                attachments.as_mut().unwrap().push_str(",");
+                attachments.as_mut().unwrap().push_str("\n");
             }
         }
     }
