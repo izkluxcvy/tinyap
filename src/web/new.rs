@@ -47,6 +47,7 @@ pub async fn post(
     Form(form): Form<NewNoteForm>,
 ) -> impl IntoResponse {
     let id = utils::gen_unique_id();
+    let ap_url = utils::local_note_ap_url(&state.domain, id);
     let created_at = utils::date_now();
 
     // in_reply_to handling
@@ -64,6 +65,7 @@ pub async fn post(
     let res = note::add(
         &state,
         id,
+        &ap_url,
         user.id,
         &form.content,
         None,

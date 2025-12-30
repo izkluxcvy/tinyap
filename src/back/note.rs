@@ -8,6 +8,7 @@ use serde_json::{Value, json};
 pub async fn add(
     state: &AppState,
     id: i64,
+    ap_url: &str,
     author_id: i64,
     content: &str,
     attachments: Option<String>,
@@ -17,7 +18,6 @@ pub async fn add(
     is_public: i64,
 ) -> Result<(), String> {
     // Create note
-    let ap_url = utils::local_note_ap_url(&state.domain, id);
     let content = utils::parse_content(content);
     if content.is_empty() {
         return Err("Content cannot be empty".to_string());
@@ -26,7 +26,7 @@ pub async fn add(
     queries::note::create(
         state,
         id,
-        &ap_url,
+        ap_url,
         author_id,
         &content,
         attachments,

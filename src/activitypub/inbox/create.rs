@@ -56,6 +56,7 @@ pub async fn note(state: &AppState, activity: &Value) {
     let _ = note::add(
         state,
         id,
+        &note_ap_url,
         author.id,
         &content,
         attachments,
