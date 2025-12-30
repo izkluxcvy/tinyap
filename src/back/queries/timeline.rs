@@ -5,7 +5,7 @@ use sqlx::query_as;
 
 pub async fn get_user(state: &AppState, user_id: i64, limit: i64) -> Vec<NoteWithAuthorRecord> {
     query_as(
-        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public
+        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
         FROM notes AS n
         JOIN users AS u ON n.author_id = u.id
         WHERE u.id = ?
@@ -22,7 +22,7 @@ pub async fn get_user(state: &AppState, user_id: i64, limit: i64) -> Vec<NoteWit
 
 pub async fn get_local(state: &AppState, limit: i64) -> Vec<NoteWithAuthorRecord> {
     query_as(
-        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public
+        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
         FROM notes AS n
         JOIN users AS u ON n.author_id = u.id
         WHERE u.is_local = 1
