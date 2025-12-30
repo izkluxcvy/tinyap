@@ -57,8 +57,6 @@ pub async fn note(state: &AppState, activity: &Value) {
         state,
         id,
         author.id,
-        None,
-        None,
         &content,
         attachments,
         parent_id,

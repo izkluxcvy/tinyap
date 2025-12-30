@@ -1,4 +1,5 @@
 pub mod auth;
+pub mod boost;
 pub mod follow;
 pub mod index;
 pub mod like;

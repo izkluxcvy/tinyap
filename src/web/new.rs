@@ -50,16 +50,13 @@ pub async fn post(
     let created_at = utils::date_now();
 
     // in_reply_to handling
-    let parent_inbox: Option<String>;
     let parent_author_username = if let Some(parent_id) = form.parent_id {
         let Some(parent) = queries::note::get_by_id(&state, parent_id).await else {
             return "Parent note not found".into_response();
         };
         let parent_author = queries::user::get_by_id(&state, parent.author_id).await;
-        parent_inbox = Some(parent_author.inbox_url.clone());
         Some(parent_author.username)
     } else {
-        parent_inbox = None;
         None
     };
 
@@ -68,8 +65,6 @@ pub async fn post(
         &state,
         id,
         user.id,
-        None,
-        None,
         &form.content,
         None,
         form.parent_id,
@@ -85,9 +80,7 @@ pub async fn post(
     }
 
     // Deliver to followers and parent
-    let create_activity = note::create_activity(&state, id, user.id).await;
-    let json_body = create_activity.to_string();
-    utils::deliver_to_followers(&state, user.id, parent_inbox, &json_body).await;
+    note::deliver_create(&state, id, user.id).await;
 
     Redirect::to("/home").into_response()
 }

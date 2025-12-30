@@ -30,6 +30,8 @@ async fn web_routes() -> Router<init::AppState> {
         .route("/@{username}/{id}", get(web::note::get))
         .route("/@{username}/{id}/like", post(web::like::post_like))
         .route("/@{username}/{id}/unlike", post(web::like::post_unlike))
+        .route("/@{username}/{id}/boost", post(web::boost::post_boost))
+        .route("/@{username}/{id}/unboost", post(web::boost::post_unboost))
         .route("/local", get(web::local::get))
 }
 

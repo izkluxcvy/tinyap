@@ -1,3 +1,4 @@
+pub mod boost;
 pub mod follow;
 pub mod init;
 pub mod like;

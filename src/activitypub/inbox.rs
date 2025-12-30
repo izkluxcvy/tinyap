@@ -1,4 +1,5 @@
 mod accept;
+mod announce;
 mod create;
 mod follow;
 mod like;
@@ -34,6 +35,7 @@ pub async fn post(State(state): State<AppState>, Json(activity): Json<Value>) ->
         "Follow" => follow::follow(&state, &activity).await,
         "Accept" => accept::follow(&state, &activity).await,
         "Like" => like::like(&state, &activity).await,
+        "Announce" => announce::announce(&state, &activity).await,
         "Undo" => {
             let Some(undo_type) = activity["object"]["type"].as_str() else {
                 return (StatusCode::BAD_REQUEST, "missing undo type").into_response();
@@ -41,6 +43,7 @@ pub async fn post(State(state): State<AppState>, Json(activity): Json<Value>) ->
             match undo_type {
                 "Follow" => undo::follow(&state, &activity).await,
                 "Like" => undo::like(&state, &activity).await,
+                "Announce" => undo::announce(&state, &activity).await,
                 _ => {}
             }
         }

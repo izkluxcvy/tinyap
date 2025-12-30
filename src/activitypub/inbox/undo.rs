@@ -1,3 +1,4 @@
+use crate::back::boost;
 use crate::back::follow;
 use crate::back::init::AppState;
 use crate::back::like;
@@ -47,4 +48,27 @@ pub async fn like(state: &AppState, activity: &Value) {
 
     // Unlike
     like::unlike(state, liker.id, note.id).await;
+}
+
+pub async fn announce(state: &AppState, activity: &Value) {
+    // Extract actor and object
+    let Some(booster_ap_url) = activity["object"]["actor"].as_str() else {
+        return;
+    };
+    let Some(note_ap_url) = activity["object"]["object"].as_str() else {
+        return;
+    };
+
+    // Get user
+    let Some(booster) = queries::user::get_by_ap_url(state, booster_ap_url).await else {
+        return;
+    };
+
+    // Get note
+    let Some(note) = queries::note::get_by_ap_url(state, note_ap_url).await else {
+        return;
+    };
+
+    // Undo boost
+    let _ = boost::unboost(state, booster.id, note.id).await;
 }

@@ -8,7 +8,9 @@ pub struct NoteRecord {
     pub ap_url: String,
     pub author_id: i64,
     pub content: String,
+    pub attachments: Option<String>,
     pub parent_id: Option<i64>,
+    pub parent_author_username: Option<String>,
     pub created_at: String,
     pub is_public: i64,
 }
@@ -84,8 +86,6 @@ pub async fn create(
     id: i64,
     ap_url: &str,
     author_id: i64,
-    boosted_id: Option<i64>,
-    boosted_username: Option<String>,
     content: &str,
     attachments: Option<String>,
     parent_id: Option<i64>,
@@ -94,14 +94,12 @@ pub async fn create(
     is_public: i64,
 ) {
     query(
-        "INSERT INTO notes (id, ap_url, author_id, boosted_id, boosted_username, content, attachments, parent_id, parent_author_username, created_at, is_public)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO notes (id, ap_url, author_id, content, attachments, parent_id, parent_author_username, created_at, is_public)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(id)
     .bind(ap_url)
     .bind(author_id)
-    .bind(boosted_id)
-    .bind(boosted_username)
     .bind(content)
     .bind(attachments)
     .bind(parent_id)
@@ -130,6 +128,30 @@ pub async fn decrement_like_count(state: &AppState, id: i64) {
         "UPDATE notes
         SET like_count = like_count - 1
         WHERE id = ? AND like_count > 0",
+    )
+    .bind(id)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}
+
+pub async fn increment_boost_count(state: &AppState, id: i64) {
+    query(
+        "UPDATE notes
+        SET boost_count = boost_count + 1
+        WHERE id = ?",
+    )
+    .bind(id)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}
+
+pub async fn decrement_boost_count(state: &AppState, id: i64) {
+    query(
+        "UPDATE notes
+        SET boost_count = boost_count - 1
+        WHERE id = ? AND boost_count > 0",
     )
     .bind(id)
     .execute(&state.db_pool)

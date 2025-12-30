@@ -9,8 +9,6 @@ pub async fn add(
     state: &AppState,
     id: i64,
     author_id: i64,
-    boosted_id: Option<i64>,
-    boosted_username: Option<String>,
     content: &str,
     attachments: Option<String>,
     parent_id: Option<i64>,
@@ -30,8 +28,6 @@ pub async fn add(
         id,
         &ap_url,
         author_id,
-        boosted_id,
-        boosted_username,
         &content,
         attachments,
         parent_id,
@@ -50,7 +46,7 @@ pub async fn add(
     Ok(())
 }
 
-pub async fn create_activity(state: &AppState, id: i64, author_id: i64) -> Value {
+pub async fn deliver_create(state: &AppState, id: i64, author_id: i64) {
     let note = queries::note::get_by_id(state, id).await.unwrap();
     let author = queries::user::get_by_id(state, author_id).await;
     let note_page_url = utils::note_url(&state.domain, &author.username, id);
@@ -65,15 +61,19 @@ pub async fn create_activity(state: &AppState, id: i64, author_id: i64) -> Value
         "published": note.created_at,
         "url": note_page_url,
     });
+    let parent_inbox_url: Option<String>;
     if let Some(parent_id) = note.parent_id {
         let parent = queries::note::get_by_id(state, parent_id).await.unwrap();
         let parent_author = queries::user::get_by_id(state, parent.author_id).await;
+        parent_inbox_url = Some(parent_author.inbox_url.clone());
         note_object["inReplyTo"] = json!(parent.ap_url);
         note_object["tag"] = json!({
             "type": "Mention",
             "href": parent.ap_url,
             "name": parent_author.username,
         });
+    } else {
+        parent_inbox_url = None;
     }
 
     let create_id = format!("{}#create-{}", author.ap_url, utils::gen_unique_id());
@@ -84,8 +84,9 @@ pub async fn create_activity(state: &AppState, id: i64, author_id: i64) -> Value
         "actor": author.ap_url,
         "object": note_object,
     });
+    let json_body = create_activity.to_string();
 
-    create_activity
+    utils::deliver_to_followers(state, author_id, parent_inbox_url, &json_body).await;
 }
 
 #[async_recursion::async_recursion]
@@ -154,8 +155,6 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
         note_id,
         &note_ap_url,
         author.id,
-        None,
-        None,
         &content,
         attachments,
         parent_id,

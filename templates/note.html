@@ -32,6 +32,16 @@
     </form>
     {% endif %}
 
+    {% if is_boosted %}
+    <form action="/@{{ note.username }}/{{ note.id }}/unboost" method="post">
+        <button type="submit">Unboost ({{ note.boost_count }})</button>
+    </form>
+    {% else %}
+    <form action="/@{{ note.username }}/{{ note.id }}/boost" method="post">
+        <button type="submit">Boost ({{ note.boost_count }})</button>
+    </form>
+    {% endif %}
+
     {% if replies %}
     <pre><hr>---Replies---</pre>
     {% for reply in replies %}
