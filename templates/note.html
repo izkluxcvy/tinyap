@@ -18,6 +18,16 @@
 
     <a href="/new?parent_id={{ note.id }}">Reply</a>
 
+    {% if is_liked %}
+    <form action="/@{{ note.username }}/{{ note.id }}/unlike" method="post">
+        <button type="submit">Unlike ({{ note.like_count }})</button>
+    </form>
+    {% else %}
+    <form action="/@{{ note.username }}/{{ note.id }}/like" method="post">
+        <button type="submit">Like ({{ note.like_count }})</button>
+    </form>
+    {% endif %}
+
     {% if replies %}
     <pre><hr>---Replies---</pre>
     {% for reply in replies %}

@@ -4,8 +4,6 @@ use sqlx::{query, query_as};
 
 #[derive(sqlx::FromRow)]
 pub struct FollowRecord {
-    pub follower_id: i64,
-    pub followee_id: i64,
     pub pending: i64,
 }
 

@@ -22,7 +22,7 @@ pub async fn get(
         return "Author not found".into_response();
     };
 
-    // Check if private note
+    // Check privacy
     if note.is_public == 0 {
         if let Some(auth_user_id) = user.id {
             let Some(_follow) = queries::follow::get(&state, auth_user_id, author.id).await else {
@@ -31,6 +31,18 @@ pub async fn get(
         } else {
             return "Private note".into_response();
         }
+    }
+
+    // Check is_liked
+    let is_liked: bool;
+    if let Some(auth_user_id) = user.id {
+        if let Some(_like) = queries::like::get(&state, auth_user_id, note.id).await {
+            is_liked = true;
+        } else {
+            is_liked = false;
+        }
+    } else {
+        is_liked = false;
     }
 
     // Get parent
@@ -48,6 +60,7 @@ pub async fn get(
     context.insert("timezone", &state.web_config.timezone);
     context.insert("parent", &parent);
     context.insert("note", &note);
+    context.insert("is_liked", &is_liked);
     context.insert("replies", &replies);
     let rendered = state.tera.render("note.html", &context).unwrap();
 

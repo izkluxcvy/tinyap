@@ -53,3 +53,12 @@ CREATE table notes (
     FOREIGN KEY (parent_id) REFERENCES notes(id) ON DELETE CASCADE
 );
 CREATE INDEX idx_notes_created_at ON notes(created_at);
+
+CREATE TABLE likes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    note_id BIGINT NOT NULL,
+    UNIQUE(user_id, note_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
+)

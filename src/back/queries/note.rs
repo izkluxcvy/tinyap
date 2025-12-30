@@ -48,11 +48,13 @@ pub struct NoteWithAuthorRecord {
     pub parent_author_username: Option<String>,
     pub created_at: String,
     pub is_public: i64,
+    pub like_count: i64,
+    pub boost_count: i64,
 }
 
 pub async fn get_with_author_by_id(state: &AppState, id: i64) -> Option<NoteWithAuthorRecord> {
     query_as(
-        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public
+        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
         FROM notes AS n
         JOIN users AS u ON n.author_id = u.id
         WHERE n.id = ?"
@@ -68,7 +70,7 @@ pub async fn get_replies_by_parent_id(
     parent_id: i64,
 ) -> Vec<NoteWithAuthorRecord> {
     query_as(
-        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public
+        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
         FROM notes AS n
         JOIN users AS u ON n.author_id = u.id
         WHERE n.parent_id = ?
@@ -111,6 +113,30 @@ pub async fn create(
     .bind(parent_author_username)
     .bind(created_at)
     .bind(is_public)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}
+
+pub async fn increment_like_count(state: &AppState, id: i64) {
+    query(
+        "UPDATE notes
+        SET like_count = like_count + 1
+        WHERE id = ?",
+    )
+    .bind(id)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}
+
+pub async fn decrement_like_count(state: &AppState, id: i64) {
+    query(
+        "UPDATE notes
+        SET like_count = like_count - 1
+        WHERE id = ? AND like_count > 0",
+    )
+    .bind(id)
     .execute(&state.db_pool)
     .await
     .unwrap();
