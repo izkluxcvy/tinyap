@@ -137,12 +137,14 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
     let parent_id: Option<i64>;
     let parent_author_username: Option<String>;
     if let Some(in_reply_to) = &in_reply_to {
-        let parent = queries::note::get_by_ap_url(state, &in_reply_to)
-            .await
-            .unwrap();
-        parent_id = Some(parent.id);
-        let parent_author = queries::user::get_by_id(state, parent.author_id).await;
-        parent_author_username = Some(parent_author.username);
+        if let Some(parent) = queries::note::get_by_ap_url(state, &in_reply_to).await {
+            parent_id = Some(parent.id);
+            let parent_author = queries::user::get_by_id(state, parent.author_id).await;
+            parent_author_username = Some(parent_author.username);
+        } else {
+            parent_id = None;
+            parent_author_username = None;
+        };
     } else {
         parent_id = None;
         parent_author_username = None;
