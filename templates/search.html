@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+
+<head>
+    {% include "parts/head.html" %}
+</head>
+
+<body>
+    <h3>Search</h3>
+
+    <form action="/search" method="post">
+        <input type="text" name="q" required><br><br>
+        <button type="submit">Search</button>
+    </form>
+
+    <pre>`@user@example.com` for searching user,
+`https://example.com/notes/123` for searching note.</pre>
+
+</body>

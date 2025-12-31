@@ -4,5 +4,6 @@ pub mod init;
 pub mod like;
 pub mod note;
 pub mod queries;
+pub mod search;
 pub mod user;
 pub mod utils;

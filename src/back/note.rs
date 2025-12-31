@@ -90,10 +90,10 @@ pub async fn deliver_create(state: &AppState, id: i64, author_id: i64) {
 }
 
 #[async_recursion::async_recursion]
-pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
+pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<i64, String> {
     // Check if already exists
-    if let Some(_existing) = queries::note::get_by_ap_url(state, ap_url).await {
-        return Ok(());
+    if let Some(existing) = queries::note::get_by_ap_url(state, ap_url).await {
+        return Ok(existing.id);
     }
 
     // Fetch
@@ -166,7 +166,7 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
     // Increment note count
     queries::user::increment_note_count(state, author.id).await;
 
-    Ok(())
+    Ok(note_id)
 }
 
 pub async fn parse_from_json(
