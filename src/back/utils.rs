@@ -228,14 +228,16 @@ pub async fn deliver_to_followers(
     }
 }
 
-pub async fn signed_get(state: &AppState, url: &str) -> Result<reqwest::Response, reqwest::Error> {
+pub async fn signed_get(state: &AppState, url: &str) -> Result<reqwest::Response, String> {
     let sender = queries::user::get_temp_sign_user(state).await;
     let sender_ap_url = &sender.ap_url;
     let private_key = sender.private_key.unwrap();
     // Sign
     let date = date_now_http_format();
 
-    let url_parsed = Url::parse(url).unwrap();
+    let Ok(url_parsed) = Url::parse(url) else {
+        return Err("Invalid URL".to_string());
+    };
     let host = url_parsed.host_str().unwrap();
     let path_and_query = {
         let full = url_parsed.path();
@@ -263,14 +265,17 @@ pub async fn signed_get(state: &AppState, url: &str) -> Result<reqwest::Response
     );
 
     // Get
-    let response = state.http_client
+    let res = state.http_client
         .get(url)
         .header("Host", host)
         .header("Date", date)
         .header("Signature", signed_header)
         .header("Accept", "application/activity+json, application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
         .send()
-        .await?;
+        .await;
 
-    Ok(response)
+    match res {
+        Ok(response) => Ok(response),
+        Err(e) => Err(format!("HTTP GET error: {}", e)),
+    }
 }
