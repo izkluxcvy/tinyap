@@ -52,6 +52,9 @@ CREATE table notes (
     FOREIGN KEY (boosted_id) REFERENCES notes(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_id) REFERENCES notes(id) ON DELETE CASCADE
 );
+CREATE INDEX idx_notes_author_id ON notes(author_id);
+CREATE INDEX idx_notes_boosted_id ON notes(boosted_id);
+CREATE INDEX idx_notes_parent_id ON notes(parent_id);
 CREATE INDEX idx_notes_created_at ON notes(created_at);
 
 CREATE TABLE likes (
@@ -74,4 +77,5 @@ CREATE TABLE notifications (
     FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
 );
+CREATE INDEX idx_notifications_recipient_id ON notifications(recipient_id);
 CREATE INDEX idx_notifications_created_at ON notifications(created_at);
