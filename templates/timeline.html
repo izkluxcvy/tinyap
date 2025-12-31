@@ -6,6 +6,8 @@
 </head>
 
 <body>
+    {% include "parts/header.html" %}
+
     <h3>{{ title }}</h3>
 
     {% for note in notes %}{% if note.boosted_id %}

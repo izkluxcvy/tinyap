@@ -6,6 +6,8 @@
 </head>
 
 <body>
+    {% include "parts/header.html" %}
+
     <h3>{{ user.display_name }}@{{ user.username }}{% if user.is_local %}<small>@{{ domain }}</small>{% endif %}</h3>
 
     <pre>{{ user.bio }}
