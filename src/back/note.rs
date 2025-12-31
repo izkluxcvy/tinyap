@@ -127,10 +127,7 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
 
     // Fetch parent note recursively
     if let Some(in_reply_to) = &in_reply_to {
-        let res = add_remote(state, &in_reply_to).await;
-        if let Err(_) = res {
-            return Err("Failed to fetch conversation notes".to_string());
-        };
+        let _res = add_remote(state, &in_reply_to).await;
     }
 
     // Get parent author username
