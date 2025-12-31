@@ -158,3 +158,14 @@ pub async fn decrement_boost_count(state: &AppState, id: i64) {
     .await
     .unwrap();
 }
+
+pub async fn delete(state: &AppState, id: i64) {
+    query(
+        "DELETE FROM notes
+        WHERE id = ?",
+    )
+    .bind(id)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}

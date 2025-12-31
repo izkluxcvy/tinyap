@@ -1,6 +1,7 @@
 mod accept;
 mod announce;
 mod create;
+mod delete;
 mod follow;
 mod like;
 mod undo;
@@ -48,6 +49,7 @@ pub async fn post(State(state): State<AppState>, Json(activity): Json<Value>) ->
             }
         }
         "Create" => create::note(&state, &activity).await,
+        "Delete" => delete::note(&state, &activity).await,
         _ => {}
     }
 

@@ -251,3 +251,8 @@ pub async fn parse_from_json(
         is_public,
     ))
 }
+
+pub async fn delete(state: &AppState, id: i64) {
+    queries::note::delete(state, id).await;
+    queries::user::decrement_note_count(state, id).await;
+}

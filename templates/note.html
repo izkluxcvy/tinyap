@@ -42,6 +42,12 @@
     </form>
     {% endif %}
 
+    {% if is_you %}
+    <form action="/@{{ note.username }}/{{ note.id }}/delete" method="post">
+        <button type="submit">Delete</button>
+    </form>
+    {% endif %}
+
     {% if replies %}
     <pre><hr>---Replies---</pre>
     {% for reply in replies %}

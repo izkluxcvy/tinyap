@@ -113,3 +113,11 @@ pub async fn increment_note_count(state: &AppState, id: i64) {
         .await
         .unwrap();
 }
+
+pub async fn decrement_note_count(state: &AppState, id: i64) {
+    query("UPDATE users SET note_count = note_count - 1 WHERE id = ? AND note_count > 0")
+        .bind(id)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
+}
