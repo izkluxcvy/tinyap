@@ -2,6 +2,7 @@
 
 <head>
     {% include "parts/head.html" %}
+    <title>New Note - {{ instance_name }}</title>
 </head>
 
 <body>
@@ -10,7 +11,7 @@
     <h3>New Note</h3>
 
     {% if parent %}
-    <pre><a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.display_name }}@{{ parent.username }}</a> (<a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
+    <pre><hr><a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.display_name }}@{{ parent.username }}</a> (<a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
 {{ parent.content | safe }}{% if parent.attachments %}
 
 {{ parent.attachments | safe }}{% endif %}

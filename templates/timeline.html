@@ -8,7 +8,7 @@
 <body>
     {% include "parts/header.html" %}
 
-    <h3>{{ title }}</h3>
+    <h3>{{ title }}{% if username %} for <a href="/@{{ username }}">{{ display_name }}</a>{% endif %}</h3>
 
     {% for note in notes %}{% if note.boosted_id %}
     <pre><hr><a href="/@{{ note.username }}">{{ note.display_name }}@{{ note.username }}</a> boosted:
@@ -21,4 +21,8 @@
     {% else %}
     <pre>No notes yet.</pre>
     {% endfor %}
+
+    {% if notes | length == max_notes %}
+    <pre><a href="?until={{ until_next }}">Older Notes</a></pre>
+    {% endif %}
 </body>
