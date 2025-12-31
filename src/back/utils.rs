@@ -54,7 +54,7 @@ pub fn gen_secure_token() -> String {
 *
 *  No worries until year 2500
 */
-const EPOCH: i64 = 1514732400000; // 2018-01-01
+const EPOCH: i64 = 1767225600000; // 2026-01-01
 const RANDOM_BITS: i8 = 19;
 pub fn gen_unique_id() -> i64 {
     let now_ms = (OffsetDateTime::now_utc().unix_timestamp_nanos() / 1_000_000) as i64;
