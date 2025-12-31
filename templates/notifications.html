@@ -11,8 +11,8 @@
     <pre><hr>{{ notif.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}{% if notif.event_type == 1 %}
 <a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> followed you.{% elif notif.event_type == 2 %}
 <a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> replied to <a href="/@{{ username }}/{{ notif.note_id }}">your note</a>{% elif notif.event_type == 3 %}
-<a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> liked <a href="/@{{ notif.note_author_username }}/{{ notif.note_id }}">your note</a>{% elif notif.event_type == 4 %}
-<a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> boosted <a href="/@{{ notif.note_author_username }}/{{ notif.note_id }}">your note</a>{% endif %}</pre>
+<a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> liked <a href="/@{{ username }}/{{ notif.note_id }}">your note</a>{% elif notif.event_type == 4 %}
+<a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> boosted <a href="/@{{ username }}/{{ notif.note_id }}">your note</a>{% endif %}</pre>
     {% else %}
     <pre>No notifications yet.</pre>
     {% endfor %}
