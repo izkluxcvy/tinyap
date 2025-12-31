@@ -33,7 +33,7 @@ pub async fn get_home(
         LEFT JOIN follows AS f ON f.followee_id = u.id
         AND f.follower_id = $1
         WHERE n.created_at <= $2
-        AND (f.id = $1 OR u.id = $1)
+        AND (f.follower_id = $1 OR u.id = $1)
         ORDER BY n.created_at DESC
         LIMIT $3",
     )
