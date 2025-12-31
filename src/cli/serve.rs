@@ -33,6 +33,7 @@ async fn web_routes() -> Router<init::AppState> {
         .route("/@{username}/{id}/unlike", post(web::like::post_unlike))
         .route("/@{username}/{id}/boost", post(web::boost::post_boost))
         .route("/@{username}/{id}/unboost", post(web::boost::post_unboost))
+        .route("/notifications", get(web::notifications::get))
         .route("/local", get(web::local::get))
         .route("/search", get(web::search::get).post(web::search::post))
 }

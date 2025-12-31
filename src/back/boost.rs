@@ -1,4 +1,5 @@
 use crate::back::init::AppState;
+use crate::back::notification;
 use crate::back::queries;
 use crate::back::utils;
 
@@ -41,6 +42,16 @@ pub async fn boost(state: &AppState, user_id: i64, note_id: i64) -> Result<(), S
 
     // Increment boost count
     queries::note::increment_boost_count(state, note.id).await;
+
+    // Add notification
+    notification::add(
+        state,
+        notification::EventType::Boost,
+        user_id,
+        note.author_id,
+        Some(note.id),
+    )
+    .await;
 
     Ok(())
 }

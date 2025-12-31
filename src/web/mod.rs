@@ -8,6 +8,7 @@ pub mod local;
 pub mod login;
 pub mod new;
 pub mod note;
+pub mod notifications;
 pub mod search;
 pub mod signup;
 pub mod user;

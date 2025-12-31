@@ -1,4 +1,5 @@
 use crate::back::init::AppState;
+use crate::back::notification;
 use crate::back::queries;
 use crate::back::utils;
 
@@ -11,20 +12,30 @@ pub async fn follow(state: &AppState, follower_id: i64, followee_id: i64) -> Res
     }
 
     // Check if already following
-    let existing = queries::follow::get(&state, follower_id, followee_id).await;
+    let existing = queries::follow::get(state, follower_id, followee_id).await;
     if existing.is_some() {
         return Err("Already following or request pending".to_string());
     }
 
     // Follow
-    queries::follow::create(&state, follower_id, followee_id).await;
+    queries::follow::create(state, follower_id, followee_id).await;
+
+    // Add notification
+    notification::add(
+        state,
+        notification::EventType::Follow,
+        follower_id,
+        followee_id,
+        None,
+    )
+    .await;
 
     Ok(())
 }
 
 pub async fn deliver_follow(state: &AppState, follower_id: i64, followee_id: i64) {
-    let follower = queries::user::get_by_id(&state, follower_id).await;
-    let followee = queries::user::get_by_id(&state, followee_id).await;
+    let follower = queries::user::get_by_id(state, follower_id).await;
+    let followee = queries::user::get_by_id(state, followee_id).await;
 
     let follow_id = format!("{}#follow-{}", follower.ap_url, utils::gen_unique_id());
     let follow_activity = json!({
@@ -48,18 +59,18 @@ pub async fn deliver_follow(state: &AppState, follower_id: i64, followee_id: i64
 }
 
 pub async fn accept(state: &AppState, follower_id: i64, followee_id: i64) {
-    queries::follow::accept(&state, follower_id, followee_id).await;
+    queries::follow::accept(state, follower_id, followee_id).await;
 }
 
 pub async fn unfollow(state: &AppState, follower_id: i64, followee_id: i64) -> Result<(), String> {
     // Check if following
-    let existing = queries::follow::get(&state, follower_id, followee_id).await;
+    let existing = queries::follow::get(state, follower_id, followee_id).await;
     if existing.is_none() {
         return Err("Not following".to_string());
     }
 
     // Unfollow
-    queries::follow::delete(&state, follower_id, followee_id).await;
+    queries::follow::delete(state, follower_id, followee_id).await;
     Ok(())
 }
 

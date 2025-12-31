@@ -1,4 +1,5 @@
 use crate::back::init::AppState;
+use crate::back::notification;
 use crate::back::queries;
 use crate::back::user;
 use crate::back::utils;
@@ -42,6 +43,19 @@ pub async fn add(
 
     // Increment note count
     queries::user::increment_note_count(state, author_id).await;
+
+    // Add notification for reply
+    if let Some(parent_id) = parent_id {
+        let parent = queries::note::get_by_id(state, parent_id).await.unwrap();
+        notification::add(
+            state,
+            notification::EventType::Reply,
+            author_id,
+            parent.author_id,
+            Some(parent_id),
+        )
+        .await;
+    }
 
     Ok(())
 }

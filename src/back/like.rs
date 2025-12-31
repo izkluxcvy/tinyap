@@ -1,4 +1,5 @@
 use crate::back::init::AppState;
+use crate::back::notification;
 use crate::back::queries;
 use crate::back::utils;
 
@@ -11,11 +12,27 @@ pub async fn like(state: &AppState, user_id: i64, note_id: i64) -> Result<(), St
         return Err("Already liked".to_string());
     }
 
+    // Get note
+    let Some(note) = queries::note::get_by_id(state, note_id).await else {
+        return Err("Note not found".to_string());
+    };
+
     // Like
     queries::like::create(state, user_id, note_id).await;
 
     // Increment like count
     queries::note::increment_like_count(state, note_id).await;
+
+    //  Add notification
+    notification::add(
+        state,
+        notification::EventType::Like,
+        user_id,
+        note.author_id,
+        Some(note_id),
+    )
+    .await;
+
     Ok(())
 }
 

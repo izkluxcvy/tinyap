@@ -3,6 +3,7 @@ pub mod follow;
 pub mod init;
 pub mod like;
 pub mod note;
+pub mod notification;
 pub mod queries;
 pub mod search;
 pub mod user;
