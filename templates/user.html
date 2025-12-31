@@ -41,4 +41,8 @@ Joined: {{ user.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone)
     {% else %}
     <pre>No notes yet.</pre>
     {% endfor %}
+
+    {% if notes | length == max_notes %}
+    <pre><a href="?until={{ until_next }}">Older Notes</a></pre>
+    {% endif %}
 </body>

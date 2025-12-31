@@ -3,14 +3,20 @@ use crate::back::queries;
 use crate::web::auth::MaybeAuthUser;
 
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     response::{Html, IntoResponse},
 };
 
+#[derive(serde::Deserialize)]
+pub struct PageQuery {
+    until: Option<String>,
+}
+
 pub async fn get(
     State(state): State<AppState>,
     Path(username): Path<String>,
+    Query(query): Query<PageQuery>,
     auth_user: MaybeAuthUser,
 ) -> impl IntoResponse {
     // Get user
@@ -21,8 +27,15 @@ pub async fn get(
     };
 
     // Get notes by user
+    let until = query.until.unwrap_or("9999-01-01-T00:00:00Z".to_string());
     let notes =
-        queries::timeline::get_user(&state, user.id, state.web_config.max_timeline_items).await;
+        queries::timeline::get_user(&state, user.id, &until, state.web_config.max_timeline_items)
+            .await;
+    let until_next = if let Some(last_note) = notes.last() {
+        &last_note.created_at
+    } else {
+        &until
+    };
 
     // Check if auth user follows this user
     // 0: not following, 1: following, 2: pending, 3: self
@@ -54,6 +67,8 @@ pub async fn get(
     context.insert("user", &user);
     context.insert("following_status", &following_status);
     context.insert("notes", &notes);
+    context.insert("until_next", until_next);
+    context.insert("max_notes", &state.web_config.max_timeline_items);
     let rendered = state.tera.render("user.html", &context).unwrap();
     Html(rendered).into_response()
 }
