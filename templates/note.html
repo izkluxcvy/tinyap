@@ -13,12 +13,12 @@
 {% if parent.parent_id %}<small>Reply to <a href="/@{{ parent.parent_author_username }}">@{{ parent.parent_author_username }}</a></small>
 {% endif %}{{ parent.content | safe }}{% if parent.attachments %}
 
-{{ parent.attachments }}{% endif %}
+{{ parent.attachments | safe }}{% endif %}
 <hr>---Reply---
 {% endif %}<a href="/@{{ note.username }}">{{ note.display_name }}@{{ note.username }}</a> (<a href="/@{{ note.username }}/{{ note.id }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
 {{ note.content | safe }}{% if note.attachments %}
 
-{{ note.attachments }}{% endif %}</pre>
+{{ note.attachments | safe }}{% endif %}</pre>
 
     <a href="/new?parent_id={{ note.id }}">Reply</a>
 
@@ -48,7 +48,7 @@
     <pre><a href="/@{{ reply.username }}">{{ reply.display_name }}@{{ reply.username }}</a> (<a href="/@{{ reply.username }}/{{ reply.id }}">{{ reply.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
 {{ reply.content | safe }}{% if reply.attachments %}
 
-{{ reply.attachments }}{% endif %}</pre>
+{{ reply.attachments | safe }}{% endif %}</pre>
     {% endfor %}
     {% endif %}
 </body>

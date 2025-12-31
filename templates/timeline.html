@@ -15,7 +15,7 @@
 {% if note.parent_id %}<small>Reply to <a href="/@{{ note.parent_author_username }}">@{{ note.parent_author_username }}</a></small>
 {% endif %}{{ note.content | safe }}{% if note.attachments %}
 
-{{ note.attachments }}{% endif %}</pre>
+{{ note.attachments | safe }}{% endif %}</pre>
     {% else %}
     <pre>No notes yet.</pre>
     {% endfor %}

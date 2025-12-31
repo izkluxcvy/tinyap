@@ -11,7 +11,7 @@
     <pre><a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.display_name }}@{{ parent.username }}</a> (<a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
 {{ parent.content | safe }}{% if parent.attachments %}
 
-{{ parent.attachments }}{% endif %}
+{{ parent.attachments | safe }}{% endif %}
 ---Reply---</pre>
     {% endif %}
     <form action="/new" method="post">
