@@ -53,7 +53,7 @@ pub async fn deliver_follow(state: &AppState, follower_id: i64, followee_id: i64
 
     let private_key = follower.private_key.unwrap();
     utils::signed_deliver(
-        &state,
+        state,
         &follower.ap_url,
         &private_key,
         &followee.inbox_url,

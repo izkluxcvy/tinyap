@@ -67,13 +67,19 @@ pub fn gen_unique_id() -> i64 {
 
 pub fn strip_content(state: &AppState, content: &str) -> String {
     let content = content.trim();
-    let content = state.re.tag.replace_all(content, "");
+    let content = state
+        .re
+        .br
+        .replace_all(content, "\n")
+        .replace("</p><p>", "\n\n");
+    let content = state.re.tag.replace_all(&content, "");
     let content = content
         .replace("&amp;", "&")
         .replace("&lt;", "<")
         .replace("&gt;", ">")
         .replace("&quot;", "\"")
-        .replace("&#39;", "'");
+        .replace("&#39;", "'")
+        .replace("&#x2F;", "/");
 
     let content = if content.chars().count() > state.config.max_note_chars {
         let byte_end = content
@@ -88,9 +94,15 @@ pub fn strip_content(state: &AppState, content: &str) -> String {
 
     content
 }
-pub fn parse_content(content: &str) -> String {
-    let escaped = tera::escape_html(content);
-    escaped
+pub fn parse_content(state: &AppState, content: &str) -> String {
+    let content = tera::escape_html(content);
+    let content = content.replace("\n", "<br>");
+    let content = state.re.link.replace_all(
+        &content,
+        r#"<a class="link-in-note" href="$1" target="_blank" rel="nofollow noopener">$1</a>"#,
+    );
+
+    content.to_string()
 }
 
 pub fn user_url(domain: &str, username: &str) -> String {

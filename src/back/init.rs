@@ -70,7 +70,9 @@ pub struct AppState {
 
 #[derive(Clone)]
 pub struct Re {
+    pub br: Regex,
     pub tag: Regex,
+    pub link: Regex,
 }
 
 #[derive(Clone)]
@@ -180,7 +182,9 @@ pub async fn create_app_state() -> AppState {
         http_client: http_client,
         domain: domain,
         re: Re {
+            br: Regex::new(r"(?i)<br\s*/?>").unwrap(),
             tag: Regex::new(r"<[^>]+>").unwrap(),
+            link: Regex::new(r"(https?:&#x2F;&#x2F;[^\s<>()]+)").unwrap(),
         },
         metadata: Metadata {
             instance_name: instance_name,

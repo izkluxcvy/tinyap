@@ -138,7 +138,7 @@ pub async fn fetch_remote(
         }
     }
     let bio = utils::strip_content(state, &bio);
-    let bio = utils::parse_content(&bio);
+    let bio = utils::parse_content(state, &bio);
 
     let url = Url::parse(ap_url).unwrap();
     let host = url.host_str().unwrap();

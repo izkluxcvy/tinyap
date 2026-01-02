@@ -53,7 +53,7 @@ pub async fn deliver_like(state: &AppState, user_id: i64, note_id: i64) {
 
     let private_key = user.private_key.unwrap();
     utils::signed_deliver(
-        &state,
+        state,
         &user.ap_url,
         &private_key,
         &author.inbox_url,
@@ -64,7 +64,7 @@ pub async fn deliver_like(state: &AppState, user_id: i64, note_id: i64) {
 
 pub async fn unlike(state: &AppState, user_id: i64, note_id: i64) {
     // Unlike
-    queries::like::delete(&state, user_id, note_id).await;
+    queries::like::delete(state, user_id, note_id).await;
 
     // Decrement like count
     queries::note::decrement_like_count(state, note_id).await;
@@ -91,7 +91,7 @@ pub async fn deliver_unlilke(state: &AppState, user_id: i64, note_id: i64) {
 
     let private_key = user.private_key.unwrap();
     utils::signed_deliver(
-        &state,
+        state,
         &user.ap_url,
         &private_key,
         &author.inbox_url,

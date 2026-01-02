@@ -19,7 +19,7 @@ pub async fn add(
     is_public: i64,
 ) -> Result<(), String> {
     // Create note
-    let content = utils::parse_content(content);
+    let content = utils::parse_content(state, content);
     if content.is_empty() {
         return Err("Content cannot be empty".to_string());
     }
@@ -216,7 +216,7 @@ pub async fn parse_from_json(
     };
 
     let content = utils::strip_content(state, content);
-    let content = utils::parse_content(&content);
+    let content = utils::parse_content(state, &content);
 
     let mut attachments: Option<String> = None;
     if let Some(note_attachments) = note_json["attachment"].as_array() {
@@ -226,7 +226,7 @@ pub async fn parse_from_json(
                 attachments
                     .as_mut()
                     .unwrap()
-                    .push_str(&utils::parse_content(url));
+                    .push_str(&utils::parse_content(state, url));
                 attachments.as_mut().unwrap().push_str("\n");
             }
         }
