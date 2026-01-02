@@ -131,7 +131,7 @@ pub async fn fetch_remote(
         bio.push_str("\n");
         for attachment in attachments {
             if let (Some(name), Some(url)) =
-                (attachment["name"].as_str(), attachment["url"].as_str())
+                (attachment["name"].as_str(), attachment["value"].as_str())
             {
                 bio.push_str(&format!("\n{}: {}", name, url));
             }
