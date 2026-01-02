@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+
+<head>
+    {% include "parts/head.html" %}
+    <title>{{ instance_name }}</title>
+</head>
+
+<body>
+    <pre>{{ message }}</pre>
+    <h3>Welcome to {{ instance_name }}</h3>
+
+    <pre>{{ instance_description | safe }}
+
+<a href="/local">Local Timeline</a>
+<a href="/federated">Federated Timeline</a>
+<a href="/home">Home</a>
+<a href="/login">Login</a>
+<a href="/signup">Sign Up</a></pre>
+</body>

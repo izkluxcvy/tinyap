@@ -7,6 +7,7 @@ server:
 
 metadata:
   instance_name: TinyAP
+  instance_description: micro-blogging software built on ActivityPub, part of the Fediverse.<br>NoJS, Fast, Lightweight.<br>More info on <a href="https://github.com/izkluxcvy/tinyap">git repo</a>
 
 config:
   max_note_chars: 2000

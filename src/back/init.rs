@@ -78,6 +78,7 @@ pub struct Re {
 #[derive(Clone)]
 pub struct Metadata {
     pub instance_name: String,
+    pub instance_description: String,
 }
 
 #[derive(Clone)]
@@ -121,6 +122,11 @@ pub async fn create_app_state() -> AppState {
     let instance_name = conf
         .get("instance_name")
         .expect("instance_name must be set")
+        .to_string();
+
+    let instance_description = conf
+        .get("instance_description")
+        .expect("instance_description must be set")
         .to_string();
 
     #[cfg(feature = "web")]
@@ -188,6 +194,7 @@ pub async fn create_app_state() -> AppState {
         },
         metadata: Metadata {
             instance_name: instance_name,
+            instance_description: instance_description,
         },
         config: Config {
             max_note_chars: max_note_chars,
