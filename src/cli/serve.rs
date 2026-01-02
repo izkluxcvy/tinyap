@@ -19,6 +19,7 @@ async fn activitypub_routes() -> Router<init::AppState> {
 #[cfg(feature = "web")]
 async fn web_routes() -> Router<init::AppState> {
     use crate::web;
+    use tower_http::services::ServeDir;
     Router::new()
         .route("/", get(web::index::get))
         .route("/signup", get(web::signup::get).post(web::signup::post))
@@ -40,6 +41,7 @@ async fn web_routes() -> Router<init::AppState> {
         .route("/local", get(web::timeline::get_local))
         .route("/federated", get(web::timeline::get_federated))
         .route("/search", get(web::search::get).post(web::search::post))
+        .nest_service("/static", ServeDir::new("static"))
 }
 
 pub async fn serve() {

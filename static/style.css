@@ -1,0 +1,32 @@
+body {
+    background: #fdf6e3;
+    color: #073642;
+    width: min(90ch, 100%);
+    margin: auto;
+    margin-top: 8px;
+    margin-bottom: 10vh;
+}
+
+h3 {
+    margin-bottom: 0;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
+}
+
+a {
+    color: #268bd2;
+    text-decoration: none;
+}
+
+a.link-in-note {
+    color: #586e75;
+    text-decoration: underline;
+}
+
+form {
+    display: inline;
+}
