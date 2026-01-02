@@ -11,6 +11,8 @@ use tokio::net::TcpListener;
 async fn activitypub_routes() -> Router<init::AppState> {
     Router::new()
         .route("/.well-known/webfinger", get(ap::webfinger::get))
+        .route("/.well-known/nodeinfo", get(ap::nodeinfo::get_well_known))
+        .route("/nodeinfo/2.1", get(ap::nodeinfo::get_nodeinfo))
         .route("/users/{username}", get(ap::actor::get))
         .route("/users/{username}/inbox", post(ap::inbox::post))
         .route("/notes/{id}", get(ap::note::get))

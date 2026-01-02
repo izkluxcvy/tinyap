@@ -158,3 +158,27 @@ pub async fn decrement_follower_count(state: &AppState, id: i64) {
     .await
     .unwrap();
 }
+
+#[derive(sqlx::FromRow)]
+pub struct CountRecord {
+    pub count: i64,
+}
+
+pub async fn count_total(state: &AppState) -> i64 {
+    query_as::<_, CountRecord>("SELECT COUNT(*) as count FROM users WHERE is_local = 1")
+        .fetch_one(&state.db_pool)
+        .await
+        .unwrap()
+        .count
+}
+
+pub async fn count_active(state: &AppState, since: &str) -> i64 {
+    query_as::<_, CountRecord>(
+        "SELECT COUNT(*) as count FROM users WHERE is_local = 1 AND updated_at >= ?",
+    )
+    .bind(since)
+    .fetch_one(&state.db_pool)
+    .await
+    .unwrap()
+    .count
+}
