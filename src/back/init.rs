@@ -23,6 +23,10 @@ fn load_config() -> HashMap<String, String> {
     let mut conf = HashMap::new();
     for line in reader.lines() {
         let line = line.expect("Failed to read line");
+        if line.starts_with('#') {
+            continue;
+        }
+
         let parts: Vec<&str> = line.splitn(2, ":").collect();
 
         if parts.len() != 2 {
@@ -32,10 +36,8 @@ fn load_config() -> HashMap<String, String> {
         let key = parts[0].trim().to_string();
         let value = parts[1]
             .trim()
-            .trim_start_matches("\"")
-            .trim_end_matches("\"")
-            .trim_start_matches("'")
-            .trim_end_matches("'")
+            .trim_matches('"')
+            .trim_matches('\'')
             .to_string();
         conf.insert(key, value);
     }
