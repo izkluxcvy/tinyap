@@ -11,7 +11,9 @@ CREATE TABLE users (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     is_local INTEGER NOT NULL,
-    note_count INTEGER NOT NULL DEFAULT 0
+    note_count INTEGER NOT NULL DEFAULT 0,
+    following_count INTEGER NOT NULL DEFAULT 0,
+    follower_count INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX idx_users_is_local ON users(is_local);
 
@@ -64,7 +66,7 @@ CREATE TABLE likes (
     UNIQUE(user_id, note_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

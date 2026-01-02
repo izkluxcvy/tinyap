@@ -32,9 +32,7 @@ pub async fn get(
     let parts: Vec<&str> = acct.split("@").collect();
     let username = parts[0];
 
-    let user = queries::user::get_by_username(&state, username).await;
-
-    let Some(user) = user else {
+    let Some(user) = queries::user::get_by_username(&state, username).await else {
         return (
             StatusCode::NOT_FOUND,
             Json(json!({"error": "user not found"})),

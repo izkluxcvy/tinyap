@@ -16,6 +16,9 @@ pub struct UserRecord {
     pub created_at: String,
     pub updated_at: String,
     pub is_local: i64,
+    pub note_count: i64,
+    pub following_count: i64,
+    pub follower_count: i64,
 }
 pub async fn get_by_username(state: &AppState, username: &str) -> Option<UserRecord> {
     query_as("SELECT * FROM users WHERE username = ?")
@@ -120,4 +123,38 @@ pub async fn decrement_note_count(state: &AppState, id: i64) {
         .execute(&state.db_pool)
         .await
         .unwrap();
+}
+
+pub async fn increment_following_count(state: &AppState, id: i64) {
+    query("UPDATE users SET following_count = following_count + 1 WHERE id = ?")
+        .bind(id)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
+}
+
+pub async fn decrement_following_count(state: &AppState, id: i64) {
+    query("UPDATE users SET following_count = following_count - 1 WHERE id = ? AND following_count > 0")
+        .bind(id)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
+}
+
+pub async fn increment_follower_count(state: &AppState, id: i64) {
+    query("UPDATE users SET follower_count = follower_count + 1 WHERE id = ?")
+        .bind(id)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
+}
+
+pub async fn decrement_follower_count(state: &AppState, id: i64) {
+    query(
+        "UPDATE users SET follower_count = follower_count - 1 WHERE id = ? AND follower_count > 0",
+    )
+    .bind(id)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
 }

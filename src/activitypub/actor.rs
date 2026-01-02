@@ -12,9 +12,7 @@ use serde_json::json;
 
 pub async fn get(State(state): State<AppState>, Path(username): Path<String>) -> impl IntoResponse {
     // Get user
-    let user = queries::user::get_by_username(&state, &username).await;
-
-    let Some(user) = user else {
+    let Some(user) = queries::user::get_by_username(&state, &username).await else {
         return (
             StatusCode::NOT_FOUND,
             Json(json!({"error": "user not found"})),

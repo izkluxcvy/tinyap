@@ -12,9 +12,7 @@ use serde_json::json;
 
 pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> impl IntoResponse {
     // Get note
-    let note = queries::note::get_by_id(&state, id).await;
-
-    let Some(note) = note else {
+    let Some(note) = queries::note::get_by_id(&state, id).await else {
         return (
             StatusCode::NOT_FOUND,
             Json(json!({"error": "note not found"})),

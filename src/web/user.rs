@@ -20,9 +20,7 @@ pub async fn get(
     auth_user: MaybeAuthUser,
 ) -> impl IntoResponse {
     // Get user
-    let user = queries::user::get_by_username(&state, &username).await;
-
-    let Some(user) = user else {
+    let Some(user) = queries::user::get_by_username(&state, &username).await else {
         return (StatusCode::NOT_FOUND, "User not found").into_response();
     };
 

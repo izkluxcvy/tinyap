@@ -200,7 +200,7 @@ pub async fn deliver_to_followers(
     let sender = queries::user::get_by_id(state, sender_id).await;
     let private_key = sender.private_key.unwrap();
 
-    let followers = queries::follow::get_followers(state, sender_id).await;
+    let followers = queries::follow::get_follower_inboxes(state, sender_id).await;
     let mut already_delivered_hosts = vec![state.domain.clone()];
     for follower in followers {
         let url_parsed = Url::parse(&follower.inbox_url).unwrap();

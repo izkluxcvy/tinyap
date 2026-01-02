@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+
+<head>
+    {% include "parts/head.html" %}
+    <title>@{{ username }}'s {{ title }} - {{ instance_name }}</title>
+</head>
+
+<body>
+    <h3>@{{ username }}'s {{ title }}</h3>
+
+    <pre>{% for user in users %}<a href="/@{{ user.username }}">{{ user.username }}</a>
+{% endfor %}</pre>
+</body>

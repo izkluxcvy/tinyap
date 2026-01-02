@@ -2,6 +2,7 @@ pub mod auth;
 pub mod boost;
 pub mod delete;
 pub mod follow;
+pub mod following;
 pub mod index;
 pub mod like;
 pub mod login;

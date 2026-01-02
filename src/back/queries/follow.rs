@@ -20,12 +20,46 @@ pub async fn get(state: &AppState, follower_id: i64, followee_id: i64) -> Option
     .unwrap()
 }
 
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct FollowUserRecord {
+    pub display_name: String,
+    pub username: String,
+}
+
+pub async fn get_following(state: &AppState, follower_id: i64) -> Vec<FollowUserRecord> {
+    query_as(
+        "SELECT users.display_name, users.username
+        FROM follows
+        JOIN users ON follows.followee_id = users.id
+        WHERE follows.follower_id = ?
+        AND follows.pending = 0",
+    )
+    .bind(follower_id)
+    .fetch_all(&state.db_pool)
+    .await
+    .unwrap()
+}
+
+pub async fn get_followers(state: &AppState, followee_id: i64) -> Vec<FollowUserRecord> {
+    query_as(
+        "SELECT users.display_name, users.username
+        FROM follows
+        JOIN users ON follows.follower_id = users.id
+        WHERE follows.followee_id = ?
+        AND follows.pending = 0",
+    )
+    .bind(followee_id)
+    .fetch_all(&state.db_pool)
+    .await
+    .unwrap()
+}
+
 #[derive(sqlx::FromRow)]
-pub struct FollowerRecord {
+pub struct FollowerInboxRecord {
     pub inbox_url: String,
 }
 
-pub async fn get_followers(state: &AppState, followee_id: i64) -> Vec<FollowerRecord> {
+pub async fn get_follower_inboxes(state: &AppState, followee_id: i64) -> Vec<FollowerInboxRecord> {
     query_as(
         "SELECT users.inbox_url
         FROM follows

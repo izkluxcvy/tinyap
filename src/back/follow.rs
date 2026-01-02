@@ -30,6 +30,10 @@ pub async fn follow(state: &AppState, follower_id: i64, followee_id: i64) -> Res
     )
     .await;
 
+    // Increment following and follower counts
+    queries::user::increment_following_count(state, follower_id).await;
+    queries::user::increment_follower_count(state, followee_id).await;
+
     Ok(())
 }
 
@@ -71,6 +75,10 @@ pub async fn unfollow(state: &AppState, follower_id: i64, followee_id: i64) -> R
 
     // Unfollow
     queries::follow::delete(state, follower_id, followee_id).await;
+
+    // Decrement following and follower counts
+    queries::user::decrement_following_count(state, follower_id).await;
+    queries::user::decrement_follower_count(state, followee_id).await;
     Ok(())
 }
 
