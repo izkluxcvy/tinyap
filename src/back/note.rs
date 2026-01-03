@@ -126,6 +126,8 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<i64, String> {
         return Err(format!("Failed to parse note JSON"));
     };
 
+    let content = utils::parse_content(state, &content);
+
     // Create author user if not exists
     let author = if let Some(author) = queries::user::get_by_ap_url(state, &author_ap_url).await {
         author
@@ -216,7 +218,6 @@ pub async fn parse_from_json(
     };
 
     let content = utils::strip_content(state, content);
-    let content = utils::parse_content(state, &content);
 
     let mut attachments: Option<String> = None;
     if let Some(note_attachments) = note_json["attachment"].as_array() {
