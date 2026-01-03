@@ -19,6 +19,9 @@ pub async fn post(
         return "Unauthorized".into_response();
     }
 
+    // Deliver delete activity
+    note::deliver_delete(&state, id).await;
+
     // Delete
     note::delete(&state, id).await;
 

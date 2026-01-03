@@ -82,7 +82,7 @@ pub async fn post(
     }
 
     // Deliver to followers and parent
-    note::deliver_create(&state, id, user.id).await;
+    note::deliver_create(&state, id).await;
 
     Redirect::to("/home").into_response()
 }

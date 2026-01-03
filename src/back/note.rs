@@ -60,9 +60,9 @@ pub async fn add(
     Ok(())
 }
 
-pub async fn deliver_create(state: &AppState, id: i64, author_id: i64) {
+pub async fn deliver_create(state: &AppState, id: i64) {
     let note = queries::note::get_by_id(state, id).await.unwrap();
-    let author = queries::user::get_by_id(state, author_id).await;
+    let author = queries::user::get_by_id(state, note.author_id).await;
     let note_page_url = utils::note_url(&state.domain, &author.username, id);
 
     let mut note_object = json!({
@@ -100,7 +100,7 @@ pub async fn deliver_create(state: &AppState, id: i64, author_id: i64) {
     });
     let json_body = create_activity.to_string();
 
-    utils::deliver_to_followers(state, author_id, parent_inbox_url, &json_body).await;
+    utils::deliver_to_followers(state, note.author_id, parent_inbox_url, &json_body).await;
 }
 
 #[async_recursion::async_recursion]
@@ -270,4 +270,32 @@ pub async fn parse_from_json(
 pub async fn delete(state: &AppState, id: i64) {
     queries::note::delete(state, id).await;
     queries::user::decrement_note_count(state, id).await;
+}
+
+pub async fn deliver_delete(state: &AppState, id: i64) {
+    let Some(note) = queries::note::get_by_id(state, id).await else {
+        return;
+    };
+    let author = queries::user::get_by_id(state, note.author_id).await;
+
+    let parent_inbox_url: Option<String>;
+    if let Some(parent_id) = note.parent_id {
+        let parent = queries::note::get_by_id(state, parent_id).await.unwrap();
+        let parent_author = queries::user::get_by_id(state, parent.author_id).await;
+        parent_inbox_url = Some(parent_author.inbox_url.clone());
+    } else {
+        parent_inbox_url = None;
+    }
+
+    let delete_id = format!("{}#delete-{}", author.ap_url, utils::gen_unique_id());
+    let delete_activity = json!({
+        "@context": "https://www.w3.org/ns/activitystreams",
+        "id": delete_id,
+        "type": "Delete",
+        "actor": author.ap_url,
+        "object": note.ap_url,
+    });
+    let json_body = delete_activity.to_string();
+
+    utils::deliver_to_followers(state, note.author_id, parent_inbox_url, &json_body).await;
 }
