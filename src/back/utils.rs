@@ -95,8 +95,9 @@ pub fn strip_content(state: &AppState, content: &str) -> String {
     content
 }
 pub fn parse_content(state: &AppState, content: &str) -> String {
+    let content = content.trim();
     let content = tera::escape_html(content);
-    let content = content.replace("\n", "<br>");
+    let content = content.replace("\r\n", "<br>").replace("\n", "<br>");
     let content = state.re.link.replace_all(
         &content,
         r#"<a class="link-in-note" href="$1" target="_blank" rel="nofollow noopener">$1</a>"#,

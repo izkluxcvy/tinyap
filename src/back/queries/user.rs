@@ -90,11 +90,20 @@ pub async fn get_temp_sign_user(state: &AppState) -> TempSignUserRecord {
         .unwrap()
 }
 
-pub async fn update_profile(state: &AppState, ap_url: &str, display_name: &str, bio: &str) {
-    query("UPDATE users SET display_name = ?, bio = ? WHERE ap_url = ?")
+pub async fn update_profile(state: &AppState, user_id: i64, display_name: &str, bio: &str) {
+    query("UPDATE users SET display_name = ?, bio = ? WHERE id = ?")
         .bind(display_name)
         .bind(bio)
-        .bind(ap_url)
+        .bind(user_id)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
+}
+
+pub async fn update_password(state: &AppState, user_id: i64, password_hash: &str) {
+    query("UPDATE users SET password_hash = ? WHERE id = ?")
+        .bind(password_hash)
+        .bind(user_id)
         .execute(&state.db_pool)
         .await
         .unwrap();

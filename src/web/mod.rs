@@ -9,6 +9,7 @@ pub mod login;
 pub mod new;
 pub mod note;
 pub mod notifications;
+pub mod profile;
 pub mod search;
 pub mod signup;
 pub mod timeline;

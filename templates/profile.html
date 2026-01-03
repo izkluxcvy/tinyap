@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<head>
+    {% include "parts/head.html" %}
+    <title>Notifications - {{ instance_name }}</title>
+</head>
+
+<body>
+    {% include "parts/header.html" %}
+
+    <h3>Edit Profile</h3>
+
+    <form action="/profile" method="post">
+        <label for="display_name">Display Name:</label><br>
+        <input type="text" id="display_name" name="display_name" value="{{ display_name }}"><br><br>
+
+        <label for="bio">Bio:</label><br>
+        <textarea id="bio" name="bio" rows="4" cols="50">{{ bio }}</textarea><br><br>
+
+        <button type="submit">Update Profile</button>
+    </form>
+
+    <h3>Change Password</h3>
+
+    <form action="/change_password" method="post">
+        <label for="current_password">Current Password:</label><br>
+        <input type="password" id="current_password" name="current_password"><br><br>
+
+        <label for="new_password">New Password:</label><br>
+        <input type="password" id="new_password" name="new_password"><br><br>
+
+        <label for="confirmation">Confirm New Password:</label><br>
+        <input type="password" id="confirmation" name="confirmation"><br><br>
+
+        <button type="submit">Change Password</button>
+    </form>
+
+</body>

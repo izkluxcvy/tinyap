@@ -26,6 +26,11 @@ async fn web_routes() -> Router<init::AppState> {
         .route("/", get(web::index::get))
         .route("/signup", get(web::signup::get).post(web::signup::post))
         .route("/login", get(web::login::get).post(web::login::post))
+        .route(
+            "/profile",
+            get(web::profile::get).post(web::profile::post_profile),
+        )
+        .route("/change_password", post(web::profile::post_password))
         .route("/@{username}", get(web::user::get))
         .route("/@{username}/follow", post(web::follow::post_follow))
         .route("/@{username}/unfollow", post(web::follow::post_unfollow))

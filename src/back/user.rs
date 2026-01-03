@@ -72,6 +72,23 @@ pub async fn add(state: &AppState, username: &str, password: &str) -> Result<(),
     Ok(())
 }
 
+pub async fn update_profile(state: &AppState, user_id: i64, display_name: &str, bio: &str) {
+    let bio = utils::parse_content(state, bio);
+    queries::user::update_profile(state, user_id, display_name, &bio).await;
+}
+
+pub async fn update_password(state: &AppState, user_id: i64, password: &str) {
+    // Hash password
+    let argon2 = Argon2::default();
+    let salt = SaltString::generate(&mut OsRng);
+    let password_hash = argon2
+        .hash_password(password.as_bytes(), &salt)
+        .unwrap()
+        .to_string();
+
+    queries::user::update_password(state, user_id, &password_hash).await;
+}
+
 pub async fn verify_password(state: &AppState, username: &str, password: &str) -> Result<i64, ()> {
     let user = queries::user::get_by_username(state, username).await;
     // Check user exists
@@ -185,7 +202,11 @@ pub async fn update_remote(state: &AppState, ap_url: &str) -> Result<(), String>
         return Err("Failed to fetch remote user".to_string());
     };
 
-    queries::user::update_profile(state, &ap_url, &display_name, &bio).await;
+    let Some(user) = queries::user::get_by_ap_url(state, &ap_url).await else {
+        return Err("User not found".to_string());
+    };
+
+    queries::user::update_profile(state, user.id, &display_name, &bio).await;
 
     Ok(())
 }
