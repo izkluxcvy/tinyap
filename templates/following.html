@@ -8,6 +8,6 @@
 <body>
     <h3>@{{ username }}'s {{ title }}</h3>
 
-    <pre>{% for user in users %}<a href="/@{{ user.username }}">{{ user.username }}</a>
+    <pre>{% for user in users %}<a href="/@{{ user.username }}">@{{ user.username }}</a>
 {% endfor %}</pre>
 </body>
