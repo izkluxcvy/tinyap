@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+
+<head>
+    {% include "parts/head.html" %}
+    <title>Logout - {{ instance_name }}</title>
+</head>
+
+<body>
+    {% include "parts/header.html" %}
+
+    <h3>Logout</h3>
+
+    <form action="/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
+</body>

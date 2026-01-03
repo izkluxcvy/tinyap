@@ -35,6 +35,22 @@ pub async fn delete_old(state: &AppState, user_id: &i64, max_sessions: &i64, dat
     .unwrap();
 }
 
+pub async fn delete_by_session_id(state: &AppState, session_id: &str) {
+    query("DELETE FROM sessions WHERE session_id = ?")
+        .bind(session_id)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
+}
+
+pub async fn delete_by_user_id(state: &AppState, user_id: i64) {
+    query("DELETE FROM sessions WHERE user_id = ?")
+        .bind(user_id)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
+}
+
 #[derive(sqlx::FromRow)]
 pub struct SessionRecord {
     pub user_id: i64,

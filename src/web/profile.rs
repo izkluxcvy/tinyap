@@ -65,5 +65,8 @@ pub async fn post_password(
     // Update password
     user::update_password(&state, user.id, &form.new_password).await;
 
-    Redirect::to("/home").into_response()
+    // Delete all sessions for this user
+    queries::session::delete_by_user_id(&state, user.id).await;
+
+    Redirect::to("/login").into_response()
 }
