@@ -44,6 +44,9 @@ pub async fn get(State(state): State<AppState>, Path(username): Path<String>) ->
             "owner": &user.ap_url,
             "publicKeyPem": &user.public_key,
         },
+        "endpoints": {
+            "sharedInbox": &format!("https://{}/inbox", &state.domain),
+        }
     });
 
     (json_headers, Json(json_body)).into_response()

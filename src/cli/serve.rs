@@ -15,6 +15,7 @@ async fn activitypub_routes() -> Router<init::AppState> {
         .route("/nodeinfo/2.1", get(ap::nodeinfo::get_nodeinfo))
         .route("/users/{username}", get(ap::actor::get))
         .route("/users/{username}/inbox", post(ap::inbox::post))
+        .route("/inbox", post(ap::inbox::post))
         .route("/notes/{id}", get(ap::note::get))
 }
 
