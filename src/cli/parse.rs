@@ -12,6 +12,7 @@ pub async fn parse() {
         "--version" => cli::version::show(),
         "serve" => cli::serve::serve().await,
         "useradd" => cli::useradd::useradd(args[2..].to_vec()).await,
+        "passwd" => cli::passwd::passwd(args[2..].to_vec()).await,
         _ => (),
     }
 }
