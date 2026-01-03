@@ -4,8 +4,8 @@ use crate::web::auth::MaybeAuthUser;
 
 use axum::{
     extract::{Path, Query, State},
-    http::StatusCode,
-    response::{Html, IntoResponse},
+    http::{HeaderMap, StatusCode},
+    response::{Html, IntoResponse, Redirect},
 };
 
 #[derive(serde::Deserialize)]
@@ -17,8 +17,16 @@ pub async fn get(
     State(state): State<AppState>,
     Path(username): Path<String>,
     Query(query): Query<PageQuery>,
+    headers: HeaderMap,
     auth_user: MaybeAuthUser,
 ) -> impl IntoResponse {
+    // Redirect to json path if requested
+    if let Some(accept_header) = headers.get("Accept") {
+        if accept_header.to_str().unwrap_or("").contains("json") {
+            return Redirect::to(&format!("/users/{}", username)).into_response();
+        }
+    }
+
     // Get user
     let Some(user) = queries::user::get_by_username(&state, &username).await else {
         return (StatusCode::NOT_FOUND, "User not found").into_response();

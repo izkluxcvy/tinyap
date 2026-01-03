@@ -4,18 +4,27 @@ use crate::web::auth::MaybeAuthUser;
 
 use axum::{
     extract::{Path, State},
-    response::{Html, IntoResponse},
+    http::HeaderMap,
+    response::{Html, IntoResponse, Redirect},
 };
 
 pub async fn get(
     State(state): State<AppState>,
     Path((username, id)): Path<(String, String)>,
+    headers: HeaderMap,
     user: MaybeAuthUser,
 ) -> impl IntoResponse {
     // Parse id
     let Ok(id) = id.parse::<i64>() else {
         return "Note not found".into_response();
     };
+
+    // Redirect to json path if requested
+    if let Some(accept_header) = headers.get("Accept") {
+        if accept_header.to_str().unwrap_or("").contains("json") {
+            return Redirect::to(&format!("/notes/{}", id)).into_response();
+        }
+    }
 
     // Get note
     let Some(note) = queries::note::get_with_author_by_id(&state, id).await else {
