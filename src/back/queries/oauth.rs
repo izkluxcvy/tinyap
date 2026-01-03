@@ -1,0 +1,103 @@
+use crate::back::init::AppState;
+
+use sqlx::{query, query_as};
+
+pub async fn create_app(
+    state: &AppState,
+    app_name: &str,
+    redirect_uri: &str,
+    client_id: i64,
+    client_secret: &str,
+) {
+    query(
+        "INSERT INTO oauth_apps (app_name, redirect_uri, client_id, client_secret)
+        VALUES (?, ?, ?, ?)",
+    )
+    .bind(app_name)
+    .bind(redirect_uri)
+    .bind(client_id)
+    .bind(client_secret)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}
+
+#[derive(sqlx::FromRow)]
+pub struct AppRecord {
+    pub app_name: String,
+    pub client_secret: String,
+}
+pub async fn get_app(state: &AppState, client_id: i64) -> Option<AppRecord> {
+    query_as("SELECT app_name, client_secret FROM oauth_apps WHERE client_id = ?")
+        .bind(client_id)
+        .fetch_optional(&state.db_pool)
+        .await
+        .unwrap()
+}
+
+pub async fn create_authorization(state: &AppState, user_id: i64, client_id: i64, code: &str) {
+    query(
+        "INSERT INTO oauth_authorizations (user_id, client_id, code)
+        VALUES (?, ?, ?)",
+    )
+    .bind(user_id)
+    .bind(client_id)
+    .bind(code)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}
+
+#[derive(sqlx::FromRow)]
+pub struct AuthorizationRecord {
+    pub user_id: i64,
+}
+
+pub async fn get_authorization(
+    state: &AppState,
+    client_id: i64,
+    code: &str,
+) -> Option<AuthorizationRecord> {
+    query_as(
+        "SELECT user_id FROM oauth_authorizations
+        WHERE client_id = ? AND code = ?",
+    )
+    .bind(client_id)
+    .bind(code)
+    .fetch_optional(&state.db_pool)
+    .await
+    .unwrap()
+}
+
+pub async fn create_token(
+    state: &AppState,
+    user_id: i64,
+    client_id: i64,
+    token: &str,
+    expires_at: &str,
+) {
+    query(
+        "INSERT INTO oauth_tokens (user_id, client_id, token, expires_at)
+        VALUES (?, ?, ?, ?)",
+    )
+    .bind(user_id)
+    .bind(client_id)
+    .bind(token)
+    .bind(expires_at)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}
+
+#[derive(sqlx::FromRow)]
+pub struct TokenRecord {
+    pub user_id: i64,
+}
+
+pub async fn get_token(state: &AppState, token: &str) -> Option<TokenRecord> {
+    query_as("SELECT user_id FROM oauth_tokens WHERE token = ?")
+        .bind(token)
+        .fetch_optional(&state.db_pool)
+        .await
+        .unwrap()
+}

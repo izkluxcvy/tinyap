@@ -17,12 +17,41 @@ CREATE TABLE users (
 );
 CREATE INDEX idx_users_is_local ON users(is_local);
 
+-- Web session
 CREATE TABLE sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id TEXT NOT NULL UNIQUE,
     user_id INTEGER NOT NULL,
     expires_at TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- API OAuth
+CREATE TABLE oauth_apps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    app_name TEXT NOT NULL,
+    redirect_uri TEXT NOT NULL,
+    client_id BIGINT NOT NULL UNIQUE,
+    client_secret TEXT NOT NULL
+);
+
+CREATE TABLE oauth_authorizations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    client_id BIGINT NOT NULL,
+    code TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (client_id) REFERENCES oauth_apps(client_id) ON DELETE CASCADE
+);
+
+CREATE TABLE oauth_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    client_id BIGINT NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    expires_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (client_id) REFERENCES oauth_apps(client_id) ON DELETE CASCADE
 );
 
 CREATE TABLE follows (

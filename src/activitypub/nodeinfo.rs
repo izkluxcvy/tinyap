@@ -29,6 +29,10 @@ pub async fn get_well_known(State(state): State<AppState>) -> impl IntoResponse 
 pub async fn get_nodeinfo(State(state): State<AppState>) -> impl IntoResponse {
     let total_users = queries::user::count_total(&state).await;
     let active_users = queries::user::count_active(&state, &utils::date_plus_days(-30)).await;
+    #[cfg(feature = "web")]
+    let open_registrations = state.web_config.allow_signup;
+    #[cfg(not(feature = "web"))]
+    let open_registrations = false;
 
     let mut json_headers = HeaderMap::new();
     json_headers.insert("Content-Type", HeaderValue::from_static("application/json"));
@@ -43,7 +47,7 @@ pub async fn get_nodeinfo(State(state): State<AppState>) -> impl IntoResponse {
             "inbound": [],
             "outbound": [],
         },
-        "openRegistrations": state.web_config.allow_signup,
+        "openRegistrations": open_registrations,
         "usage": {
             "users": {
                 "total": total_users,

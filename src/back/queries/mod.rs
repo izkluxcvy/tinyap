@@ -3,6 +3,7 @@ pub mod follow;
 pub mod like;
 pub mod note;
 pub mod notification;
+pub mod oauth;
 pub mod session;
 pub mod timeline;
 pub mod user;

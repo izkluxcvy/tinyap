@@ -74,13 +74,13 @@ pub struct Metadata {
 #[derive(Clone)]
 pub struct Config {
     pub max_note_chars: usize,
+    pub token_ttl_days: i64,
 }
 
 #[cfg(feature = "web")]
 #[derive(Clone)]
 pub struct WebConfig {
     pub allow_signup: bool,
-    pub session_ttl_days: i64,
     pub max_sessions_per_user: i64,
     pub max_timeline_items: i64,
     pub timezone: String,
@@ -119,13 +119,6 @@ pub async fn create_app_state() -> AppState {
         .expect("allow_signup must be a boolean");
 
     #[cfg(feature = "web")]
-    let session_ttl_days = conf
-        .get("session_ttl_days")
-        .expect("session_ttl_days must be set")
-        .parse::<i64>()
-        .expect("session_ttl_days must be an integer");
-
-    #[cfg(feature = "web")]
     let max_sessions_per_user = conf
         .get("max_sessions_per_user")
         .expect("max_sessions_per_user must be set")
@@ -137,6 +130,12 @@ pub async fn create_app_state() -> AppState {
         .expect("max_note_chars must be set")
         .parse::<usize>()
         .expect("max_note_chars must be an integer");
+
+    let token_ttl_days = conf
+        .get("token_ttl_days")
+        .expect("token_ttl_days must be set")
+        .parse::<i64>()
+        .expect("token_ttl_days must be an integer");
 
     let deliver_queue_size = conf
         .get("deliver_queue_size")
@@ -180,11 +179,11 @@ pub async fn create_app_state() -> AppState {
         },
         config: Config {
             max_note_chars: max_note_chars,
+            token_ttl_days: token_ttl_days,
         },
         #[cfg(feature = "web")]
         web_config: WebConfig {
             allow_signup: allow_signup,
-            session_ttl_days: session_ttl_days,
             max_sessions_per_user: max_sessions_per_user,
             max_timeline_items: max_timeline_items,
             timezone: timezone,

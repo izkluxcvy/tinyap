@@ -53,6 +53,31 @@ async fn web_routes() -> Router<init::AppState> {
         .nest_service("/static", ServeDir::new("static"))
 }
 
+#[cfg(feature = "api")]
+async fn api_routes() -> Router<init::AppState> {
+    use crate::api;
+    use tower_http::cors::{Any, CorsLayer};
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any);
+
+    Router::new()
+        .route("/api/v1/instance", get(api::instance::get_v1))
+        .route("/api/v2/instance", get(api::instance::get_v2))
+        .route("/api/v1/apps", post(api::oauth::apps::post))
+        .route(
+            "/oauth/authorize",
+            get(api::oauth::authorize::get).post(api::oauth::authorize::post),
+        )
+        .route("/oauth/token", post(api::oauth::token::post))
+        .route(
+            "/api/v1/accounts/verify_credentials",
+            get(api::accounts::verify_credentials::get),
+        )
+        .layer(cors)
+}
+
 pub async fn serve() {
     println!("[TinyAP version {}]", VERSION);
 
@@ -61,6 +86,8 @@ pub async fn serve() {
     let app = activitypub_routes().await;
     #[cfg(feature = "web")]
     let app = app.merge(web_routes().await);
+    #[cfg(feature = "api")]
+    let app = app.merge(api_routes().await);
 
     let app = app.with_state(state);
 

@@ -32,7 +32,7 @@ pub async fn post(
     };
 
     let session_id = utils::gen_secure_token();
-    let expires_at = utils::date_plus_days(state.web_config.session_ttl_days);
+    let expires_at = utils::date_plus_days(state.config.token_ttl_days);
     queries::session::create(&state, &session_id, &user_id, &expires_at).await;
     let date_now = utils::date_now();
     queries::session::delete_old(
@@ -48,7 +48,7 @@ pub async fn post(
         .http_only(true)
         .same_site(SameSite::Lax)
         .secure(true)
-        .max_age(time::Duration::days(state.web_config.session_ttl_days));
+        .max_age(time::Duration::days(state.config.token_ttl_days));
 
     (jar.add(cookie), Redirect::to("/home")).into_response()
 }

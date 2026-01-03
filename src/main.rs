@@ -1,4 +1,6 @@
 mod activitypub;
+#[cfg(feature = "api")]
+mod api;
 mod back;
 mod cli;
 #[cfg(feature = "web")]
