@@ -1,10 +1,3 @@
-// Compile-time checks for database feature flags
-#[cfg(not(any(feature = "sqlite", feature = "postgres")))]
-compile_error!("sqlite or postgres feature must be enabled");
-
-#[cfg(all(feature = "sqlite", feature = "postgres"))]
-compile_error!("sqlite and postgres features must be enabled exclusively");
-
 use crate::VERSION;
 
 use regex::Regex;
@@ -53,10 +46,7 @@ pub fn server_address() -> String {
 
 #[derive(Clone)]
 pub struct AppState {
-    #[cfg(feature = "sqlite")]
     pub db_pool: sqlx::SqlitePool,
-    #[cfg(feature = "postgres")]
-    pub db_pool: sqlx::PgPool,
     pub tera: Tera,
     pub deliver_queue: Arc<Semaphore>,
     pub http_client: Client,
@@ -96,18 +86,10 @@ pub struct WebConfig {
     pub timezone: String,
 }
 
-#[cfg(feature = "sqlite")]
 async fn create_db_pool(conf: &HashMap<String, String>) -> sqlx::SqlitePool {
     let database_url = conf.get("database_url").expect("database_url must be set");
     println!("Connecting to SQLite database...");
     sqlx::SqlitePool::connect(database_url).await.unwrap()
-}
-
-#[cfg(feature = "postgres")]
-async fn create_db_pool(conf: &HashMap<String, String>) -> sqlx::PgPool {
-    let database_url = conf.get("database_url").expect("database_url must be set");
-    println!("Connecting to PostgreSQL database...");
-    sqlx::PgPool::connect(database_url).await.unwrap()
 }
 
 pub async fn create_app_state() -> AppState {
