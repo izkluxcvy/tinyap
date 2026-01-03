@@ -9,9 +9,14 @@ use axum::{
 
 pub async fn get(
     State(state): State<AppState>,
-    Path((username, id)): Path<(String, i64)>,
+    Path((username, id)): Path<(String, String)>,
     user: MaybeAuthUser,
 ) -> impl IntoResponse {
+    // Parse id
+    let Ok(id) = id.parse::<i64>() else {
+        return "Note not found".into_response();
+    };
+
     // Get note
     let Some(note) = queries::note::get_with_author_by_id(&state, id).await else {
         return "Note not found".into_response();
