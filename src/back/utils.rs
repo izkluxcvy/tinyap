@@ -35,7 +35,7 @@ pub fn date_now_http_format() -> String {
 }
 
 pub fn date_to_utc(date: &str) -> String {
-    let parsed = OffsetDateTime::parse(date, &Rfc3339).unwrap();
+    let parsed = OffsetDateTime::parse(date, &Rfc3339).unwrap().to_utc();
     parsed.format(&Rfc3339).unwrap()
 }
 
