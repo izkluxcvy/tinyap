@@ -8,7 +8,9 @@ pub async fn get_v1(State(state): State<AppState>) -> Json<Value> {
     Json(json!({
         "uri": &state.domain,
         "title": &state.metadata.instance_name,
+        "short_description": "",
         "description": &state.metadata.instance_description,
+        "email": "",
         "version": VERSION,
     }))
 }

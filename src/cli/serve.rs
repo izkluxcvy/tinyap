@@ -70,6 +70,10 @@ async fn api_routes() -> Router<init::AppState> {
             "/oauth/authorize",
             get(api::oauth::authorize::get).post(api::oauth::authorize::post),
         )
+        .route(
+            "/oauth/authorize/",
+            get(api::oauth::authorize::get).post(api::oauth::authorize::post),
+        )
         .route("/oauth/token", post(api::oauth::token::post))
         .route(
             "/api/v1/accounts/verify_credentials",

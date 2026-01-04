@@ -6,7 +6,7 @@ edition = "2024"
 [features]
 default = ["web", "api"]
 web = ["tower-http/fs"]
-api = ["tower-http/cors"]
+api = ["tower-http/cors", "serde_urlencoded"]
 tls = ["axum-server/tls-rustls"]
 
 [dependencies]
@@ -22,6 +22,7 @@ sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio"] }
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+serde_urlencoded = { version = "0.7", optional = true }
 
 argon2 = "0.5"
 rand = "0.8"
