@@ -56,6 +56,7 @@ async fn web_routes() -> Router<init::AppState> {
 #[cfg(feature = "api")]
 async fn api_routes() -> Router<init::AppState> {
     use crate::api;
+    use axum::routing::delete;
     use tower_http::cors::{Any, CorsLayer};
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -81,6 +82,7 @@ async fn api_routes() -> Router<init::AppState> {
         )
         .route("/api/v1/statuses", post(api::statuses::post))
         .route("/api/v1/statuses/{id}", get(api::statuses::get))
+        .route("/api/v1/statuses/{id}", delete(api::statuses::delete))
         .route("/api/v1/statuses/{id}/context", get(api::context::get))
         .route("/api/v1/timelines/home", get(api::timeline::get_home))
         .route("/api/v1/timelines/public", get(api::timeline::get_public))

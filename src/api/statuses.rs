@@ -127,3 +127,43 @@ pub async fn post(
         "media_attachments": [],
     }))
 }
+
+pub async fn delete(
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+    user: OAuthUser,
+) -> Json<Value> {
+    // Get user
+    let user = queries::user::get_by_id(&state, user.id).await;
+
+    // Get note
+    let Some(note) = queries::note::get_with_author_by_id(&state, id).await else {
+        return Json(json!({"error": "Note not found"}));
+    };
+    if note.author_id != user.id {
+        return Json(json!({"error": "Unauthorized"}));
+    }
+
+    // Deliver delete activity
+    note::deliver_delete(&state, id).await;
+
+    // Delete
+    note::delete(&state, id).await;
+
+    Json(json!({
+        "id": note.id,
+        "created_at": &note.created_at,
+        "in_reply_to_id": note.parent_id,
+        "visibility": "public",
+        "reblogs_count": note.boost_count,
+        "favourites_count": note.like_count,
+        "content": &note.content,
+        "account": {
+            "id": note.author_id,
+            "username": &user.username,
+            "acct": &user.username,
+            "display_name": &user.display_name,
+        },
+        "media_attachments": [],
+    }))
+}
