@@ -1,3 +1,4 @@
+use crate::api::auth::OAuthUser;
 use crate::back::init::AppState;
 use crate::back::queries;
 use crate::back::utils;
@@ -8,7 +9,11 @@ use axum::{
 };
 use serde_json::{Value, json};
 
-pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Value> {
+pub async fn get(
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+    user: OAuthUser,
+) -> Json<Value> {
     let Some(note) = queries::note::get_with_author_by_id(&state, id).await else {
         return Json(json!({
             "error": "Note not found"
@@ -16,6 +21,19 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
     };
 
     let attachments = utils::attachments_to_value(&state, &note.attachments);
+
+    // Check is_liked, is_boosted
+    let is_liked = if let Some(_like) = queries::like::get(&state, user.id, note.id).await {
+        true
+    } else {
+        false
+    };
+
+    let is_boosted = if let Some(_boost) = queries::boost::get(&state, user.id, note.id).await {
+        true
+    } else {
+        false
+    };
 
     Json(json!({
         "id": note.id,
@@ -32,5 +50,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
             "display_name": &note.display_name,
         },
         "media_attachments": attachments,
+        "favourited": is_liked,
+        "reblogged": is_boosted,
     }))
 }
