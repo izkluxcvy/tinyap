@@ -5,6 +5,7 @@ pub mod instance;
 pub mod notifications;
 pub mod oauth;
 pub mod reblog;
+pub mod search;
 pub mod statuses;
 pub mod timeline;
 pub mod verify_credentials;
