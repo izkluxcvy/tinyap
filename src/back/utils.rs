@@ -106,6 +106,32 @@ pub fn parse_content(state: &AppState, content: &str) -> String {
     content.to_string()
 }
 
+#[cfg(feature = "api")]
+pub fn attachments_to_value(
+    state: &AppState,
+    attachments: &Option<String>,
+) -> Vec<serde_json::Value> {
+    if let Some(attachments) = attachments {
+        if attachments.is_empty() {
+            vec![]
+        } else {
+            let mut ret: Vec<serde_json::Value> = vec![];
+            for url in attachments.split("\n") {
+                if url.is_empty() {
+                    continue;
+                }
+                ret.push(serde_json::json!({
+                    "type": "image",
+                    "url": strip_content(&state, url),
+                }));
+            }
+            ret
+        }
+    } else {
+        vec![]
+    }
+}
+
 pub fn user_url(domain: &str, username: &str) -> String {
     format!("https://{}/@{}", domain, username)
 }

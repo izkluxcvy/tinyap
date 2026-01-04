@@ -15,25 +15,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
         }));
     };
 
-    let attachments = if let Some(attachments) = note.attachments {
-        if attachments.is_empty() {
-            vec![]
-        } else {
-            let mut ret: Vec<Value> = vec![];
-            for url in attachments.split("\n") {
-                if url.is_empty() {
-                    continue;
-                }
-                ret.push(json!({
-                    "type": "image",
-                    "url": utils::strip_content(&state, url),
-                }));
-            }
-            ret
-        }
-    } else {
-        vec![]
-    };
+    let attachments = utils::attachments_to_value(&state, &note.attachments);
 
     Json(json!({
         "id": note.id,

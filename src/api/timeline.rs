@@ -43,42 +43,59 @@ pub async fn timeline_json(
     let notes_json: Value = notes
         .into_iter()
         .map(|note| {
-            let attachments = if let Some(attachments) = note.attachments {
-                if attachments.is_empty() {
-                    vec![]
-                } else {
-                    let mut ret: Vec<Value> = vec![];
-                    for url in attachments.split("\n") {
-                        if url.is_empty() {
-                            continue;
-                        }
-                        ret.push(json!({
-                            "type": "image",
-                            "url": utils::strip_content(&state, url),
-                        }));
-                    }
-                    ret
-                }
-            } else {
-                vec![]
-            };
+            let attachments = utils::attachments_to_value(state, &note.attachments);
 
-            json!({
-                "id": note.id,
-                "created_at": &note.created_at,
-                "in_reply_to_id": note.parent_id,
-                "visibility": "public",
-                "reblogs_count": note.boost_count,
-                "favourites_count": note.like_count,
-                "content": &note.content,
-                "account": {
-                    "id": note.author_id,
-                    "username": &note.username,
-                    "acct": &note.username,
-                    "display_name": &note.display_name,
-                },
-                "media_attachments": attachments,
-            })
+            if note.boosted_id.is_some() {
+                json!({
+                    "id": note.id,
+                    "created_at": &note.created_at,
+                    "in_reply_to_id": note.parent_id,
+                    "visibility": "public",
+                    "reblogs_count": 0,
+                    "favourites_count": 0,
+                    "content": "",
+                    "account": {
+                        "id": note.author_id,
+                        "username": &note.username,
+                        "acct": &note.username,
+                        "display_name": &note.display_name,
+                    },
+                    "media_attachments": [],
+                    "reblog": {
+                        "id": note.boosted_id,
+                        "created_at": &note.boosted_created_at,
+                        "in_reply_to_id": null,
+                        "visibility": "public",
+                        "reblogs_count": 0,
+                        "favourites_count": 0,
+                        "content": &note.content,
+                        "account": {
+                            "id": 1,
+                            "username": &note.boosted_username,
+                            "acct": &note.boosted_username,
+                            "display_name": &note.boosted_username,
+                        },
+                        "media_attachments": attachments,
+                    }
+                })
+            } else {
+                json!({
+                    "id": note.id,
+                    "created_at": &note.created_at,
+                    "in_reply_to_id": note.parent_id,
+                    "visibility": "public",
+                    "reblogs_count": note.boost_count,
+                    "favourites_count": note.like_count,
+                    "content": &note.content,
+                    "account": {
+                        "id": note.author_id,
+                        "username": &note.username,
+                        "acct": &note.username,
+                        "display_name": &note.display_name,
+                    },
+                    "media_attachments": attachments,
+                })
+            }
         })
         .collect();
 
