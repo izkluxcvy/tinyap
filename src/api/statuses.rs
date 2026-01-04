@@ -1,5 +1,6 @@
 use crate::back::init::AppState;
 use crate::back::queries;
+use crate::back::utils;
 
 use axum::{
     Json,
@@ -18,15 +19,17 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
         if attachments.is_empty() {
             vec![]
         } else {
-            attachments
-                .split("\n")
-                .map(|url| {
-                    json!({
-                        "type": "image",
-                        "url": url,
-                    })
-                })
-                .collect()
+            let mut ret: Vec<Value> = vec![];
+            for url in attachments.split("\n") {
+                if url.is_empty() {
+                    continue;
+                }
+                ret.push(json!({
+                    "type": "image",
+                    "url": utils::strip_content(&state, url),
+                }));
+            }
+            ret
         }
     } else {
         vec![]

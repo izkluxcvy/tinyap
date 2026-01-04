@@ -1,6 +1,7 @@
 use crate::api::auth::OAuthUser;
 use crate::back::init::AppState;
 use crate::back::queries;
+use crate::back::utils;
 
 use axum::{
     Json,
@@ -35,7 +36,10 @@ pub async fn extract_limit_and_since_id(state: &AppState, query: &TimelineQuery)
     (limit, since)
 }
 
-pub async fn timeline_json(notes: Vec<queries::note::NoteWithAuthorRecord>) -> Value {
+pub async fn timeline_json(
+    state: &AppState,
+    notes: Vec<queries::note::NoteWithAuthorRecord>,
+) -> Value {
     let notes_json: Value = notes
         .into_iter()
         .map(|note| {
@@ -43,19 +47,22 @@ pub async fn timeline_json(notes: Vec<queries::note::NoteWithAuthorRecord>) -> V
                 if attachments.is_empty() {
                     vec![]
                 } else {
-                    attachments
-                        .split("\n")
-                        .map(|url| {
-                            json!({
-                                "type": "image",
-                                "url": url,
-                            })
-                        })
-                        .collect()
+                    let mut ret: Vec<Value> = vec![];
+                    for url in attachments.split("\n") {
+                        if url.is_empty() {
+                            continue;
+                        }
+                        ret.push(json!({
+                            "type": "image",
+                            "url": utils::strip_content(&state, url),
+                        }));
+                    }
+                    ret
                 }
             } else {
                 vec![]
             };
+
             json!({
                 "id": note.id,
                 "created_at": &note.created_at,
@@ -87,7 +94,7 @@ pub async fn get_home(
 
     let notes = queries::timeline::get_home_since(&state, user.id, &since, limit).await;
 
-    let notes_json = timeline_json(notes).await;
+    let notes_json = timeline_json(&state, notes).await;
 
     Json(notes_json)
 }
@@ -104,7 +111,7 @@ pub async fn get_public(
         queries::timeline::get_federated_since(&state, &since, limit).await
     };
 
-    let notes_json = timeline_json(notes).await;
+    let notes_json = timeline_json(&state, notes).await;
 
     Json(notes_json)
 }
