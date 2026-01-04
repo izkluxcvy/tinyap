@@ -79,6 +79,7 @@ async fn api_routes() -> Router<init::AppState> {
             "/api/v1/accounts/verify_credentials",
             get(api::verify_credentials::get),
         )
+        .route("/api/v1/statuses", post(api::statuses::post))
         .route("/api/v1/statuses/{id}", get(api::statuses::get))
         .route("/api/v1/statuses/{id}/context", get(api::context::get))
         .route("/api/v1/timelines/home", get(api::timeline::get_home))

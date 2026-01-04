@@ -1,5 +1,6 @@
 use crate::api::auth::OAuthUser;
 use crate::back::init::AppState;
+use crate::back::note;
 use crate::back::queries;
 use crate::back::utils;
 
@@ -52,5 +53,77 @@ pub async fn get(
         "media_attachments": attachments,
         "favourited": is_liked,
         "reblogged": is_boosted,
+    }))
+}
+
+#[derive(serde::Deserialize)]
+pub struct PostStatusRequest {
+    pub status: String,
+    pub in_reply_to_id: Option<i64>,
+}
+
+pub async fn post(
+    State(state): State<AppState>,
+    user: OAuthUser,
+    Json(req): Json<PostStatusRequest>,
+) -> Json<Value> {
+    let user = queries::user::get_by_id(&state, user.id).await;
+    let id = utils::gen_unique_id();
+    let ap_url = utils::local_note_ap_url(&state.domain, id);
+    let created_at = utils::date_now();
+
+    // in_reply_to handling
+    let parent_author_username = if let Some(parent_id) = req.in_reply_to_id {
+        let Some(parent) = queries::note::get_by_id(&state, parent_id).await else {
+            return Json(json!({
+                "error": "Parent note not found"
+            }));
+        };
+        let parent_author = queries::user::get_by_id(&state, parent.author_id).await;
+        Some(parent_author.username)
+    } else {
+        None
+    };
+
+    // Create note
+    let res = note::add(
+        &state,
+        id,
+        &ap_url,
+        user.id,
+        &req.status,
+        None,
+        req.in_reply_to_id,
+        parent_author_username,
+        &created_at,
+        1, // is_public
+    )
+    .await;
+
+    if let Err(e) = res {
+        println!("Error creating note: {}", e);
+        return Json(json!({
+            "error": "Something went wrong"
+        }));
+    }
+
+    // Deliver to followers and parent
+    note::deliver_create(&state, id).await;
+
+    Json(json!({
+        "id": id,
+        "created_at": created_at,
+        "in_reply_to_id": req.in_reply_to_id,
+        "visibility": "public",
+        "reblogs_count": 0,
+        "favourites_count": 0,
+        "content": req.status,
+        "account": {
+            "id": user.id,
+            "username": user.username,
+            "acct": user.username,
+            "display_name": user.display_name,
+        },
+        "media_attachments": [],
     }))
 }
