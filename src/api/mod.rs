@@ -2,6 +2,7 @@ pub mod auth;
 pub mod context;
 pub mod favourite;
 pub mod instance;
+pub mod notifications;
 pub mod oauth;
 pub mod reblog;
 pub mod statuses;

@@ -27,6 +27,44 @@ pub async fn get(state: &AppState, recipient_id: i64, limit: i64) -> Vec<Notific
     .unwrap()
 }
 
+#[derive(sqlx::FromRow)]
+pub struct NotificationWithNoteRecord {
+    pub sender_id: i64,
+    pub display_name: String,
+    pub username: String,
+    pub event_type: i64,
+    pub note_id: i64,
+    pub content: String,
+    pub attachments: Option<String>,
+    pub note_created_at: String,
+    pub parent_id: Option<i64>,
+    pub like_count: i64,
+    pub boost_count: i64,
+    pub created_at: String,
+}
+pub async fn get_with_note(
+    state: &AppState,
+    recipient_id: i64,
+    since: &str,
+    limit: i64,
+) -> Vec<NotificationWithNoteRecord> {
+    query_as(
+        "SELECT notif.sender_id, u.display_name, u.username, notif.event_type, notif.note_id, note.content, note.attachments, note.created_at AS note_created_at, note.parent_id, note.parent_author_username, note.like_count, note.boost_count, notif.created_at
+        FROM notifications AS notif
+        JOIN users AS u ON notif.sender_id = u.id
+        JOIN notes AS note ON notif.note_id = note.id
+        WHERE notif.recipient_id = ? AND notif.created_at > ?
+        ORDER BY notif.created_at DESC
+        LIMIT ?",
+    )
+    .bind(recipient_id)
+    .bind(since)
+    .bind(limit)
+    .fetch_all(&state.db_pool)
+    .await
+    .unwrap()
+}
+
 pub async fn create(
     state: &AppState,
     event_type: i64,

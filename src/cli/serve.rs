@@ -102,6 +102,7 @@ async fn api_routes() -> Router<init::AppState> {
         )
         .route("/api/v1/timelines/home", get(api::timeline::get_home))
         .route("/api/v1/timelines/public", get(api::timeline::get_public))
+        .route("/api/v1/notifications", get(api::notifications::get))
         .layer(cors)
 }
 
