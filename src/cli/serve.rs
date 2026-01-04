@@ -84,6 +84,14 @@ async fn api_routes() -> Router<init::AppState> {
         .route("/api/v1/statuses/{id}", get(api::statuses::get))
         .route("/api/v1/statuses/{id}", delete(api::statuses::delete))
         .route("/api/v1/statuses/{id}/context", get(api::context::get))
+        .route(
+            "/api/v1/statuses/{id}/favourite",
+            post(api::favourite::post_favourite),
+        )
+        .route(
+            "/api/v1/statuses/{id}/unfavourite",
+            post(api::favourite::post_unfavourite),
+        )
         .route("/api/v1/timelines/home", get(api::timeline::get_home))
         .route("/api/v1/timelines/public", get(api::timeline::get_public))
         .layer(cors)

@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod context;
+pub mod favourite;
 pub mod instance;
 pub mod oauth;
 pub mod statuses;
