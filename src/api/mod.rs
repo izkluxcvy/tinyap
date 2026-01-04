@@ -3,6 +3,7 @@ pub mod context;
 pub mod favourite;
 pub mod instance;
 pub mod oauth;
+pub mod reblog;
 pub mod statuses;
 pub mod timeline;
 pub mod verify_credentials;
