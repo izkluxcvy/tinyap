@@ -33,6 +33,7 @@ pub async fn get_by_ap_url(state: &AppState, ap_url: &str) -> Option<NoteRecord>
 
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct NoteWithAuthorRecord {
+    pub author_id: i64,
     pub display_name: String,
     pub username: String,
     pub id: i64,
@@ -51,7 +52,7 @@ pub struct NoteWithAuthorRecord {
 
 pub async fn get_with_author_by_id(state: &AppState, id: i64) -> Option<NoteWithAuthorRecord> {
     query_as(
-        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
+        "SELECT n.author_id, u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
         FROM notes AS n
         JOIN users AS u ON n.author_id = u.id
         WHERE n.id = ?"
@@ -67,7 +68,7 @@ pub async fn get_replies_by_parent_id(
     parent_id: i64,
 ) -> Vec<NoteWithAuthorRecord> {
     query_as(
-        "SELECT u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
+        "SELECT n.author_id, u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
         FROM notes AS n
         JOIN users AS u ON n.author_id = u.id
         WHERE n.parent_id = ?
