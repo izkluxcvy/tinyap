@@ -29,9 +29,10 @@ pub async fn announce(state: &AppState, activity: &Value) {
         note
     } else {
         let _ = note::add_remote(state, &note_ap_url).await;
-        queries::note::get_by_ap_url(state, note_ap_url)
-            .await
-            .unwrap()
+        let Some(note) = queries::note::get_by_ap_url(state, note_ap_url).await else {
+            return;
+        };
+        note
     };
 
     // Boost
