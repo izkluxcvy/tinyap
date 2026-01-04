@@ -1,5 +1,6 @@
 use crate::back::init::AppState;
 use crate::back::queries;
+use crate::back::utils;
 
 use axum::{
     extract::FromRequestParts,
@@ -24,7 +25,8 @@ impl FromRequestParts<AppState> for OAuthUser {
             .and_then(|s| s.strip_prefix("Bearer "))
             .ok_or(StatusCode::UNAUTHORIZED)?;
 
-        let Some(token) = queries::oauth::get_token(state, token).await else {
+        let date_now = utils::date_now();
+        let Some(token) = queries::oauth::get_token(state, token, &date_now).await else {
             return Err(StatusCode::UNAUTHORIZED);
         };
 

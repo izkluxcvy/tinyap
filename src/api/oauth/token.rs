@@ -45,6 +45,10 @@ pub async fn post(State(state): State<AppState>, Form(req): Form<TokenRequestFor
     // Save token
     queries::oauth::create_token(&state, auth.user_id, req.client_id, &token, &expires_at).await;
 
+    // Delete expired tokens
+    let date_now = utils::date_now();
+    queries::oauth::delete_expired_tokens(&state, &date_now).await;
+
     Json(json!({
         "access_token": token,
         "token_type": "Bearer",

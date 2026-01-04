@@ -94,10 +94,19 @@ pub struct TokenRecord {
     pub user_id: i64,
 }
 
-pub async fn get_token(state: &AppState, token: &str) -> Option<TokenRecord> {
-    query_as("SELECT user_id FROM oauth_tokens WHERE token = ?")
+pub async fn get_token(state: &AppState, token: &str, date_now: &str) -> Option<TokenRecord> {
+    query_as("SELECT user_id FROM oauth_tokens WHERE token = ? AND expires_at > ?")
         .bind(token)
+        .bind(date_now)
         .fetch_optional(&state.db_pool)
         .await
         .unwrap()
+}
+
+pub async fn delete_expired_tokens(state: &AppState, date_now: &str) {
+    query("DELETE FROM oauth_tokens WHERE expires_at <= ?")
+        .bind(date_now)
+        .execute(&state.db_pool)
+        .await
+        .unwrap();
 }
