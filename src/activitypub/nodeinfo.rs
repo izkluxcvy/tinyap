@@ -17,7 +17,7 @@ pub async fn get_well_known(State(state): State<AppState>) -> impl IntoResponse 
     let json_body = json!({
         "links": [
             {
-                "rel": "nodeinfo",
+                "rel": "http://nodeinfo.diaspora.software/ns/schema/2.1",
                 "href": format!("https://{}/nodeinfo/2.1", state.domain)
             }
         ]
