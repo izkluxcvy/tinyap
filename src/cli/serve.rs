@@ -80,6 +80,7 @@ async fn api_routes() -> Router<init::AppState> {
             get(api::verify_credentials::get),
         )
         .route("/api/v1/statuses/{id}", get(api::statuses::get))
+        .route("/api/v1/statuses/{id}/context", get(api::context::get))
         .route("/api/v1/timelines/home", get(api::timeline::get_home))
         .route("/api/v1/timelines/public", get(api::timeline::get_public))
         .layer(cors)
