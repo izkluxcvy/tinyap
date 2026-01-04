@@ -35,7 +35,7 @@ pub async fn get(
 
         return Json(json!({
             "accounts": [{
-                "id": user.id,
+                "id": &user.username,
                 "username": &user.username,
                 "acct": &user.username,
                 "display_name": &user.display_name,

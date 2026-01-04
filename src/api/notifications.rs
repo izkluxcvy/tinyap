@@ -43,7 +43,7 @@ pub async fn get(
                 "type": event_type,
                 "created_at": &notif.created_at,
                 "account": {
-                    "id": notif.sender_id,
+                    "id": &notif.username,
                     "username": &notif.username,
                     "acct": &notif.username,
                     "display_name": &notif.display_name,

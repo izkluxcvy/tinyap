@@ -33,7 +33,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
             "favourites_count": ancestor.like_count,
             "content": &ancestor.content,
             "account": {
-                "id": ancestor.author_id,
+                "id": &ancestor.username,
                 "username": &ancestor.username,
                 "acct": &ancestor.username,
                 "display_name": &ancestor.display_name,
@@ -60,7 +60,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
                 "favourites_count": descendant.like_count,
                 "content": &descendant.content,
                 "account": {
-                    "id": descendant.author_id,
+                    "id": &descendant.username,
                     "username": &descendant.username,
                     "acct": &descendant.username,
                     "display_name": &descendant.display_name,

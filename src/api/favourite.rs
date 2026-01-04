@@ -46,7 +46,7 @@ pub async fn post_favourite(
         "favourites_count": note.like_count + 1,
         "content": &note.content,
         "account": {
-            "id": note.author_id,
+            "id": &note.username,
             "username": &note.username,
             "acct": &note.username,
             "display_name": &note.display_name,
@@ -87,7 +87,7 @@ pub async fn post_unfavourite(
         "favourites_count": note.like_count - 1,
         "content": &note.content,
         "account": {
-            "id": note.author_id,
+            "id": &note.username,
             "username": &note.username,
             "acct": &note.username,
             "display_name": &note.display_name,

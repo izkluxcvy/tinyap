@@ -45,7 +45,7 @@ pub async fn get(
         "favourites_count": note.like_count,
         "content": &note.content,
         "account": {
-            "id": note.author_id,
+            "id": &note.username,
             "username": &note.username,
             "acct": &note.username,
             "display_name": &note.display_name,
@@ -119,10 +119,10 @@ pub async fn post(
         "favourites_count": 0,
         "content": req.status,
         "account": {
-            "id": user.id,
-            "username": user.username,
-            "acct": user.username,
-            "display_name": user.display_name,
+            "id": &user.username,
+            "username": &user.username,
+            "acct": &user.username,
+            "display_name": &user.display_name,
         },
         "media_attachments": [],
     }))
@@ -159,7 +159,7 @@ pub async fn delete(
         "favourites_count": note.like_count,
         "content": &note.content,
         "account": {
-            "id": note.author_id,
+            "id": &note.username,
             "username": &user.username,
             "acct": &user.username,
             "display_name": &user.display_name,

@@ -9,7 +9,7 @@ pub async fn get(State(state): State<AppState>, user: OAuthUser) -> Json<Value> 
     let user = queries::user::get_by_id(&state, user.id).await;
 
     Json(json!({
-        "id": user.id,
+        "id": &user.username,
         "username": &user.username,
         "display_name": &user.display_name,
         "created_at": &user.created_at,

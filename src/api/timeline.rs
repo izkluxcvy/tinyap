@@ -55,7 +55,7 @@ pub async fn timeline_json(
                     "favourites_count": 0,
                     "content": "",
                     "account": {
-                        "id": note.author_id,
+                        "id": &note.username,
                         "username": &note.username,
                         "acct": &note.username,
                         "display_name": &note.display_name,
@@ -70,7 +70,7 @@ pub async fn timeline_json(
                         "favourites_count": 0,
                         "content": &note.content,
                         "account": {
-                            "id": 1,
+                            "id": &note.boosted_username,
                             "username": &note.boosted_username,
                             "acct": &note.boosted_username,
                             "display_name": &note.boosted_username,
@@ -88,7 +88,7 @@ pub async fn timeline_json(
                     "favourites_count": note.like_count,
                     "content": &note.content,
                     "account": {
-                        "id": note.author_id,
+                        "id": &note.username,
                         "username": &note.username,
                         "acct": &note.username,
                         "display_name": &note.display_name,
