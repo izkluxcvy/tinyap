@@ -24,7 +24,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
 
     let ancestors_json = if let Some(ancestor) = ancestor {
         let attachments = utils::attachments_to_value(&state, &ancestor.attachments);
-        json!({
+        json!([{
             "id": ancestor.id,
             "created_at": &ancestor.created_at,
             "in_reply_to_id": ancestor.parent_id,
@@ -39,7 +39,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
                 "display_name": &ancestor.display_name,
             },
             "media_attachments": attachments,
-        })
+        }])
     } else {
         json!({})
     };
@@ -71,7 +71,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
         .collect();
 
     Json(json!({
-        "anscestors": ancestors_json,
+        "ancestors": ancestors_json,
         "descendants": descendants_json,
     }))
 }
