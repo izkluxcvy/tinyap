@@ -38,6 +38,20 @@ fn load_config() -> HashMap<String, String> {
     conf
 }
 
+#[cfg(feature = "tls")]
+pub fn cert_files() -> (String, String) {
+    let conf = load_config();
+    let cert_file = conf
+        .get("cert_path")
+        .expect("cert_path must be set")
+        .to_string();
+    let key_file = conf
+        .get("key_path")
+        .expect("key_path must be set")
+        .to_string();
+    (cert_file, key_file)
+}
+
 pub fn server_address() -> String {
     let conf = load_config();
     let host = conf.get("host").expect("host must be set");

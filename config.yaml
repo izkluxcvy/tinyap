@@ -1,5 +1,9 @@
 domain: example.com
 
+tls:
+  cert_path: ./server.crt
+  key_path: ./server.key
+
 server:
   database_url: sqlite://./tinyap.db
   host: 127.0.0.1

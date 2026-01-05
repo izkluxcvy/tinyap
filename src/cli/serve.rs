@@ -6,7 +6,6 @@ use axum::{
     Router,
     routing::{get, post},
 };
-use tokio::net::TcpListener;
 
 async fn activitypub_routes() -> Router<init::AppState> {
     Router::new()
@@ -121,7 +120,10 @@ async fn api_routes() -> Router<init::AppState> {
         .layer(cors)
 }
 
+#[cfg(not(feature = "tls"))]
 pub async fn serve() {
+    use tokio::net::TcpListener;
+
     println!("[TinyAP version {}]", VERSION);
 
     let state = init::create_app_state().await;
@@ -138,4 +140,39 @@ pub async fn serve() {
     let listener = TcpListener::bind(&server_addr).await.unwrap();
     println!("Server listening on http://{}", &server_addr);
     axum::serve(listener, app).await.unwrap();
+}
+
+#[cfg(feature = "tls")]
+pub async fn serve() {
+    use axum_server::tls_rustls::RustlsConfig;
+    use rustls;
+    use std::net::SocketAddr;
+
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .unwrap();
+
+    println!("[TinyAP version {}]", VERSION);
+
+    let state = init::create_app_state().await;
+
+    let app = activitypub_routes().await;
+    #[cfg(feature = "web")]
+    let app = app.merge(web_routes().await);
+    #[cfg(feature = "api")]
+    let app = app.merge(api_routes().await);
+
+    let app = app.with_state(state);
+
+    let (cert_path, key_path) = init::cert_files();
+    let tls_config = RustlsConfig::from_pem_file(cert_path, key_path)
+        .await
+        .unwrap();
+
+    let server_addr = SocketAddr::from(init::server_address().parse::<SocketAddr>().unwrap());
+    println!("Server listening on https://{}", &server_addr);
+    axum_server::bind_rustls(server_addr, tls_config)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }

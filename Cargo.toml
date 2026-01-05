@@ -4,10 +4,10 @@ version = "1.0.0-alpha"
 edition = "2024"
 
 [features]
-default = ["web", "api"]
+default = []
 web = ["tower-http/fs"]
 api = ["tower-http/cors", "serde_urlencoded"]
-tls = ["axum-server/tls-rustls"]
+tls = ["axum-server/tls-rustls", "rustls"]
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
@@ -15,6 +15,7 @@ async-recursion = "1"
 axum = { version = "0.8", features = ["json"] }
 axum-extra = { version = "0.12", features = ["cookie"] }
 axum-server = { version = "0.7", features = ["tls-rustls"], optional = true }
+rustls = { version = "0.23", optional = true }
 tower-http = "0.6"
 time = "0.3"
 tera = { version = "1", features = ["builtins", "date-locale"] }

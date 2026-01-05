@@ -11,7 +11,14 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 - Create note
 - Follow, Reply, Like, Boost, Undo them
 - Tiny web UI
-- (coming soon) Mastodon-compatible API
+- Mastodon-compatible API
+
+## Tested clients
+
+- [Phanpy](https://phanpy.social/) for web
+- [Pinafore](https://pinafore.social/) for web
+- [Flare](https://flareapp.moe/) for Android
+- [toot](https://github.com/ihabunek/toot) for cli
 
 ## Requirements
 
@@ -43,10 +50,16 @@ $ vi config.yaml
 Build and Run
 
 ```sh
-$ cargo build --release
+$ cargo build --release --features=web,api
 
 $ mv target/release/tinyap ./
 $ cargo clean
 
 $ ./tinyap serve
 ```
+
+### Build feature flags:
+
+- `web`: text-based tiny Web UI
+- `api`: mastodon-compatible API
+- `tls`: tinyap as a TLS termination
