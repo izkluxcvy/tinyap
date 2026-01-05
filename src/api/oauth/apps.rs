@@ -55,7 +55,7 @@ pub async fn post(State(state): State<AppState>, req: Request<Body>) -> Json<Val
     Json(json!({
         "id": utils::gen_unique_id(),
         "redirect_uri": redirect_uris,
-        "client_id": client_id,
+        "client_id": client_id.to_string(),
         "client_secret": client_secret,
     }))
 }

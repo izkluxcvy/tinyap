@@ -19,5 +19,9 @@ pub async fn get(State(state): State<AppState>, user: OAuthUser) -> Json<Value> 
         "following_count": user.following_count,
         "statuses_count": user.note_count,
         "last_status_at": user.updated_at,
+        "source": {
+            "privacy": "public",
+            "sensitive": false,
+        }
     }))
 }
