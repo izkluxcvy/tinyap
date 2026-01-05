@@ -223,9 +223,9 @@ pub async fn signed_deliver(
 
             drop(_permit);
 
-            let status = _res.as_ref().unwrap().status();
-            let body = _res.unwrap().text().await.unwrap();
-            println!("{}, response: {}", status, body);
+            // let status = _res.as_ref().unwrap().status();
+            // let body = _res.unwrap().text().await.unwrap();
+            // println!("{}, response: {}", status, body);
         }
     });
 }

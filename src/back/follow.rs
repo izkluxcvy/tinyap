@@ -68,17 +68,18 @@ pub async fn accept(state: &AppState, follower_id: i64, followee_id: i64) {
 
 pub async fn unfollow(state: &AppState, follower_id: i64, followee_id: i64) -> Result<(), String> {
     // Check if following
-    let existing = queries::follow::get(state, follower_id, followee_id).await;
-    if existing.is_none() {
+    let Some(follow) = queries::follow::get(state, follower_id, followee_id).await else {
         return Err("Not following".to_string());
-    }
+    };
 
     // Unfollow
     queries::follow::delete(state, follower_id, followee_id).await;
 
     // Decrement following and follower counts
-    queries::user::decrement_following_count(state, follower_id).await;
-    queries::user::decrement_follower_count(state, followee_id).await;
+    if follow.pending == 0 {
+        queries::user::decrement_following_count(state, follower_id).await;
+        queries::user::decrement_follower_count(state, followee_id).await;
+    }
     Ok(())
 }
 
