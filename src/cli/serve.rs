@@ -85,6 +85,14 @@ async fn api_routes() -> Router<init::AppState> {
             "/api/v1/accounts/verify_credentials",
             get(api::verify_credentials::get),
         )
+        .route(
+            "/api/v1/accounts/{username}/follow",
+            post(api::follow::post_follow),
+        )
+        .route(
+            "/api/v1/accounts/{username}/unfollow",
+            post(api::follow::post_unfollow),
+        )
         .route("/api/v1/statuses", post(api::statuses::post))
         .route("/api/v1/statuses/{id}", get(api::statuses::get))
         .route("/api/v1/statuses/{id}", delete(api::statuses::delete))
