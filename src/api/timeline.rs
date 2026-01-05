@@ -13,27 +13,26 @@ use serde_json::{Value, json};
 pub struct TimelineQuery {
     pub limit: Option<i64>,
     pub since_id: Option<i64>,
+    pub max_id: Option<i64>,
     pub local: Option<bool>,
 }
 
-pub async fn extract_limit_and_since_id(state: &AppState, query: &TimelineQuery) -> (i64, String) {
-    // Extract limit
-    let limit = query.limit.unwrap_or(20);
-    let limit = if limit > 40 { 40 } else { limit };
+pub async fn extract_limit(limit: Option<i64>) -> i64 {
+    let limit = limit.unwrap_or(20);
+    if limit > 40 { 40 } else { limit }
+}
 
-    // Extract since_id to since
-    let since = if let Some(since_id) = query.since_id {
-        let since_note = queries::note::get_by_id(&state, since_id).await;
-        if let Some(since_note) = since_note {
-            since_note.created_at
+pub async fn extract_id(state: &AppState, id: Option<i64>, default: &str) -> String {
+    if let Some(id) = id {
+        let note = queries::note::get_by_id(&state, id).await;
+        if let Some(note) = note {
+            note.created_at
         } else {
-            "0".to_string()
+            default.to_string()
         }
     } else {
-        "0".to_string()
-    };
-
-    (limit, since)
+        default.to_string()
+    }
 }
 
 pub async fn timeline_json(
@@ -107,9 +106,15 @@ pub async fn get_home(
     Query(query): Query<TimelineQuery>,
     user: OAuthUser,
 ) -> Json<Value> {
-    let (limit, since) = extract_limit_and_since_id(&state, &query).await;
+    let limit = extract_limit(query.limit).await;
 
-    let notes = queries::timeline::get_home_since(&state, user.id, &since, limit).await;
+    let notes = if let Some(max_id) = query.max_id {
+        let until = extract_id(&state, Some(max_id), "9999").await;
+        queries::timeline::get_home(&state, user.id, &until, limit).await
+    } else {
+        let since = extract_id(&state, query.since_id, "0").await;
+        queries::timeline::get_home_since(&state, user.id, &since, limit).await
+    };
 
     let notes_json = timeline_json(&state, notes).await;
 
@@ -120,12 +125,24 @@ pub async fn get_public(
     State(state): State<AppState>,
     Query(query): Query<TimelineQuery>,
 ) -> Json<Value> {
-    let (limit, since) = extract_limit_and_since_id(&state, &query).await;
+    let limit = extract_limit(query.limit).await;
 
     let notes = if query.local.unwrap_or(false) {
-        queries::timeline::get_local_since(&state, &since, limit).await
+        if let Some(max_id) = query.max_id {
+            let until = extract_id(&state, Some(max_id), "9999").await;
+            queries::timeline::get_local(&state, &until, limit).await
+        } else {
+            let since = extract_id(&state, query.since_id, "0").await;
+            queries::timeline::get_local_since(&state, &since, limit).await
+        }
     } else {
-        queries::timeline::get_federated_since(&state, &since, limit).await
+        if let Some(max_id) = query.max_id {
+            let until = extract_id(&state, Some(max_id), "9999").await;
+            queries::timeline::get_federated(&state, &until, limit).await
+        } else {
+            let since = extract_id(&state, query.since_id, "0").await;
+            queries::timeline::get_federated_since(&state, &since, limit).await
+        }
     };
 
     let notes_json = timeline_json(&state, notes).await;
