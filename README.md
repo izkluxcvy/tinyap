@@ -55,6 +55,7 @@ $ cargo build --release --features=web,api
 $ mv target/release/tinyap ./
 $ cargo clean
 
+$ ./tinyap --help
 $ ./tinyap serve
 ```
 
