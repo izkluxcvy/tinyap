@@ -11,11 +11,15 @@ use axum::{
 pub async fn post(
     State(state): State<AppState>,
     user: AuthUser,
-    Path((username, id)): Path<(String, i64)>,
+    Path((_username, id)): Path<(String, i64)>,
 ) -> impl IntoResponse {
-    // Get user
-    let user = queries::user::get_by_id(&state, user.id).await;
-    if user.username != username {
+    // Get note
+    let Some(note) = queries::note::get_by_id(&state, id).await else {
+        return "Note not found".into_response();
+    };
+
+    // Check ownership
+    if note.author_id != user.id {
         return "Unauthorized".into_response();
     }
 
