@@ -13,12 +13,12 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 - Tiny web UI
 - Mastodon-compatible API
 
-## Tested clients
+### Tested clients
 
-- [Phanpy](https://phanpy.social/) for web
-- [Pinafore](https://pinafore.social/) for web
+- [Phanpy](https://phanpy.social/) for Web
+- [Pinafore](https://pinafore.social/) for Web
 - [Flare](https://flareapp.moe/) for Android, iOS
-- [toot](https://github.com/ihabunek/toot) for cli
+- [toot](https://github.com/ihabunek/toot) for CLI
 
 ## Requirements
 
@@ -47,7 +47,7 @@ Configure your config.yaml.
 $ vi config.yaml
 ```
 
-Build and Run
+Build and run
 
 ```sh
 $ cargo build --release --features=web,api
@@ -64,3 +64,17 @@ $ ./tinyap serve
 - `web`: text-based tiny Web UI
 - `api`: mastodon-compatible API
 - `tls`: tinyap as a TLS termination
+
+## Customizing Web UI
+
+### templates/
+
+HTML with [Jinja](https://en.wikipedia.org/wiki/Jinja_(template_engine)) template format.
+
+Loaded once when server starts.
+
+### static/
+
+Static files like style.css.
+
+Loaded on each access to /static/xxx.xx.
