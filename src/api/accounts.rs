@@ -1,4 +1,4 @@
-use crate::api::timeline::timeline_json;
+use crate::api::timeline::{extract_id, timeline_json};
 use crate::back::init::AppState;
 use crate::back::queries;
 
@@ -31,6 +31,7 @@ pub async fn get(State(state): State<AppState>, Path(username): Path<String>) ->
 #[derive(serde::Deserialize)]
 pub struct StatusesQuery {
     pub limit: Option<i64>,
+    pub max_id: Option<i64>,
     pub pinned: Option<bool>,
 }
 
@@ -50,13 +51,16 @@ pub async fn get_statuses(
     let limit = query.limit.unwrap_or(20);
     let limit = if limit > 40 { 40 } else { limit };
 
+    // Extract max_id
+    let until = extract_id(&state, query.max_id, "9999").await;
+
     // Get user
     let Some(user) = queries::user::get_by_username(&state, &username).await else {
         return Json(json!({"error": "User not found"}));
     };
 
     // Get notes by user
-    let notes = queries::timeline::get_user(&state, user.id, "9999-01-01-T00:00:00Z", limit).await;
+    let notes = queries::timeline::get_user(&state, user.id, &until, limit).await;
 
     let notes_json = timeline_json(&state, notes).await;
 
