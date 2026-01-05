@@ -20,12 +20,14 @@ pub async fn get(state: &AppState, follower_id: i64, followee_id: i64) -> Option
     .unwrap()
 }
 
+#[cfg(feature = "web")]
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct FollowUserRecord {
     pub display_name: String,
     pub username: String,
 }
 
+#[cfg(feature = "web")]
 pub async fn get_following(state: &AppState, follower_id: i64) -> Vec<FollowUserRecord> {
     query_as(
         "SELECT users.display_name, users.username
@@ -40,6 +42,7 @@ pub async fn get_following(state: &AppState, follower_id: i64) -> Vec<FollowUser
     .unwrap()
 }
 
+#[cfg(feature = "web")]
 pub async fn get_followers(state: &AppState, followee_id: i64) -> Vec<FollowUserRecord> {
     query_as(
         "SELECT users.display_name, users.username

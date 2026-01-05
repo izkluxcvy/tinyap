@@ -72,6 +72,7 @@ pub async fn add(state: &AppState, username: &str, password: &str) -> Result<(),
     Ok(())
 }
 
+#[cfg(feature = "web")]
 pub async fn update_profile(state: &AppState, user_id: i64, display_name: &str, bio: &str) {
     let bio = utils::parse_content(state, bio);
     queries::user::update_profile(state, user_id, display_name, &bio).await;
