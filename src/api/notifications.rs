@@ -24,6 +24,10 @@ pub async fn get(
     let limit = if limit > 80 { 80 } else { limit };
     let since = query.since_id.unwrap_or("0".to_string());
 
+    // Get user
+    let user = queries::user::get_by_id(&state, user.id).await;
+
+    // Get notifications
     let notifications = queries::notification::get_with_note(&state, user.id, &since, limit).await;
 
     let notifications_json: Value = notifications
@@ -56,6 +60,12 @@ pub async fn get(
                     "reblogs_count": notif.boost_count,
                     "favourites_count": notif.like_count,
                     "content": notif.content,
+                    "account": {
+                        "id": &user.username,
+                        "username": &user.username,
+                        "acct": &user.username,
+                        "display_name": &user.display_name,
+                    },
                     "attachments": attachments,
                 }
             })
