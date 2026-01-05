@@ -7,7 +7,7 @@ use argon2::{
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
 };
 use rand::rngs::OsRng;
-use rsa::{RsaPrivateKey, RsaPublicKey, pkcs1::EncodeRsaPrivateKey, pkcs1::EncodeRsaPublicKey};
+use rsa::{RsaPrivateKey, RsaPublicKey, pkcs8::EncodePrivateKey, pkcs8::EncodePublicKey};
 use serde_json::Value;
 use url::Url;
 
@@ -43,10 +43,10 @@ pub async fn add(state: &AppState, username: &str, password: &str) -> Result<(),
     let public_key = RsaPublicKey::from(&private_key);
 
     let private_key_pem = private_key
-        .to_pkcs1_pem(Default::default())
+        .to_pkcs8_pem(Default::default())
         .unwrap()
         .to_string();
-    let public_key_pem = public_key.to_pkcs1_pem(Default::default()).unwrap();
+    let public_key_pem = public_key.to_public_key_pem(Default::default()).unwrap();
 
     // Create user
     let ap_url = utils::local_user_ap_url(&state.domain, username);

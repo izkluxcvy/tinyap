@@ -7,8 +7,8 @@ use rand::rngs::OsRng;
 use rand::{Rng, thread_rng};
 use rsa::{
     RsaPrivateKey,
-    pkcs1::DecodeRsaPrivateKey,
     pkcs1v15::SigningKey,
+    pkcs8::DecodePrivateKey,
     signature::{SignatureEncoding, Signer},
 };
 use sha2::{Digest, Sha256};
@@ -190,7 +190,7 @@ pub async fn signed_deliver(
         path_and_query, host, date, digest_value
     );
 
-    let private_key = RsaPrivateKey::from_pkcs1_pem(private_key).unwrap();
+    let private_key = RsaPrivateKey::from_pkcs8_pem(private_key).unwrap();
     let signing_key = SigningKey::<Sha256>::new(private_key);
 
     let signature = signing_key.sign(signing_string.as_bytes());
@@ -223,9 +223,9 @@ pub async fn signed_deliver(
 
             drop(_permit);
 
-            // let status = _res.as_ref().unwrap().status();
-            // let body = _res.unwrap().text().await.unwrap();
-            // println!("{}, response: {}", status, body);
+            let status = _res.as_ref().unwrap().status();
+            let body = _res.unwrap().text().await.unwrap();
+            println!("{}, response: {}", status, body);
         }
     });
 }
@@ -291,7 +291,7 @@ pub async fn signed_get(state: &AppState, url: &str) -> Result<reqwest::Response
         path_and_query, host, date
     );
 
-    let private_key = RsaPrivateKey::from_pkcs1_pem(&private_key).unwrap();
+    let private_key = RsaPrivateKey::from_pkcs8_pem(&private_key).unwrap();
     let signing_key = SigningKey::<Sha256>::new(private_key);
 
     let signature = signing_key.sign(signing_string.as_bytes());
