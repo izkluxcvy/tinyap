@@ -56,7 +56,7 @@ pub async fn get(
 
         return Json(json!({
             "statuses": [{
-                "id": note.id,
+                "id": note.id.to_string(),
                 "created_at": &note.created_at,
                 "in_reply_to_id": note.parent_id,
                 "visibility": "public",
@@ -64,7 +64,7 @@ pub async fn get(
                 "favourites_count": note.like_count,
                 "content": &note.content,
                 "account": {
-                    "id": note.author_id,
+                    "id": &note.username,
                     "username": &note.username,
                     "acct": &note.username,
                     "display_name": &note.display_name,

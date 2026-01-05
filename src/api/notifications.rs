@@ -53,7 +53,7 @@ pub async fn get(
                     "display_name": &notif.display_name,
                 },
                 "status": {
-                    "id": notif.note_id,
+                    "id": notif.note_id.to_string(),
                     "created_at": &notif.note_created_at,
                     "in_reply_to_id": notif.parent_id,
                     "visibility": "public",

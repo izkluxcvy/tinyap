@@ -46,7 +46,7 @@ pub async fn timeline_json(
 
             if note.boosted_id.is_some() {
                 json!({
-                    "id": note.id,
+                    "id": note.id.to_string(),
                     "created_at": &note.created_at,
                     "in_reply_to_id": note.parent_id,
                     "visibility": "public",
@@ -79,7 +79,7 @@ pub async fn timeline_json(
                 })
             } else {
                 json!({
-                    "id": note.id,
+                    "id": note.id.to_string(),
                     "created_at": &note.created_at,
                     "in_reply_to_id": note.parent_id,
                     "visibility": "public",

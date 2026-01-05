@@ -37,7 +37,7 @@ pub async fn get(
     };
 
     Json(json!({
-        "id": note.id,
+        "id": note.id.to_string(),
         "created_at": &note.created_at,
         "in_reply_to_id": note.parent_id,
         "visibility": "public",

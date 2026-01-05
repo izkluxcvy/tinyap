@@ -25,7 +25,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
     let ancestors_json = if let Some(ancestor) = ancestor {
         let attachments = utils::attachments_to_value(&state, &ancestor.attachments);
         json!([{
-            "id": &ancestor.username,
+            "id": &ancestor.id.to_string(),
             "created_at": &ancestor.created_at,
             "in_reply_to_id": ancestor.parent_id,
             "visibility": "public",
@@ -52,7 +52,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
         .map(|descendant| {
             let attachments = utils::attachments_to_value(&state, &descendant.attachments);
             json!({
-                "id": &descendant.username,
+                "id": &descendant.id.to_string(),
                 "created_at": &descendant.created_at,
                 "in_reply_to_id": descendant.parent_id,
                 "visibility": "public",
