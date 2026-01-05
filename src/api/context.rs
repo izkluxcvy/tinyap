@@ -41,7 +41,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
             "media_attachments": attachments,
         }])
     } else {
-        json!({})
+        json!([])
     };
 
     // Get descendants (replies)
