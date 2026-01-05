@@ -2,6 +2,7 @@ use crate::back::init::AppState;
 
 use sqlx::{query, query_as};
 
+#[cfg(feature = "web")]
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct NotificationRecord {
     pub display_name: String,
@@ -11,6 +12,7 @@ pub struct NotificationRecord {
     pub created_at: String,
 }
 
+#[cfg(feature = "web")]
 pub async fn get(state: &AppState, recipient_id: i64, limit: i64) -> Vec<NotificationRecord> {
     query_as(
         "SELECT u.display_name, u.username, n.event_type, n.note_id, n.created_at
@@ -27,6 +29,7 @@ pub async fn get(state: &AppState, recipient_id: i64, limit: i64) -> Vec<Notific
     .unwrap()
 }
 
+#[cfg(feature = "api")]
 #[derive(sqlx::FromRow)]
 pub struct NotificationWithNoteRecord {
     pub display_name: String,
@@ -41,6 +44,8 @@ pub struct NotificationWithNoteRecord {
     pub boost_count: i64,
     pub created_at: String,
 }
+
+#[cfg(feature = "api")]
 pub async fn get_with_note(
     state: &AppState,
     recipient_id: i64,

@@ -87,6 +87,7 @@ pub async fn get_federated(state: &AppState, until: &str, limit: i64) -> Vec<Not
     .unwrap()
 }
 
+#[cfg(feature = "api")]
 pub async fn get_home_since(
     state: &AppState,
     user_id: i64,
@@ -112,6 +113,7 @@ pub async fn get_home_since(
     .unwrap()
 }
 
+#[cfg(feature = "api")]
 pub async fn get_local_since(
     state: &AppState,
     since: &str,
@@ -134,6 +136,7 @@ pub async fn get_local_since(
     .unwrap()
 }
 
+#[cfg(feature = "api")]
 pub async fn get_federated_since(
     state: &AppState,
     since: &str,

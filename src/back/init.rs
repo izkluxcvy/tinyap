@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::sync::Arc;
+#[cfg(feature = "web")]
 use tera::Tera;
 use tokio::sync::Semaphore;
 
@@ -47,6 +48,7 @@ pub fn server_address() -> String {
 #[derive(Clone)]
 pub struct AppState {
     pub db_pool: sqlx::SqlitePool,
+    #[cfg(feature = "web")]
     pub tera: Tera,
     pub deliver_queue: Arc<Semaphore>,
     pub http_client: Client,
@@ -97,6 +99,7 @@ pub async fn create_app_state() -> AppState {
 
     let db_pool = create_db_pool(&conf).await;
 
+    #[cfg(feature = "web")]
     let tera = Tera::new("templates/**/*").unwrap();
 
     let domain = conf.get("domain").expect("domain must be set").to_string();
@@ -164,6 +167,7 @@ pub async fn create_app_state() -> AppState {
 
     AppState {
         db_pool: db_pool,
+        #[cfg(feature = "web")]
         tera: tera,
         deliver_queue: Arc::new(Semaphore::new(deliver_queue_size)),
         http_client: http_client,

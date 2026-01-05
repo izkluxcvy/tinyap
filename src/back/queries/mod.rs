@@ -3,7 +3,9 @@ pub mod follow;
 pub mod like;
 pub mod note;
 pub mod notification;
+#[cfg(feature = "api")]
 pub mod oauth;
+#[cfg(feature = "web")]
 pub mod session;
 pub mod timeline;
 pub mod user;
