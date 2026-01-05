@@ -17,7 +17,7 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 
 - [Phanpy](https://phanpy.social/) for web
 - [Pinafore](https://pinafore.social/) for web
-- [Flare](https://flareapp.moe/) for Android
+- [Flare](https://flareapp.moe/) for Android, iOS
 - [toot](https://github.com/ihabunek/toot) for cli
 
 ## Requirements
