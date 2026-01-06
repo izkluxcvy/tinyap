@@ -10,4 +10,5 @@ pub mod reblog;
 pub mod search;
 pub mod statuses;
 pub mod timeline;
+pub mod update_credentials;
 pub mod verify_credentials;

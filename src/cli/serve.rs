@@ -55,7 +55,7 @@ async fn web_routes() -> Router<init::AppState> {
 #[cfg(feature = "api")]
 async fn api_routes() -> Router<init::AppState> {
     use crate::api;
-    use axum::routing::delete;
+    use axum::routing::{delete, patch};
     use tower_http::cors::{Any, CorsLayer};
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -83,6 +83,10 @@ async fn api_routes() -> Router<init::AppState> {
         .route(
             "/api/v1/accounts/verify_credentials",
             get(api::verify_credentials::get),
+        )
+        .route(
+            "/api/v1/accounts/update_credentials",
+            patch(api::update_credentials::patch),
         )
         .route(
             "/api/v1/accounts/{username}/follow",

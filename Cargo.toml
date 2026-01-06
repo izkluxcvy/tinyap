@@ -6,7 +6,7 @@ edition = "2024"
 [features]
 default = []
 web = ["tower-http/fs"]
-api = ["tower-http/cors", "serde_urlencoded"]
+api = ["tower-http/cors", "serde_urlencoded", "axum/multipart"]
 tls = ["axum-server/tls-rustls", "rustls"]
 
 [dependencies]
