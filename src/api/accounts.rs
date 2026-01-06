@@ -62,7 +62,7 @@ pub async fn get_statuses(
     // Get notes by user
     let notes = queries::timeline::get_user(&state, user.id, &until, limit).await;
 
-    let notes_json = timeline_json(&state, notes).await;
+    let notes_json = timeline_json(&state, notes);
 
     Json(json!(notes_json))
 }

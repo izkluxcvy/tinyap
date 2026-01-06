@@ -35,10 +35,7 @@ pub async fn extract_id(state: &AppState, id: Option<i64>, default: &str) -> Str
     }
 }
 
-pub async fn timeline_json(
-    state: &AppState,
-    notes: Vec<queries::note::NoteWithAuthorRecord>,
-) -> Value {
+pub fn timeline_json(state: &AppState, notes: Vec<queries::note::NoteWithAuthorRecord>) -> Value {
     let notes_json: Value = notes
         .into_iter()
         .map(|note| {
@@ -117,7 +114,7 @@ pub async fn get_home(
         queries::timeline::get_home_since(&state, user.id, &since, limit).await
     };
 
-    let notes_json = timeline_json(&state, notes).await;
+    let notes_json = timeline_json(&state, notes);
 
     Json(notes_json)
 }
@@ -146,7 +143,7 @@ pub async fn get_public(
         }
     };
 
-    let notes_json = timeline_json(&state, notes).await;
+    let notes_json = timeline_json(&state, notes);
 
     Json(notes_json)
 }

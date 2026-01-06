@@ -3,6 +3,7 @@ pub mod auth;
 pub mod context;
 pub mod favourite;
 pub mod follow;
+pub mod following;
 pub mod instance;
 pub mod notifications;
 pub mod oauth;
