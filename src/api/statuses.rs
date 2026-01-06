@@ -60,7 +60,7 @@ pub async fn get(
 #[derive(serde::Deserialize)]
 pub struct PostStatusRequest {
     pub status: String,
-    pub in_reply_to_id: Option<i64>,
+    pub in_reply_to_id: Option<String>,
 }
 
 pub async fn post(
@@ -68,13 +68,19 @@ pub async fn post(
     user: OAuthUser,
     Json(req): Json<PostStatusRequest>,
 ) -> Json<Value> {
+    // Option<String> to Option<i64>
+    let in_reply_to_id = req
+        .in_reply_to_id
+        .as_ref()
+        .and_then(|id_str| id_str.parse::<i64>().ok());
+
     let user = queries::user::get_by_id(&state, user.id).await;
     let id = utils::gen_unique_id();
     let ap_url = utils::local_note_ap_url(&state.domain, id);
     let created_at = utils::date_now();
 
     // in_reply_to handling
-    let parent_author_username = if let Some(parent_id) = req.in_reply_to_id {
+    let parent_author_username = if let Some(parent_id) = in_reply_to_id {
         let Some(parent) = queries::note::get_by_id(&state, parent_id).await else {
             return Json(json!({
                 "error": "Parent note not found"
@@ -94,7 +100,7 @@ pub async fn post(
         user.id,
         &req.status,
         None,
-        req.in_reply_to_id,
+        in_reply_to_id,
         parent_author_username,
         &created_at,
         1, // is_public
