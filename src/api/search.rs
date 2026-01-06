@@ -53,12 +53,13 @@ pub async fn get(
         };
 
         let attachments = utils::attachments_to_value(&state, &note.attachments);
+        let parent_id_string = note.parent_id.map(|id| id.to_string());
 
         return Json(json!({
             "statuses": [{
                 "id": note.id.to_string(),
                 "created_at": &note.created_at,
-                "in_reply_to_id": note.parent_id,
+                "in_reply_to_id": parent_id_string,
                 "visibility": "public",
                 "reblogs_count": note.boost_count,
                 "favourites_count": note.like_count,

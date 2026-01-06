@@ -18,6 +18,7 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 - [Phanpy](https://phanpy.social/) for Web
 - [Pinafore](https://pinafore.social/) for Web
 - [tokodon](https://apps.kde.org/tokodon/) for Linux, Windows
+- [tuba](https://tuba.geopjr.dev/) for Linux, Windows
 - [Flare](https://flareapp.moe/) for Android, iOS
 - [toot](https://github.com/ihabunek/toot) for CLI
 

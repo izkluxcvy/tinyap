@@ -29,7 +29,7 @@ pub async fn post_reblog(
     boost::deliver_boost(&state, user.id, id).await;
 
     Json(json!({
-        "id": note.id,
+        "id": note.id.to_string(),
         "created_at": &note.created_at,
         "in_reply_to_id": note.parent_id,
         "visibility": "public",
@@ -66,7 +66,7 @@ pub async fn post_unreblog(
     boost::deliver_unboost(&state, user.id, id).await;
 
     Json(json!({
-        "id": note.id,
+        "id": note.id.to_string(),
         "created_at": &note.created_at,
         "in_reply_to_id": note.parent_id,
         "visibility": "public",

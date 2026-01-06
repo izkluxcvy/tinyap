@@ -36,10 +36,11 @@ pub async fn get(
         false
     };
 
+    let parent_id_string = note.parent_id.map(|id| id.to_string());
     Json(json!({
         "id": note.id.to_string(),
         "created_at": &note.created_at,
-        "in_reply_to_id": note.parent_id,
+        "in_reply_to_id": parent_id_string,
         "visibility": "public",
         "reblogs_count": note.boost_count,
         "favourites_count": note.like_count,
@@ -110,10 +111,11 @@ pub async fn post(
     // Deliver to followers and parent
     note::deliver_create(&state, id).await;
 
+    let parent_id_string = req.in_reply_to_id.map(|id| id.to_string());
     Json(json!({
-        "id": id,
+        "id": id.to_string(),
         "created_at": created_at,
-        "in_reply_to_id": req.in_reply_to_id,
+        "in_reply_to_id": parent_id_string,
         "visibility": "public",
         "reblogs_count": 0,
         "favourites_count": 0,

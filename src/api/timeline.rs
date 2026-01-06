@@ -43,12 +43,13 @@ pub async fn timeline_json(
         .into_iter()
         .map(|note| {
             let attachments = utils::attachments_to_value(state, &note.attachments);
+            let parent_id_string = note.parent_id.map(|id| id.to_string());
 
-            if note.boosted_id.is_some() {
+            if let Some(boosted_id) = note.boosted_id {
                 json!({
                     "id": note.id.to_string(),
                     "created_at": &note.created_at,
-                    "in_reply_to_id": note.parent_id,
+                    "in_reply_to_id": parent_id_string,
                     "visibility": "public",
                     "reblogs_count": 0,
                     "favourites_count": 0,
@@ -61,7 +62,7 @@ pub async fn timeline_json(
                     },
                     "media_attachments": [],
                     "reblog": {
-                        "id": note.boosted_id,
+                        "id": boosted_id.to_string(),
                         "created_at": &note.boosted_created_at,
                         "in_reply_to_id": null,
                         "visibility": "public",
@@ -81,7 +82,7 @@ pub async fn timeline_json(
                 json!({
                     "id": note.id.to_string(),
                     "created_at": &note.created_at,
-                    "in_reply_to_id": note.parent_id,
+                    "in_reply_to_id": parent_id_string,
                     "visibility": "public",
                     "reblogs_count": note.boost_count,
                     "favourites_count": note.like_count,

@@ -24,10 +24,11 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
 
     let ancestors_json = if let Some(ancestor) = ancestor {
         let attachments = utils::attachments_to_value(&state, &ancestor.attachments);
+        let parent_id_string = ancestor.parent_id.map(|id| id.to_string());
         json!([{
             "id": &ancestor.id.to_string(),
             "created_at": &ancestor.created_at,
-            "in_reply_to_id": ancestor.parent_id,
+            "in_reply_to_id": parent_id_string,
             "visibility": "public",
             "reblogs_count": ancestor.boost_count,
             "favourites_count": ancestor.like_count,
@@ -51,10 +52,11 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
         .into_iter()
         .map(|descendant| {
             let attachments = utils::attachments_to_value(&state, &descendant.attachments);
+            let parent_id_string = descendant.parent_id.map(|id| id.to_string());
             json!({
                 "id": &descendant.id.to_string(),
                 "created_at": &descendant.created_at,
-                "in_reply_to_id": descendant.parent_id,
+                "in_reply_to_id": parent_id_string,
                 "visibility": "public",
                 "reblogs_count": descendant.boost_count,
                 "favourites_count": descendant.like_count,
