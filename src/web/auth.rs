@@ -19,13 +19,13 @@ impl FromRequestParts<AppState> for AuthUser {
         let jar = CookieJar::from_headers(&parts.headers);
 
         let Some(cookie) = jar.get("session_id") else {
-            return Err(Redirect::to("/?message=login_required"));
+            return Err(Redirect::to("/login"));
         };
 
         let session_id = cookie.value();
         let session = queries::session::get(state, session_id, &utils::date_now()).await;
         let Some(session) = session else {
-            return Err(Redirect::to("/?message=login_required"));
+            return Err(Redirect::to("/login"));
         };
 
         Ok(AuthUser {
