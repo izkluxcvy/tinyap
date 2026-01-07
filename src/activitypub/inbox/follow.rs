@@ -16,30 +16,33 @@ pub async fn follow(state: &AppState, activity: &Value) {
     };
 
     // Get followee = local user
-    let Some(followee) = queries::user::get_by_ap_url(&state, followee_ap_url).await else {
+    let Some(followee) = queries::user::get_by_ap_url(state, followee_ap_url).await else {
         return;
     };
     let private_key = followee.private_key.unwrap();
 
     // Create locally-stored remote user if not exists
     let follower = {
-        if let Some(follower) = queries::user::get_by_ap_url(&state, follower_ap_url).await {
+        if let Some(follower) = queries::user::get_by_ap_url(state, follower_ap_url).await {
             follower
         } else {
-            let res = user::add_remote(&state, follower_ap_url).await;
+            let res = user::add_remote(state, follower_ap_url).await;
             if res.is_err() {
                 return;
             }
 
-            queries::user::get_by_ap_url(&state, follower_ap_url)
+            queries::user::get_by_ap_url(state, follower_ap_url)
                 .await
                 .unwrap()
         }
     };
 
-    // Follow
-    let _ = follow::follow(&state, follower.id, followee.id).await;
-    let _ = follow::accept(&state, follower.id, followee.id).await;
+    // Create follow if not exists
+    let existing = queries::follow::get(state, follower.id, followee.id).await;
+    if existing.is_none() {
+        let _ = follow::follow(state, follower.id, followee.id).await;
+        let _ = follow::accept(state, follower.id, followee.id).await;
+    }
 
     // Return Accept activity
     let accept_id = format!("{}#accept-{}", followee.ap_url, utils::gen_unique_id());
@@ -53,7 +56,7 @@ pub async fn follow(state: &AppState, activity: &Value) {
     let json_body = accept_activity.to_string();
 
     utils::signed_deliver(
-        &state,
+        state,
         &followee.ap_url,
         &private_key,
         &follower.inbox_url,

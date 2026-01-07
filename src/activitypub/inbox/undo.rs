@@ -23,8 +23,11 @@ pub async fn follow(state: &AppState, activity: &Value) {
         return;
     };
 
-    // Unfollow
-    let _ = follow::unfollow(state, follower.id, followee.id).await;
+    // Unfollow if exists
+    let existing = queries::follow::get(state, follower.id, followee.id).await;
+    if existing.is_some() {
+        let _ = follow::unfollow(state, follower.id, followee.id).await;
+    }
 }
 
 pub async fn like(state: &AppState, activity: &Value) {
