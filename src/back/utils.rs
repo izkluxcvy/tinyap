@@ -277,7 +277,9 @@ pub async fn signed_get(state: &AppState, url: &str) -> Result<reqwest::Response
     let Ok(url_parsed) = Url::parse(url) else {
         return Err("Invalid URL".to_string());
     };
-    let host = url_parsed.host_str().unwrap();
+    let Some(host) = url_parsed.host_str() else {
+        return Err("Host missing".to_string());
+    };
     let path_and_query = {
         let full = url_parsed.path();
         match url_parsed.query() {
