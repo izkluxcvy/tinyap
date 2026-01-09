@@ -1,6 +1,7 @@
-use crate::api::timeline::{extract_id, timeline_json};
+use crate::api::timeline::timeline_json;
 use crate::back::init::AppState;
 use crate::back::queries;
+use crate::back::utils;
 
 use axum::{
     Json,
@@ -52,7 +53,7 @@ pub async fn get_statuses(
     let limit = if limit > 40 { 40 } else { limit };
 
     // Extract max_id
-    let until = extract_id(&state, query.max_id, "9999").await;
+    let (until_date, until_id) = utils::extract_until_id(&state, query.max_id).await;
 
     // Get user
     let Some(user) = queries::user::get_by_username(&state, &username).await else {
@@ -60,7 +61,7 @@ pub async fn get_statuses(
     };
 
     // Get notes by user
-    let notes = queries::timeline::get_user(&state, user.id, &until, limit).await;
+    let notes = queries::timeline::get_user(&state, user.id, &until_date, until_id, limit).await;
 
     let notes_json = timeline_json(&state, notes);
 

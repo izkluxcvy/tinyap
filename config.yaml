@@ -21,5 +21,5 @@ config:
 web_config:
   allow_signup: true
   max_sessions_per_user: 10
-  max_timeline_items: 50
+  max_timeline_items: 30
   timezone: Asia/Tokyo

@@ -49,7 +49,7 @@ CREATE table notes (
 CREATE INDEX idx_notes_author_id ON notes(author_id);
 CREATE INDEX idx_notes_boosted_id ON notes(boosted_id);
 CREATE INDEX idx_notes_parent_id ON notes(parent_id);
-CREATE INDEX idx_notes_created_at ON notes(created_at);
+CREATE INDEX idx_notes_created_at_id ON notes(created_at, id);
 
 CREATE TABLE likes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

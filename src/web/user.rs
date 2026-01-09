@@ -1,5 +1,6 @@
 use crate::back::init::AppState;
 use crate::back::queries;
+use crate::back::utils::extract_until_id;
 use crate::web::auth::MaybeAuthUser;
 
 use axum::{
@@ -10,7 +11,7 @@ use axum::{
 
 #[derive(serde::Deserialize)]
 pub struct PageQuery {
-    until: Option<String>,
+    until: Option<i64>,
 }
 
 pub async fn get(
@@ -33,14 +34,19 @@ pub async fn get(
     };
 
     // Get notes by user
-    let until = query.until.unwrap_or("9999-01-01-T00:00:00Z".to_string());
-    let notes =
-        queries::timeline::get_user(&state, user.id, &until, state.web_config.max_timeline_items)
-            .await;
+    let (until_date, until_id) = extract_until_id(&state, query.until).await;
+    let notes = queries::timeline::get_user(
+        &state,
+        user.id,
+        &until_date,
+        until_id,
+        state.web_config.max_timeline_items,
+    )
+    .await;
     let until_next = if let Some(last_note) = notes.last() {
-        &last_note.created_at
+        last_note.id
     } else {
-        &until
+        until_id
     };
 
     // Check if auth user follows this user
@@ -73,7 +79,7 @@ pub async fn get(
     context.insert("user", &user);
     context.insert("following_status", &following_status);
     context.insert("notes", &notes);
-    context.insert("until_next", until_next);
+    context.insert("until_next", &until_next);
     context.insert("max_notes", &state.web_config.max_timeline_items);
     let rendered = state.tera.render("user.html", &context).unwrap();
     Html(rendered).into_response()

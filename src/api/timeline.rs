@@ -22,19 +22,6 @@ pub async fn extract_limit(limit: Option<i64>) -> i64 {
     if limit > 40 { 40 } else { limit }
 }
 
-pub async fn extract_id(state: &AppState, id: Option<i64>, default: &str) -> String {
-    if let Some(id) = id {
-        let note = queries::note::get_by_id(&state, id).await;
-        if let Some(note) = note {
-            note.created_at
-        } else {
-            default.to_string()
-        }
-    } else {
-        default.to_string()
-    }
-}
-
 pub fn timeline_json(state: &AppState, notes: Vec<queries::note::NoteWithAuthorRecord>) -> Value {
     let notes_json: Value = notes
         .into_iter()
@@ -107,11 +94,11 @@ pub async fn get_home(
     let limit = extract_limit(query.limit).await;
 
     let notes = if let Some(max_id) = query.max_id {
-        let until = extract_id(&state, Some(max_id), "9999").await;
-        queries::timeline::get_home(&state, user.id, &until, limit).await
+        let (until_date, until_id) = utils::extract_until_id(&state, Some(max_id)).await;
+        queries::timeline::get_home(&state, user.id, &until_date, until_id, limit).await
     } else {
-        let since = extract_id(&state, query.since_id, "0").await;
-        queries::timeline::get_home_since(&state, user.id, &since, limit).await
+        let (since_date, since_id) = utils::extract_since_id(&state, query.since_id).await;
+        queries::timeline::get_home_since(&state, user.id, &since_date, since_id, limit).await
     };
 
     let notes_json = timeline_json(&state, notes);
@@ -127,19 +114,19 @@ pub async fn get_public(
 
     let notes = if query.local.unwrap_or(false) {
         if let Some(max_id) = query.max_id {
-            let until = extract_id(&state, Some(max_id), "9999").await;
-            queries::timeline::get_local(&state, &until, limit).await
+            let (until_date, until_id) = utils::extract_until_id(&state, Some(max_id)).await;
+            queries::timeline::get_local(&state, &until_date, until_id, limit).await
         } else {
-            let since = extract_id(&state, query.since_id, "0").await;
-            queries::timeline::get_local_since(&state, &since, limit).await
+            let (since_date, since_id) = utils::extract_since_id(&state, query.since_id).await;
+            queries::timeline::get_local_since(&state, &since_date, since_id, limit).await
         }
     } else {
         if let Some(max_id) = query.max_id {
-            let until = extract_id(&state, Some(max_id), "9999").await;
-            queries::timeline::get_federated(&state, &until, limit).await
+            let (until_date, until_id) = utils::extract_until_id(&state, Some(max_id)).await;
+            queries::timeline::get_federated(&state, &until_date, until_id, limit).await
         } else {
-            let since = extract_id(&state, query.since_id, "0").await;
-            queries::timeline::get_federated_since(&state, &since, limit).await
+            let (since_date, since_id) = utils::extract_since_id(&state, query.since_id).await;
+            queries::timeline::get_federated_since(&state, &since_date, since_id, limit).await
         }
     };
 

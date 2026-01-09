@@ -65,6 +65,29 @@ pub fn gen_unique_id() -> i64 {
     (timestamp << RANDOM_BITS) | random
 }
 
+pub async fn extract_until_id(state: &AppState, until_id: Option<i64>) -> (String, i64) {
+    let until_id = until_id.unwrap_or(i64::MAX);
+    let until_date = if let Some(until_note) = queries::note::get_by_id(state, until_id).await {
+        until_note.created_at
+    } else {
+        "9999".to_string()
+    };
+
+    (until_date, until_id)
+}
+
+#[cfg(feature = "api")]
+pub async fn extract_since_id(state: &AppState, since_id: Option<i64>) -> (String, i64) {
+    let since_id = since_id.unwrap_or(0);
+    let since_date = if let Some(note) = queries::note::get_by_id(state, since_id).await {
+        note.created_at
+    } else {
+        "0000".to_string()
+    };
+
+    (since_date, since_id)
+}
+
 pub fn strip_content(state: &AppState, content: &str) -> String {
     let content = content.trim();
     let content = state
