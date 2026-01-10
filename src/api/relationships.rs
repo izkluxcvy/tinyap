@@ -7,40 +7,36 @@ use axum::{
     extract::{Query, State},
 };
 use serde_json::{Value, json};
-use std::collections::HashMap;
 
 pub async fn get(
     State(state): State<AppState>,
-    Query(query): Query<HashMap<String, String>>,
+    Query(query): Query<Vec<(String, String)>>,
     auth_user: OAuthUser,
 ) -> Json<Value> {
     // Extract id[] or id parameter
-    let mut username = "";
+    let mut usernames = Vec::new();
     for (key, value) in query.iter() {
         if key == "id[]" || key == "id" {
-            username = value;
-            break;
+            usernames.push(value.clone());
         }
     }
-    if username == "" {
-        return Json(json!({"error": "Missing id parameter"}));
-    }
 
-    // Get user
-    let Some(user) = queries::user::get_by_username(&state, username).await else {
-        return Json(json!({"error": "User not found"}));
-    };
+    let mut relationships: Vec<Value> = Vec::new();
+    for username in usernames {
+        // Get user
+        let Some(user) = queries::user::get_by_username(&state, &username).await else {
+            return Json(json!({"error": "User not found"}));
+        };
 
-    // Check relationships
-    let is_following = queries::follow::get(&state, auth_user.id, user.id)
-        .await
-        .is_some();
-    let is_followed_by = queries::follow::get(&state, user.id, auth_user.id)
-        .await
-        .is_some();
+        // Check relationships
+        let is_following = queries::follow::get(&state, auth_user.id, user.id)
+            .await
+            .is_some();
+        let is_followed_by = queries::follow::get(&state, user.id, auth_user.id)
+            .await
+            .is_some();
 
-    Json(json!([
-        {
+        relationships.push(json!({
             "id": user.username,
             "following": is_following,
             "showing_reblogs": true,
@@ -53,6 +49,8 @@ pub async fn get(
             "requested": false,
             "domain_blocking": false,
             "endorsed": false
-        }
-    ]))
+        }));
+    }
+
+    Json(json!(relationships))
 }
