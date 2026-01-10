@@ -89,6 +89,10 @@ async fn api_routes() -> Router<init::AppState> {
             patch(api::update_credentials::patch),
         )
         .route(
+            "/api/v1/accounts/relationships",
+            get(api::relationships::get),
+        )
+        .route(
             "/api/v1/accounts/{username}/follow",
             post(api::follow::post_follow),
         )

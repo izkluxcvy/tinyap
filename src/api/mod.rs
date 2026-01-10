@@ -8,6 +8,7 @@ pub mod instance;
 pub mod notifications;
 pub mod oauth;
 pub mod reblog;
+pub mod relationships;
 pub mod search;
 pub mod statuses;
 pub mod timeline;
