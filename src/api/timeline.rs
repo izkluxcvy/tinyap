@@ -46,12 +46,12 @@ pub fn timeline_json(state: &AppState, notes: Vec<queries::note::NoteWithAuthorR
                     state,
                     boosted_username,
                     boosted_username,
-                    "0000",
+                    "9999-01-01T00:00:00Z",
                     "",
                     0,
                     0,
                     0,
-                    "0000",
+                    "9999-01-01T00:00:00Z",
                 ))
             } else {
                 None

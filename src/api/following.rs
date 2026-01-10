@@ -16,12 +16,12 @@ pub fn users_json(state: &AppState, users: Vec<queries::follow::FollowUserRecord
                 state,
                 &user.username,
                 &user.display_name,
-                "0000",
+                "9999-01-01T00:00:00Z",
                 "",
                 0,
                 0,
                 0,
-                "0000",
+                "9999-01-01T00:00:00Z",
             )
         })
         .collect();
