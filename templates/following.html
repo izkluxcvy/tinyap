@@ -8,6 +8,10 @@
 <body>
     <h3>@{{ username }}'s {{ title }}</h3>
 
-    <pre>{% for user in users %}<a href="/@{{ user.username }}">@{{ user.username }}</a>
+    <pre>{% for user in users %}<a href="/@{{ user.username }}">{{ user.display_name }}@{{ user.username }}</a>
 {% endfor %}</pre>
+
+    {% if users | length == max_users %}
+    <pre><a href="?max={{ max_next }}">More</a></pre>
+    {% endif %}
 </body>

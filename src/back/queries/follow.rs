@@ -26,29 +26,49 @@ pub struct FollowUserRecord {
     pub username: String,
 }
 
-pub async fn get_following(state: &AppState, follower_id: i64) -> Vec<FollowUserRecord> {
+pub async fn get_following(
+    state: &AppState,
+    follower_id: i64,
+    max_username: &str,
+    limit: i64,
+) -> Vec<FollowUserRecord> {
     query_as(
         "SELECT users.display_name, users.username
         FROM follows
         JOIN users ON follows.followee_id = users.id
-        WHERE follows.follower_id = ?
-        AND follows.pending = 0",
+        WHERE users.username > ?
+        AND follows.follower_id = ?
+        AND follows.pending = 0
+        ORDER BY users.username ASC
+        LIMIT ?",
     )
+    .bind(max_username)
     .bind(follower_id)
+    .bind(limit)
     .fetch_all(&state.db_pool)
     .await
     .unwrap()
 }
 
-pub async fn get_followers(state: &AppState, followee_id: i64) -> Vec<FollowUserRecord> {
+pub async fn get_followers(
+    state: &AppState,
+    followee_id: i64,
+    max_username: &str,
+    limit: i64,
+) -> Vec<FollowUserRecord> {
     query_as(
         "SELECT users.display_name, users.username
         FROM follows
         JOIN users ON follows.follower_id = users.id
-        WHERE follows.followee_id = ?
-        AND follows.pending = 0",
+        WHERE users.username > ?
+        AND follows.followee_id = ?
+        AND follows.pending = 0
+        ORDER BY users.username ASC
+        LIMIT ?",
     )
+    .bind(max_username)
     .bind(followee_id)
+    .bind(limit)
     .fetch_all(&state.db_pool)
     .await
     .unwrap()
