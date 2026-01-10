@@ -5,6 +5,7 @@ pub mod favourite;
 pub mod follow;
 pub mod following;
 pub mod instance;
+pub mod lists;
 pub mod notifications;
 pub mod oauth;
 pub mod reblog;
