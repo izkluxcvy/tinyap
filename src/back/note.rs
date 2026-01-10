@@ -105,11 +105,6 @@ pub async fn deliver_create(state: &AppState, id: i64) {
 
 #[async_recursion::async_recursion]
 pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<i64, String> {
-    // Check if already exists
-    if let Some(existing) = queries::note::get_by_ap_url(state, ap_url).await {
-        return Ok(existing.id);
-    }
-
     // Fetch
     let Ok(res) = utils::signed_get(state, ap_url).await else {
         return Err("Failed to fetch remote note".to_string());
@@ -127,6 +122,11 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<i64, String> {
     };
 
     let content = utils::parse_content(state, &content);
+
+    // Check if already exists
+    if let Some(existing) = queries::note::get_by_ap_url(state, &note_ap_url).await {
+        return Ok(existing.id);
+    }
 
     // Create author user if not exists
     let author = if let Some(author) = queries::user::get_by_ap_url(state, &author_ap_url).await {
