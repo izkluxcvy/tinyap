@@ -21,7 +21,7 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 - [Tuba](https://tuba.geopjr.dev/) for Linux, Windows
 - [Ice Cubes](https://apps.apple.com/us/app/ice-cubes-for-mastodon/id6444915884) for iOS, Mac
 - [Tusky](https://tusky.app/) for Android
-- [Toot](https://github.com/ihabunek/toot) for CLI
+- [Toot](https://github.com/ihabunek/toot) for CLI, TUI
 
 ## Requirements
 

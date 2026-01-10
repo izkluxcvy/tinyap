@@ -148,6 +148,7 @@ pub fn attachments_to_value(
                     "id": url,
                     "type": "image",
                     "url": url,
+                    "description": "",
                 }));
             }
             ret
