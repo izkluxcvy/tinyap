@@ -20,8 +20,6 @@ pub async fn get(
         if key == "id[]" || key == "id" {
             username = value;
             break;
-        } else {
-            return Json(json!({"error": "Missing id parameter"}));
         }
     }
     if username == "" {
