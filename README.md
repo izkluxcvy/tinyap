@@ -19,7 +19,7 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 - [Pinafore](https://pinafore.social/) for Web
 - [Tokodon](https://apps.kde.org/tokodon/) for Linux, Windows
 - [Tuba](https://tuba.geopjr.dev/) for Linux, Windows
-- [Flare](https://flareapp.moe/) for Android, iOS
+- [Ice Cubes](https://apps.apple.com/us/app/ice-cubes-for-mastodon/id6444915884) for iOS, Mac
 - [Toot](https://github.com/ihabunek/toot) for CLI
 
 ## Requirements

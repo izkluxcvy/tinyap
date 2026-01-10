@@ -35,13 +35,13 @@ pub struct NotificationWithNoteRecord {
     pub display_name: String,
     pub username: String,
     pub event_type: i64,
-    pub note_id: i64,
-    pub content: String,
+    pub note_id: Option<i64>,
+    pub content: Option<String>,
     pub attachments: Option<String>,
-    pub note_created_at: String,
+    pub note_created_at: Option<String>,
     pub parent_id: Option<i64>,
-    pub like_count: i64,
-    pub boost_count: i64,
+    pub like_count: Option<i64>,
+    pub boost_count: Option<i64>,
     pub created_at: String,
 }
 

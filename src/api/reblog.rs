@@ -1,4 +1,6 @@
+use crate::api::accounts::account_json;
 use crate::api::auth::OAuthUser;
+use crate::api::statuses::status_json;
 use crate::back::boost;
 use crate::back::init::AppState;
 use crate::back::queries;
@@ -28,22 +30,37 @@ pub async fn post_reblog(
     // Deliver to followers
     boost::deliver_boost(&state, user.id, id).await;
 
-    Json(json!({
-        "id": note.id.to_string(),
-        "created_at": &note.created_at,
-        "in_reply_to_id": note.parent_id,
-        "visibility": "public",
-        "reblogs_count": note.boost_count + 1,
-        "favourites_count": note.like_count,
-        "content": &note.content,
-        "account": {
-            "id": &note.username,
-            "username": &note.username,
-            "acct": &note.username,
-            "display_name": &note.display_name,
-        },
-        "reblogged": true,
-    }))
+    let account_json = account_json(
+        &state,
+        &note.username,
+        &note.display_name,
+        &note.created_at,
+        &note.content,
+        0,
+        0,
+        0,
+        &note.created_at,
+    );
+    let status_json = status_json(
+        &state,
+        note.id,
+        &note.username,
+        None,
+        None,
+        None,
+        &note.content,
+        &account_json,
+        &note.created_at,
+        &vec![],
+        note.like_count,
+        note.boost_count,
+        false,
+        true,
+        note.parent_id,
+        None,
+    );
+
+    Json(status_json)
 }
 
 pub async fn post_unreblog(
@@ -65,20 +82,35 @@ pub async fn post_unreblog(
     // Deliver to followers
     boost::deliver_unboost(&state, user.id, id).await;
 
-    Json(json!({
-        "id": note.id.to_string(),
-        "created_at": &note.created_at,
-        "in_reply_to_id": note.parent_id,
-        "visibility": "public",
-        "reblogs_count": note.boost_count - 1,
-        "favourites_count": note.like_count,
-        "content": &note.content,
-        "account": {
-            "id": &note.username,
-            "username": &note.username,
-            "acct": &note.username,
-            "display_name": &note.display_name,
-        },
-        "reblogged": false,
-    }))
+    let account_json = account_json(
+        &state,
+        &note.username,
+        &note.display_name,
+        &note.created_at,
+        "",
+        0,
+        0,
+        0,
+        &note.created_at,
+    );
+    let status_json = status_json(
+        &state,
+        note.id,
+        &note.username,
+        None,
+        None,
+        None,
+        &note.content,
+        &account_json,
+        &note.created_at,
+        &vec![],
+        note.like_count,
+        note.boost_count,
+        false,
+        false,
+        note.parent_id,
+        None,
+    );
+
+    Json(status_json)
 }

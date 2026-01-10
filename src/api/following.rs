@@ -1,3 +1,4 @@
+use crate::api::accounts::account_json;
 use crate::back::init::AppState;
 use crate::back::queries;
 
@@ -7,16 +8,21 @@ use axum::{
 };
 use serde_json::{Value, json};
 
-pub fn users_json(users: Vec<queries::follow::FollowUserRecord>) -> Value {
+pub fn users_json(state: &AppState, users: Vec<queries::follow::FollowUserRecord>) -> Value {
     let users_json: Value = users
         .into_iter()
         .map(|user| {
-            json!({
-                "id": &user.username,
-                "username": &user.username,
-                "acct": &user.username,
-                "display_name": &user.display_name,
-            })
+            account_json(
+                state,
+                &user.username,
+                &user.display_name,
+                "0000",
+                "",
+                0,
+                0,
+                0,
+                "0000",
+            )
         })
         .collect();
 
@@ -35,7 +41,7 @@ pub async fn get_following(
     // Get following
     let following = queries::follow::get_following(&state, user.id).await;
 
-    let following_json = users_json(following);
+    let following_json = users_json(&state, following);
 
     Json(following_json)
 }
@@ -52,7 +58,7 @@ pub async fn get_followers(
     // Get followers
     let followers = queries::follow::get_followers(&state, user.id).await;
 
-    let followers_json = users_json(followers);
+    let followers_json = users_json(&state, followers);
 
     Json(followers_json)
 }

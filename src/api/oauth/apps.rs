@@ -88,7 +88,7 @@ pub async fn post(
     .await;
 
     Json(json!({
-        "id": utils::gen_unique_id(),
+        "id": utils::gen_unique_id().to_string(),
         "name": client_name,
         "redirect_uri": redirect_uris,
         "client_id": client_id.to_string(),

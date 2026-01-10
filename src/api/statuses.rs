@@ -1,3 +1,4 @@
+use crate::api::accounts::account_json;
 use crate::api::auth::OAuthUser;
 use crate::back::init::AppState;
 use crate::back::note;
@@ -9,6 +10,99 @@ use axum::{
     extract::{Path, State},
 };
 use serde_json::{Value, json};
+
+pub fn status_json(
+    state: &AppState,
+    id: i64,
+    author_username: &str,
+    boosted_id: Option<i64>,
+    boosted_created_at: Option<String>,
+    boosted_account_json: Option<Value>,
+    content: &str,
+    account_json: &Value,
+    created_at: &str,
+    attachments: &Vec<Value>,
+    like_count: i64,
+    boost_count: i64,
+    is_liked: bool,
+    is_boosted: bool,
+    parent_id: Option<i64>,
+    parent_author_username: Option<String>,
+) -> Value {
+    let parent_id_string = parent_id.map(|id| id.to_string());
+    if let Some(boosted_id) = boosted_id {
+        let reblog_json = json!({
+            "id": boosted_id.to_string(),
+            "content": content,
+            "account": boosted_account_json,
+            "created_at": boosted_created_at,
+            "media_attachments": attachments,
+            "mentions": [],
+            "replies_count": 0,
+            "favourites_count": 0,
+            "reblogs_count": 0,
+            "favourited": false,
+            "reblogged": false,
+            "in_reply_to_id": null,
+            "in_reply_to_account_id": null,
+            "visibility": "public",
+            "emojis": [],
+            "url": utils::note_url(&state.domain, author_username, boosted_id),
+            "sensitive": false,
+            "spoiler_text": "",
+            "tags": [],
+            "filtered": [],
+            "reblog": null,
+        });
+        json!({
+            "id": id.to_string(),
+            "content": "",
+            "account": account_json,
+            "created_at": created_at,
+            "media_attachments": [],
+            "mentions": [],
+            "replies_count": 0,
+            "favourites_count": like_count,
+            "reblogs_count": boost_count,
+            "favourited": is_liked,
+            "reblogged": is_boosted,
+            "in_reply_to_id": parent_id_string,
+            "in_reply_to_account_id": parent_author_username,
+            "visibility": "public",
+            "emojis": [],
+            "url": utils::note_url(&state.domain, author_username, id),
+            "sensitive": false,
+            "spoiler_text": "",
+            "tags": [],
+            "filtered": [],
+            "reblog": reblog_json,
+        })
+    } else {
+        json!({
+            "id": id.to_string(),
+            "content": content,
+            "account": account_json,
+            "created_at": created_at,
+            "media_attachments": attachments,
+            "mentions": [],
+            "replies_count": 0,
+            "favourites_count": like_count,
+            "reblogs_count": boost_count,
+            "favourited": is_liked,
+            "reblogged": is_boosted,
+            "in_reply_to_id": parent_id_string,
+            "in_reply_to_account_id": parent_author_username,
+            "visibility": "public",
+            "emojis": [],
+            "url": utils::note_url(&state.domain, author_username, id),
+            "sensitive": false,
+            "spoiler_text": "",
+            "tags": [],
+            "filtered": [],
+            "reblog": null,
+        })
+    }
+}
 
 pub async fn get(
     State(state): State<AppState>,
@@ -36,25 +130,37 @@ pub async fn get(
         false
     };
 
-    let parent_id_string = note.parent_id.map(|id| id.to_string());
-    Json(json!({
-        "id": note.id.to_string(),
-        "created_at": &note.created_at,
-        "in_reply_to_id": parent_id_string,
-        "visibility": "public",
-        "reblogs_count": note.boost_count,
-        "favourites_count": note.like_count,
-        "content": &note.content,
-        "account": {
-            "id": &note.username,
-            "username": &note.username,
-            "acct": &note.username,
-            "display_name": &note.display_name,
-        },
-        "media_attachments": attachments,
-        "favourited": is_liked,
-        "reblogged": is_boosted,
-    }))
+    let account_json = account_json(
+        &state,
+        &note.username,
+        &note.display_name,
+        &note.created_at,
+        "",
+        0,
+        0,
+        0,
+        &note.created_at,
+    );
+    let status_json = status_json(
+        &state,
+        note.id,
+        &note.username,
+        None,
+        None,
+        None,
+        &note.content,
+        &account_json,
+        &note.created_at,
+        &attachments,
+        note.like_count,
+        note.boost_count,
+        is_liked,
+        is_boosted,
+        note.parent_id,
+        note.parent_author_username,
+    );
+
+    Json(status_json)
 }
 
 #[derive(serde::Deserialize)]
@@ -117,23 +223,37 @@ pub async fn post(
     // Deliver to followers and parent
     note::deliver_create(&state, id).await;
 
-    let parent_id_string = req.in_reply_to_id.map(|id| id.to_string());
-    Json(json!({
-        "id": id.to_string(),
-        "created_at": created_at,
-        "in_reply_to_id": parent_id_string,
-        "visibility": "public",
-        "reblogs_count": 0,
-        "favourites_count": 0,
-        "content": req.status,
-        "account": {
-            "id": &user.username,
-            "username": &user.username,
-            "acct": &user.username,
-            "display_name": &user.display_name,
-        },
-        "media_attachments": [],
-    }))
+    let account_json = account_json(
+        &state,
+        &user.username,
+        &user.display_name,
+        &user.created_at,
+        &user.bio,
+        user.follower_count,
+        user.following_count,
+        user.note_count,
+        &user.updated_at,
+    );
+    let status_json = status_json(
+        &state,
+        id,
+        &user.username,
+        None,
+        None,
+        None,
+        &req.status,
+        &account_json,
+        &created_at,
+        &vec![],
+        0,
+        0,
+        false,
+        false,
+        in_reply_to_id,
+        None,
+    );
+
+    Json(status_json)
 }
 
 pub async fn delete(

@@ -21,5 +21,12 @@ pub async fn get_v2(State(state): State<AppState>) -> Json<Value> {
         "title": &state.metadata.instance_name,
         "description": &state.metadata.instance_description,
         "version": VERSION,
+        "registrations": {
+            "enabled": false,
+        },
+        "thumbnail": {},
+        "contact": {
+            "email": "",
+        },
     }))
 }

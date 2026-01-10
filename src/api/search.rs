@@ -1,4 +1,6 @@
+use crate::api::accounts::account_json;
 use crate::api::auth::OAuthUser;
+use crate::api::statuses::status_json;
 use crate::back::init::AppState;
 use crate::back::queries;
 use crate::back::search;
@@ -33,19 +35,19 @@ pub async fn get(
             return Json(json!({"error": "User not found"}));
         };
 
-        return Json(json!({
-            "accounts": [{
-                "id": &user.username,
-                "username": &user.username,
-                "acct": &user.username,
-                "display_name": &user.display_name,
-                "note": &user.bio,
-                "created_at": &user.created_at,
-                "followers_count": user.follower_count,
-                "following_count": user.following_count,
-                "statuses_count": user.note_count,
-            }]
-        }));
+        let account_json = account_json(
+            &state,
+            &user.username,
+            &user.display_name,
+            &user.created_at,
+            &user.bio,
+            user.follower_count,
+            user.following_count,
+            user.note_count,
+            &user.updated_at,
+        );
+
+        return Json(json!({"accounts": [account_json]}));
     } else {
         let note_id = parts[2].parse::<i64>().unwrap();
         let Some(note) = queries::note::get_with_author_by_id(&state, note_id).await else {
@@ -53,25 +55,37 @@ pub async fn get(
         };
 
         let attachments = utils::attachments_to_value(&state, &note.attachments);
-        let parent_id_string = note.parent_id.map(|id| id.to_string());
 
-        return Json(json!({
-            "statuses": [{
-                "id": note.id.to_string(),
-                "created_at": &note.created_at,
-                "in_reply_to_id": parent_id_string,
-                "visibility": "public",
-                "reblogs_count": note.boost_count,
-                "favourites_count": note.like_count,
-                "content": &note.content,
-                "account": {
-                    "id": &note.username,
-                    "username": &note.username,
-                    "acct": &note.username,
-                    "display_name": &note.display_name,
-                },
-                "media_attachments": attachments,
-            }]
-        }));
+        let account_json = account_json(
+            &state,
+            &note.username,
+            &note.display_name,
+            &note.created_at,
+            "",
+            0,
+            0,
+            0,
+            &note.created_at,
+        );
+        let status_json = status_json(
+            &state,
+            note.id,
+            &note.username,
+            None,
+            None,
+            None,
+            &note.content,
+            &account_json,
+            &note.created_at,
+            &attachments,
+            note.like_count,
+            note.boost_count,
+            false,
+            false,
+            note.parent_id,
+            note.parent_author_username,
+        );
+
+        return Json(json!({"statuses": [status_json]}));
     }
 }

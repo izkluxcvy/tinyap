@@ -1,4 +1,6 @@
+use crate::api::accounts::account_json;
 use crate::api::auth::OAuthUser;
+use crate::api::statuses::status_json;
 use crate::back::init::AppState;
 use crate::back::queries;
 use crate::back::utils;
@@ -26,6 +28,17 @@ pub async fn get(
 
     // Get user
     let user = queries::user::get_by_id(&state, user.id).await;
+    let user_json = account_json(
+        &state,
+        &user.username,
+        &user.display_name,
+        &user.created_at,
+        &user.bio,
+        user.follower_count,
+        user.following_count,
+        user.note_count,
+        &user.updated_at,
+    );
 
     // Get notifications
     let notifications = queries::notification::get_with_note(&state, user.id, &since, limit).await;
@@ -42,32 +55,46 @@ pub async fn get(
                 _ => "unknown",
             };
 
+            let account_json = account_json(
+                &state,
+                &notif.username,
+                &notif.display_name,
+                &notif.created_at,
+                "",
+                0,
+                0,
+                0,
+                &notif.created_at,
+            );
+            let status_json = if let Some(note_id) = notif.note_id {
+                Some(status_json(
+                    &state,
+                    note_id,
+                    "",
+                    None,
+                    None,
+                    None,
+                    notif.content.as_ref().unwrap_or(&"".to_string()),
+                    &user_json,
+                    notif.note_created_at.as_ref().unwrap_or(&"".to_string()),
+                    &attachments,
+                    notif.like_count.unwrap_or(0),
+                    notif.boost_count.unwrap_or(0),
+                    false,
+                    false,
+                    notif.parent_id,
+                    None,
+                ))
+            } else {
+                None
+            };
+
             json!({
                 "id": &notif.created_at,
                 "type": event_type,
                 "created_at": &notif.created_at,
-                "account": {
-                    "id": &notif.username,
-                    "username": &notif.username,
-                    "acct": &notif.username,
-                    "display_name": &notif.display_name,
-                },
-                "status": {
-                    "id": notif.note_id.to_string(),
-                    "created_at": &notif.note_created_at,
-                    "in_reply_to_id": notif.parent_id,
-                    "visibility": "public",
-                    "reblogs_count": notif.boost_count,
-                    "favourites_count": notif.like_count,
-                    "content": notif.content,
-                    "account": {
-                        "id": &user.username,
-                        "username": &user.username,
-                        "acct": &user.username,
-                        "display_name": &user.display_name,
-                    },
-                    "attachments": attachments,
-                }
+                "account": &account_json,
+                "status": &status_json,
             })
         })
         .collect();

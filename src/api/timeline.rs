@@ -1,4 +1,6 @@
+use crate::api::accounts::account_json;
 use crate::api::auth::OAuthUser;
+use crate::api::statuses::status_json;
 use crate::back::init::AppState;
 use crate::back::queries;
 use crate::back::utils;
@@ -7,7 +9,7 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use serde_json::{Value, json};
+use serde_json::Value;
 
 #[derive(serde::Deserialize)]
 pub struct TimelineQuery {
@@ -27,59 +29,52 @@ pub fn timeline_json(state: &AppState, notes: Vec<queries::note::NoteWithAuthorR
         .into_iter()
         .map(|note| {
             let attachments = utils::attachments_to_value(state, &note.attachments);
-            let parent_id_string = note.parent_id.map(|id| id.to_string());
 
-            if let Some(boosted_id) = note.boosted_id {
-                json!({
-                    "id": note.id.to_string(),
-                    "created_at": &note.created_at,
-                    "in_reply_to_id": parent_id_string,
-                    "visibility": "public",
-                    "reblogs_count": 0,
-                    "favourites_count": 0,
-                    "content": "",
-                    "account": {
-                        "id": &note.username,
-                        "username": &note.username,
-                        "acct": &note.username,
-                        "display_name": &note.display_name,
-                    },
-                    "media_attachments": [],
-                    "reblog": {
-                        "id": boosted_id.to_string(),
-                        "created_at": &note.boosted_created_at,
-                        "in_reply_to_id": null,
-                        "visibility": "public",
-                        "reblogs_count": 0,
-                        "favourites_count": 0,
-                        "content": &note.content,
-                        "account": {
-                            "id": &note.boosted_username,
-                            "username": &note.boosted_username,
-                            "acct": &note.boosted_username,
-                            "display_name": &note.boosted_username,
-                        },
-                        "media_attachments": attachments,
-                    }
-                })
+            let author_json = account_json(
+                state,
+                &note.username,
+                &note.display_name,
+                &note.created_at,
+                "",
+                0,
+                0,
+                0,
+                &note.created_at,
+            );
+            let boosted_author_json = if let Some(boosted_username) = &note.boosted_username {
+                Some(account_json(
+                    state,
+                    boosted_username,
+                    boosted_username,
+                    "0000",
+                    "",
+                    0,
+                    0,
+                    0,
+                    "0000",
+                ))
             } else {
-                json!({
-                    "id": note.id.to_string(),
-                    "created_at": &note.created_at,
-                    "in_reply_to_id": parent_id_string,
-                    "visibility": "public",
-                    "reblogs_count": note.boost_count,
-                    "favourites_count": note.like_count,
-                    "content": &note.content,
-                    "account": {
-                        "id": &note.username,
-                        "username": &note.username,
-                        "acct": &note.username,
-                        "display_name": &note.display_name,
-                    },
-                    "media_attachments": attachments,
-                })
-            }
+                None
+            };
+
+            status_json(
+                state,
+                note.id,
+                &note.username,
+                note.boosted_id,
+                note.boosted_created_at,
+                boosted_author_json,
+                &note.content,
+                &author_json,
+                &note.created_at,
+                &attachments,
+                note.like_count,
+                note.boost_count,
+                false,
+                false,
+                note.parent_id,
+                note.parent_author_username,
+            )
         })
         .collect();
 

@@ -1,3 +1,5 @@
+use crate::api::accounts::account_json;
+use crate::api::statuses::status_json;
 use crate::back::init::AppState;
 use crate::back::queries;
 use crate::back::utils;
@@ -24,23 +26,37 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
 
     let ancestors_json = if let Some(ancestor) = ancestor {
         let attachments = utils::attachments_to_value(&state, &ancestor.attachments);
-        let parent_id_string = ancestor.parent_id.map(|id| id.to_string());
-        json!([{
-            "id": &ancestor.id.to_string(),
-            "created_at": &ancestor.created_at,
-            "in_reply_to_id": parent_id_string,
-            "visibility": "public",
-            "reblogs_count": ancestor.boost_count,
-            "favourites_count": ancestor.like_count,
-            "content": &ancestor.content,
-            "account": {
-                "id": &ancestor.username,
-                "username": &ancestor.username,
-                "acct": &ancestor.username,
-                "display_name": &ancestor.display_name,
-            },
-            "media_attachments": attachments,
-        }])
+        let account_json = account_json(
+            &state,
+            &ancestor.username,
+            &ancestor.display_name,
+            &ancestor.created_at,
+            "",
+            0,
+            0,
+            0,
+            &ancestor.created_at,
+        );
+        let status_json = status_json(
+            &state,
+            ancestor.id,
+            &ancestor.username,
+            None,
+            None,
+            None,
+            &ancestor.content,
+            &account_json,
+            &ancestor.created_at,
+            &attachments,
+            ancestor.like_count,
+            ancestor.boost_count,
+            false,
+            false,
+            ancestor.parent_id,
+            ancestor.parent_author_username,
+        );
+
+        json!([status_json])
     } else {
         json!([])
     };
@@ -52,23 +68,37 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
         .into_iter()
         .map(|descendant| {
             let attachments = utils::attachments_to_value(&state, &descendant.attachments);
-            let parent_id_string = descendant.parent_id.map(|id| id.to_string());
-            json!({
-                "id": &descendant.id.to_string(),
-                "created_at": &descendant.created_at,
-                "in_reply_to_id": parent_id_string,
-                "visibility": "public",
-                "reblogs_count": descendant.boost_count,
-                "favourites_count": descendant.like_count,
-                "content": &descendant.content,
-                "account": {
-                    "id": &descendant.username,
-                    "username": &descendant.username,
-                    "acct": &descendant.username,
-                    "display_name": &descendant.display_name,
-                },
-                "media_attachments": attachments,
-            })
+            let account_json = account_json(
+                &state,
+                &descendant.username,
+                &descendant.display_name,
+                &descendant.created_at,
+                "",
+                0,
+                0,
+                0,
+                &descendant.created_at,
+            );
+            let status_json = status_json(
+                &state,
+                descendant.id,
+                &descendant.username,
+                None,
+                None,
+                None,
+                &descendant.content,
+                &account_json,
+                &descendant.created_at,
+                &attachments,
+                descendant.like_count,
+                descendant.boost_count,
+                false,
+                false,
+                descendant.parent_id,
+                descendant.parent_author_username,
+            );
+
+            status_json
         })
         .collect();
 

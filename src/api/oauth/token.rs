@@ -9,12 +9,13 @@ use axum::{
     http::{Request, header::HeaderMap},
 };
 use serde_json::{Value, json};
+use time::OffsetDateTime;
 
 #[derive(serde::Deserialize)]
 pub struct TokenRequestRequest {
     pub grant_type: String,
     pub code: String,
-    pub client_id: i64,
+    pub client_id: String,
     pub client_secret: String,
 }
 
@@ -23,53 +24,73 @@ pub async fn post(
     headers: HeaderMap,
     req: Request<Body>,
 ) -> Json<Value> {
-    // Extract from either form or multipart
-    let (grant_type, code, client_id, client_secret) =
-        if let Some(content_type) = headers.get("content-type") {
-            let content_type = content_type.to_str().unwrap_or("");
-            if content_type.contains("multipart") {
-                // Multipart
-                let mut multipart = Multipart::from_request(req, &state).await.unwrap();
-                let mut grant_type = String::new();
-                let mut code = String::new();
-                let mut client_id = 0;
-                let mut client_secret = String::new();
-                while let Some(field) = multipart.next_field().await.unwrap() {
-                    let name = field.name().unwrap_or("").to_string();
-                    let value = field.text().await.unwrap_or("".to_string());
-                    match name.as_str() {
-                        "grant_type" => grant_type = value,
-                        "code" => code = value,
-                        "client_id" => client_id = value.parse::<i64>().unwrap_or(0),
-                        "client_secret" => client_secret = value,
-                        _ => {}
-                    }
+    // Extract from either form or multipart, json
+    let (grant_type, code, client_id, client_secret) = if let Some(content_type) =
+        headers.get("content-type")
+    {
+        let content_type = content_type.to_str().unwrap_or("");
+        if content_type.contains("json") {
+            // JSON
+            let Ok(body_bytes) =
+                axum::body::to_bytes(req.into_body(), state.config.max_note_chars).await
+            else {
+                return Json(json!({"error": "failed to read body"}));
+            };
+
+            let Ok(req_json) = serde_json::from_slice::<TokenRequestRequest>(&body_bytes) else {
+                return Json(json!({"error": "invalid json"}));
+            };
+
+            (
+                req_json.grant_type,
+                req_json.code,
+                req_json.client_id,
+                req_json.client_secret,
+            )
+        } else if content_type.contains("multipart") {
+            // Multipart
+            let mut multipart = Multipart::from_request(req, &state).await.unwrap();
+            let mut grant_type = String::new();
+            let mut code = String::new();
+            let mut client_id = String::new();
+            let mut client_secret = String::new();
+            while let Some(field) = multipart.next_field().await.unwrap() {
+                let name = field.name().unwrap_or("").to_string();
+                let value = field.text().await.unwrap_or("".to_string());
+                match name.as_str() {
+                    "grant_type" => grant_type = value,
+                    "code" => code = value,
+                    "client_id" => client_id = value,
+                    "client_secret" => client_secret = value,
+                    _ => {}
                 }
-
-                (grant_type, code, client_id, client_secret)
-            } else {
-                // Form
-                let Ok(body_bytes) =
-                    axum::body::to_bytes(req.into_body(), state.config.max_note_chars).await
-                else {
-                    return Json(json!({"error": "failed to read body"}));
-                };
-
-                let Ok(req_form) = serde_urlencoded::from_bytes::<TokenRequestRequest>(&body_bytes)
-                else {
-                    return Json(json!({"error": "invalid form"}));
-                };
-
-                (
-                    req_form.grant_type,
-                    req_form.code,
-                    req_form.client_id,
-                    req_form.client_secret,
-                )
             }
+
+            (grant_type, code, client_id, client_secret)
         } else {
-            return Json(json!({"error": "missing content-type"}));
-        };
+            // Form
+            let Ok(body_bytes) =
+                axum::body::to_bytes(req.into_body(), state.config.max_note_chars).await
+            else {
+                return Json(json!({"error": "failed to read body"}));
+            };
+
+            let Ok(req_form) = serde_urlencoded::from_bytes::<TokenRequestRequest>(&body_bytes)
+            else {
+                return Json(json!({"error": "invalid form"}));
+            };
+
+            (
+                req_form.grant_type,
+                req_form.code,
+                req_form.client_id,
+                req_form.client_secret,
+            )
+        }
+    } else {
+        return Json(json!({"error": "missing content-type"}));
+    };
+    let client_id = client_id.parse::<i64>().unwrap_or(0);
 
     // Check grant_type
     if grant_type != "authorization_code" {
@@ -107,5 +128,6 @@ pub async fn post(
         "token_type": "Bearer",
         "scope": "read write",
         "expires_at": expires_at,
+        "created_at": OffsetDateTime::now_utc().unix_timestamp(),
     }))
 }

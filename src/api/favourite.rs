@@ -1,4 +1,6 @@
+use crate::api::accounts::account_json;
 use crate::api::auth::OAuthUser;
+use crate::api::statuses::status_json;
 use crate::back::init::AppState;
 use crate::back::like;
 use crate::back::queries;
@@ -37,22 +39,37 @@ pub async fn post_favourite(
         like::deliver_like(&state, user.id, id).await;
     }
 
-    Json(json!({
-        "id": note.id,
-        "created_at": &note.created_at,
-        "in_reply_to_id": note.parent_id,
-        "visibility": "public",
-        "reblogs_count": note.boost_count,
-        "favourites_count": note.like_count + 1,
-        "content": &note.content,
-        "account": {
-            "id": &note.username,
-            "username": &note.username,
-            "acct": &note.username,
-            "display_name": &note.display_name,
-        },
-        "favourited": true,
-    }))
+    let account_json = account_json(
+        &state,
+        &note.username,
+        &note.display_name,
+        &note.created_at,
+        "",
+        0,
+        0,
+        0,
+        &note.created_at,
+    );
+    let status_json = status_json(
+        &state,
+        note.id,
+        &note.username,
+        None,
+        None,
+        None,
+        &note.content,
+        &account_json,
+        &note.created_at,
+        &vec![],
+        note.like_count + 1,
+        note.boost_count,
+        false,
+        false,
+        note.parent_id,
+        None,
+    );
+
+    Json(status_json)
 }
 
 pub async fn post_unfavourite(
@@ -78,20 +95,35 @@ pub async fn post_unfavourite(
         like::deliver_unlilke(&state, user.id, id).await;
     }
 
-    Json(json!({
-        "id": note.id,
-        "created_at": &note.created_at,
-        "in_reply_to_id": note.parent_id,
-        "visibility": "public",
-        "reblogs_count": note.boost_count,
-        "favourites_count": note.like_count - 1,
-        "content": &note.content,
-        "account": {
-            "id": &note.username,
-            "username": &note.username,
-            "acct": &note.username,
-            "display_name": &note.display_name,
-        },
-        "favourited": false,
-    }))
+    let account_json = account_json(
+        &state,
+        &note.username,
+        &note.display_name,
+        &note.created_at,
+        "",
+        0,
+        0,
+        0,
+        &note.created_at,
+    );
+    let status_json = status_json(
+        &state,
+        note.id,
+        &note.username,
+        None,
+        None,
+        None,
+        &note.content,
+        &account_json,
+        &note.created_at,
+        &vec![],
+        note.like_count - 1,
+        note.boost_count,
+        false,
+        false,
+        note.parent_id,
+        None,
+    );
+
+    Json(status_json)
 }
