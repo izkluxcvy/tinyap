@@ -50,6 +50,30 @@ pub async fn get_following(
     .unwrap()
 }
 
+#[cfg(feature = "api")]
+pub async fn get_following_in(
+    state: &AppState,
+    follower_id: i64,
+    followee_usernames: &Vec<String>,
+) -> Vec<FollowUserRecord> {
+    let in_placeholder = format!("?{}", ", ?".repeat(followee_usernames.len() - 1));
+    let query_str = format!(
+        "SELECT users.display_name, users.username
+        FROM follows
+        JOIN users ON follows.followee_id = users.id
+        WHERE follows.follower_id = ?
+        AND users.username IN ({}) 
+        AND follows.pending = 0",
+        in_placeholder
+    );
+    let mut query = query_as(&query_str).bind(follower_id);
+    for username in followee_usernames {
+        query = query.bind(username);
+    }
+
+    query.fetch_all(&state.db_pool).await.unwrap()
+}
+
 pub async fn get_followers(
     state: &AppState,
     followee_id: i64,
@@ -72,6 +96,30 @@ pub async fn get_followers(
     .fetch_all(&state.db_pool)
     .await
     .unwrap()
+}
+
+#[cfg(feature = "api")]
+pub async fn get_followers_in(
+    state: &AppState,
+    followee_id: i64,
+    follower_usernames: &Vec<String>,
+) -> Vec<FollowUserRecord> {
+    let in_placeholder = format!("?{}", ", ?".repeat(follower_usernames.len() - 1));
+    let query_str = format!(
+        "SELECT users.display_name, users.username
+        FROM follows
+        JOIN users ON follows.follower_id = users.id
+        WHERE follows.followee_id = ?
+        AND users.username IN ({}) 
+        AND follows.pending = 0",
+        in_placeholder
+    );
+    let mut query = query_as(&query_str).bind(followee_id);
+    for username in follower_usernames {
+        query = query.bind(username);
+    }
+
+    query.fetch_all(&state.db_pool).await.unwrap()
 }
 
 #[derive(sqlx::FromRow)]

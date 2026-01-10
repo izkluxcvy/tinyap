@@ -21,23 +21,18 @@ pub async fn get(
         }
     }
 
+    // Get following, followers
+    let following = queries::follow::get_following_in(&state, auth_user.id, &usernames).await;
+    let followers = queries::follow::get_followers_in(&state, auth_user.id, &usernames).await;
+
+    // Check relationships
     let mut relationships: Vec<Value> = Vec::new();
     for username in usernames {
-        // Get user
-        let Some(user) = queries::user::get_by_username(&state, &username).await else {
-            return Json(json!({"error": "User not found"}));
-        };
-
-        // Check relationships
-        let is_following = queries::follow::get(&state, auth_user.id, user.id)
-            .await
-            .is_some();
-        let is_followed_by = queries::follow::get(&state, user.id, auth_user.id)
-            .await
-            .is_some();
+        let is_following = following.iter().any(|u| &u.username == &username);
+        let is_followed_by = followers.iter().any(|u| &u.username == &username);
 
         relationships.push(json!({
-            "id": user.username,
+            "id": username,
             "following": is_following,
             "showing_reblogs": true,
             "notifying": true,
