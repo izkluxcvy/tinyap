@@ -10,6 +10,8 @@ use std::sync::Arc;
 use tera::Tera;
 use tokio::sync::Semaphore;
 
+pub type AppState = Arc<AppStateInner>;
+
 fn load_config() -> HashMap<String, String> {
     let file = File::open("config.yaml").expect("Failed to open config.yaml");
     let reader = BufReader::new(file);
@@ -60,7 +62,7 @@ pub fn server_address() -> String {
 }
 
 #[derive(Clone)]
-pub struct AppState {
+pub struct AppStateInner {
     pub db_pool: sqlx::SqlitePool,
     #[cfg(feature = "web")]
     pub tera: Tera,
@@ -179,7 +181,7 @@ pub async fn create_app_state() -> AppState {
         .parse::<i64>()
         .expect("max_timeline_items must be an integer");
 
-    AppState {
+    Arc::new(AppStateInner {
         db_pool: db_pool,
         #[cfg(feature = "web")]
         tera: tera,
@@ -206,5 +208,5 @@ pub async fn create_app_state() -> AppState {
             max_timeline_items: max_timeline_items,
             timezone: timezone,
         },
-    }
+    })
 }
