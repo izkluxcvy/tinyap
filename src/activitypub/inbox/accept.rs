@@ -21,14 +21,17 @@ pub async fn follow(state: &AppState, activity: &Value) {
     };
 
     // Get user
-    let Some(actor) = queries::user::get_by_ap_url(&state, actor_ap_url).await else {
+    let Some(actor) = queries::user::get_by_ap_url(state, actor_ap_url).await else {
         return;
     };
 
-    let Some(object) = queries::user::get_by_ap_url(&state, object_ap_url).await else {
+    let Some(object) = queries::user::get_by_ap_url(state, object_ap_url).await else {
         return;
     };
 
     // Accept
-    follow::accept(&state, object.id, actor.id).await;
+    let existing = queries::follow::get(state, object.id, actor.id).await;
+    if existing.is_none() {
+        follow::accept(&state, object.id, actor.id).await;
+    }
 }
