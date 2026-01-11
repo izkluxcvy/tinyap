@@ -30,8 +30,10 @@ pub async fn follow(state: &AppState, activity: &Value) {
     };
 
     // Accept
-    let existing = queries::follow::get(state, object.id, actor.id).await;
-    if existing.is_none() {
+    let Some(existing) = queries::follow::get(state, object.id, actor.id).await else {
+        return;
+    };
+    if existing.pending != 0 {
         follow::accept(&state, object.id, actor.id).await;
     }
 }
