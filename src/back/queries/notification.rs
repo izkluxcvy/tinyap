@@ -56,7 +56,7 @@ pub async fn get_with_note(
         "SELECT u.display_name, u.username, notif.event_type, notif.note_id, note.content, note.attachments, note.created_at AS note_created_at, note.parent_id, note.parent_author_username, note.like_count, note.boost_count, notif.created_at
         FROM notifications AS notif
         JOIN users AS u ON notif.sender_id = u.id
-        JOIN notes AS note ON notif.note_id = note.id
+        LEFT JOIN notes AS note ON notif.note_id = note.id
         WHERE notif.recipient_id = ? AND notif.created_at > ?
         ORDER BY notif.created_at DESC
         LIMIT ?",
