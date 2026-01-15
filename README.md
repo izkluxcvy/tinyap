@@ -57,7 +57,7 @@ $ sqlite3 tinyap.db < schema.sql
 
 $ # for PostgreSQL
 $ psql -U postgres -c "CREATE DATABASE tinyap"
-$ sed -e "s/INTEGER PRIMARY KEY AUTOINCREMENT/SERIAL PRIMARY KEY/g" schema.sql | psql -U postgres -d tinyap
+$ sed -e "s/INTEGER PRIMARY KEY AUTOINCREMENT/BIGSERIAL PRIMARY KEY/g" schema.sql | psql -U postgres -d tinyap
 ```
 
 Configure your config.yaml.
