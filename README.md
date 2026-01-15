@@ -7,11 +7,22 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 
 ## Features
 
+- Tiny memory usage
 - Federate with remote users
-- Create note
+- Create text note
 - Follow, Reply, Like, Boost, Undo them
 - Tiny web UI
 - Mastodon-compatible API
+
+### Memory usage
+
+Real memory usage of `tinyap.izkluxcvy.foo`
+
+```sh
+$ watch -n 360 'echo $(date "+%F %T"),$(cat /sys/fs/cgroup/system.slice/tinyap.service/memory.current) >> memory.csv'
+```
+
+![memory usage](memory_usage.webp)
 
 ### Tested clients
 
