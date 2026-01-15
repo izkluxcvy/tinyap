@@ -11,7 +11,7 @@ pub async fn create_app(
 ) {
     query(
         "INSERT INTO oauth_apps (app_name, redirect_uri, client_id, client_secret)
-        VALUES (?, ?, ?, ?)",
+        VALUES ($1, $2, $3, $4)",
     )
     .bind(app_name)
     .bind(redirect_uri)
@@ -28,7 +28,7 @@ pub struct AppRecord {
     pub client_secret: String,
 }
 pub async fn get_app(state: &AppState, client_id: i64) -> Option<AppRecord> {
-    query_as("SELECT app_name, client_secret FROM oauth_apps WHERE client_id = ?")
+    query_as("SELECT app_name, client_secret FROM oauth_apps WHERE client_id = $1")
         .bind(client_id)
         .fetch_optional(&state.db_pool)
         .await
@@ -38,7 +38,7 @@ pub async fn get_app(state: &AppState, client_id: i64) -> Option<AppRecord> {
 pub async fn create_authorization(state: &AppState, user_id: i64, client_id: i64, code: &str) {
     query(
         "INSERT INTO oauth_authorizations (user_id, client_id, code)
-        VALUES (?, ?, ?)",
+        VALUES ($1, $2, $3)",
     )
     .bind(user_id)
     .bind(client_id)
@@ -60,7 +60,7 @@ pub async fn get_authorization(
 ) -> Option<AuthorizationRecord> {
     query_as(
         "SELECT user_id FROM oauth_authorizations
-        WHERE client_id = ? AND code = ?",
+        WHERE client_id = $1 AND code = $2",
     )
     .bind(client_id)
     .bind(code)
@@ -78,7 +78,7 @@ pub async fn create_token(
 ) {
     query(
         "INSERT INTO oauth_tokens (user_id, client_id, token, expires_at)
-        VALUES (?, ?, ?, ?)",
+        VALUES ($1, $2, $3, $4)",
     )
     .bind(user_id)
     .bind(client_id)
@@ -95,7 +95,7 @@ pub struct TokenRecord {
 }
 
 pub async fn get_token(state: &AppState, token: &str, date_now: &str) -> Option<TokenRecord> {
-    query_as("SELECT user_id FROM oauth_tokens WHERE token = ? AND expires_at > ?")
+    query_as("SELECT user_id FROM oauth_tokens WHERE token = $1 AND expires_at > $2")
         .bind(token)
         .bind(date_now)
         .fetch_optional(&state.db_pool)
@@ -104,7 +104,7 @@ pub async fn get_token(state: &AppState, token: &str, date_now: &str) -> Option<
 }
 
 pub async fn delete_expired_tokens(state: &AppState, date_now: &str) {
-    query("DELETE FROM oauth_tokens WHERE expires_at <= ?")
+    query("DELETE FROM oauth_tokens WHERE expires_at <= $1")
         .bind(date_now)
         .execute(&state.db_pool)
         .await

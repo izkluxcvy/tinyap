@@ -16,7 +16,7 @@ pub struct NoteRecord {
 }
 
 pub async fn get_by_id(state: &AppState, id: i64) -> Option<NoteRecord> {
-    query_as("SELECT * FROM notes WHERE id = ?")
+    query_as("SELECT * FROM notes WHERE id = $1")
         .bind(id)
         .fetch_optional(&state.db_pool)
         .await
@@ -24,7 +24,7 @@ pub async fn get_by_id(state: &AppState, id: i64) -> Option<NoteRecord> {
 }
 
 pub async fn get_by_ap_url(state: &AppState, ap_url: &str) -> Option<NoteRecord> {
-    query_as("SELECT * FROM notes WHERE ap_url = ?")
+    query_as("SELECT * FROM notes WHERE ap_url = $1")
         .bind(ap_url)
         .fetch_optional(&state.db_pool)
         .await
@@ -55,7 +55,7 @@ pub async fn get_with_author_by_id(state: &AppState, id: i64) -> Option<NoteWith
         "SELECT n.author_id, u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
         FROM notes AS n
         JOIN users AS u ON n.author_id = u.id
-        WHERE n.id = ?"
+        WHERE n.id = $1"
     )
     .bind(id)
     .fetch_optional(&state.db_pool)
@@ -71,7 +71,7 @@ pub async fn get_replies_by_parent_id(
         "SELECT n.author_id, u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
         FROM notes AS n
         JOIN users AS u ON n.author_id = u.id
-        WHERE n.parent_id = ?
+        WHERE n.parent_id = $1
         AND n.is_public = 1
         AND n.boosted_id IS NULL
         ORDER BY n.created_at ASC",
@@ -96,7 +96,7 @@ pub async fn create(
 ) {
     query(
         "INSERT INTO notes (id, ap_url, author_id, content, attachments, parent_id, parent_author_username, created_at, is_public)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
     )
     .bind(id)
     .bind(ap_url)
@@ -116,7 +116,7 @@ pub async fn increment_like_count(state: &AppState, id: i64) {
     query(
         "UPDATE notes
         SET like_count = like_count + 1
-        WHERE id = ?",
+        WHERE id = $1",
     )
     .bind(id)
     .execute(&state.db_pool)
@@ -128,7 +128,7 @@ pub async fn decrement_like_count(state: &AppState, id: i64) {
     query(
         "UPDATE notes
         SET like_count = like_count - 1
-        WHERE id = ? AND like_count > 0",
+        WHERE id = $1 AND like_count > 0",
     )
     .bind(id)
     .execute(&state.db_pool)
@@ -140,7 +140,7 @@ pub async fn increment_boost_count(state: &AppState, id: i64) {
     query(
         "UPDATE notes
         SET boost_count = boost_count + 1
-        WHERE id = ?",
+        WHERE id = $1",
     )
     .bind(id)
     .execute(&state.db_pool)
@@ -152,7 +152,7 @@ pub async fn decrement_boost_count(state: &AppState, id: i64) {
     query(
         "UPDATE notes
         SET boost_count = boost_count - 1
-        WHERE id = ? AND boost_count > 0",
+        WHERE id = $1 AND boost_count > 0",
     )
     .bind(id)
     .execute(&state.db_pool)
@@ -163,7 +163,7 @@ pub async fn decrement_boost_count(state: &AppState, id: i64) {
 pub async fn delete(state: &AppState, id: i64) {
     query(
         "DELETE FROM notes
-        WHERE id = ?",
+        WHERE id = $1",
     )
     .bind(id)
     .execute(&state.db_pool)

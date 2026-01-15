@@ -10,8 +10,8 @@ pub struct FollowRecord {
 pub async fn get(state: &AppState, follower_id: i64, followee_id: i64) -> Option<FollowRecord> {
     query_as(
         "SELECT follower_id, followee_id, pending FROM follows
-        WHERE follower_id = ?
-        AND followee_id = ?",
+        WHERE follower_id = $1
+        AND followee_id = $2",
     )
     .bind(follower_id)
     .bind(followee_id)
@@ -36,11 +36,11 @@ pub async fn get_following(
         "SELECT users.display_name, users.username
         FROM follows
         JOIN users ON follows.followee_id = users.id
-        WHERE users.username > ?
-        AND follows.follower_id = ?
+        WHERE users.username > $1
+        AND follows.follower_id = $2
         AND follows.pending = 0
         ORDER BY users.username ASC
-        LIMIT ?",
+        LIMIT $3",
     )
     .bind(max_username)
     .bind(follower_id)
@@ -56,12 +56,15 @@ pub async fn get_following_in(
     follower_id: i64,
     followee_usernames: &Vec<String>,
 ) -> Vec<FollowUserRecord> {
-    let in_placeholder = format!("?{}", ", ?".repeat(followee_usernames.len() - 1));
+    let in_placeholder = (1..followee_usernames.len())
+        .map(|id| format!("${}", id + 1))
+        .collect::<Vec<String>>()
+        .join(", ");
     let query_str = format!(
         "SELECT users.display_name, users.username
         FROM follows
         JOIN users ON follows.followee_id = users.id
-        WHERE follows.follower_id = ?
+        WHERE follows.follower_id = $1
         AND users.username IN ({}) 
         AND follows.pending = 0",
         in_placeholder
@@ -84,11 +87,11 @@ pub async fn get_followers(
         "SELECT users.display_name, users.username
         FROM follows
         JOIN users ON follows.follower_id = users.id
-        WHERE users.username > ?
-        AND follows.followee_id = ?
+        WHERE users.username > $1
+        AND follows.followee_id = $2
         AND follows.pending = 0
         ORDER BY users.username ASC
-        LIMIT ?",
+        LIMIT $3",
     )
     .bind(max_username)
     .bind(followee_id)
@@ -104,12 +107,15 @@ pub async fn get_followers_in(
     followee_id: i64,
     follower_usernames: &Vec<String>,
 ) -> Vec<FollowUserRecord> {
-    let in_placeholder = format!("?{}", ", ?".repeat(follower_usernames.len() - 1));
+    let in_placeholder = (1..follower_usernames.len())
+        .map(|id| format!("${}", id + 1))
+        .collect::<Vec<String>>()
+        .join(", ");
     let query_str = format!(
         "SELECT users.display_name, users.username
         FROM follows
         JOIN users ON follows.follower_id = users.id
-        WHERE follows.followee_id = ?
+        WHERE follows.followee_id = $1
         AND users.username IN ({}) 
         AND follows.pending = 0",
         in_placeholder
@@ -132,7 +138,7 @@ pub async fn get_follower_inboxes(state: &AppState, followee_id: i64) -> Vec<Fol
         "SELECT users.inbox_url
         FROM follows
         JOIN users ON follows.follower_id = users.id
-        WHERE follows.followee_id = ?
+        WHERE follows.followee_id = $1
         AND follows.pending = 0",
     )
     .bind(followee_id)
@@ -144,7 +150,7 @@ pub async fn get_follower_inboxes(state: &AppState, followee_id: i64) -> Vec<Fol
 pub async fn create(state: &AppState, follower_id: i64, followee_id: i64) {
     query(
         "INSERT INTO follows (follower_id, followee_id, pending)
-        VALUES (?, ?, 1)",
+        VALUES ($1, $2, 1)",
     )
     .bind(follower_id)
     .bind(followee_id)
@@ -156,8 +162,8 @@ pub async fn create(state: &AppState, follower_id: i64, followee_id: i64) {
 pub async fn accept(state: &AppState, follower_id: i64, followee_id: i64) {
     query(
         "UPDATE follows SET pending = 0
-        WHERE follower_id = ?
-        AND followee_id = ?",
+        WHERE follower_id = $1
+        AND followee_id = $2",
     )
     .bind(follower_id)
     .bind(followee_id)
@@ -169,8 +175,8 @@ pub async fn accept(state: &AppState, follower_id: i64, followee_id: i64) {
 pub async fn delete(state: &AppState, follower_id: i64, followee_id: i64) {
     query(
         "DELETE FROM follows
-        WHERE follower_id = ?
-        AND followee_id = ?",
+        WHERE follower_id = $1
+        AND followee_id = $2",
     )
     .bind(follower_id)
     .bind(followee_id)

@@ -18,9 +18,9 @@ pub async fn get(state: &AppState, recipient_id: i64, limit: i64) -> Vec<Notific
         "SELECT u.display_name, u.username, n.event_type, n.note_id, n.created_at
         FROM notifications AS n
         JOIN users AS u ON n.sender_id = u.id
-        WHERE n.recipient_id = ?
+        WHERE n.recipient_id = $1
         ORDER BY n.created_at DESC
-        LIMIT ?",
+        LIMIT $2",
     )
     .bind(recipient_id)
     .bind(limit)
@@ -57,9 +57,9 @@ pub async fn get_with_note(
         FROM notifications AS notif
         JOIN users AS u ON notif.sender_id = u.id
         LEFT JOIN notes AS note ON notif.note_id = note.id
-        WHERE notif.recipient_id = ? AND notif.created_at > ?
+        WHERE notif.recipient_id = $1 AND notif.created_at > $2
         ORDER BY notif.created_at DESC
-        LIMIT ?",
+        LIMIT $3",
     )
     .bind(recipient_id)
     .bind(since)
@@ -79,7 +79,7 @@ pub async fn create(
 ) {
     query(
         "INSERT INTO notifications (event_type, sender_id, recipient_id, note_id, created_at)
-        VALUES (?, ?, ?, ?, ?)",
+        VALUES ($1, $2, $3, $4, $5)",
     )
     .bind(event_type)
     .bind(sender_id)

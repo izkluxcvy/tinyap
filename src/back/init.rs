@@ -1,3 +1,8 @@
+#[cfg(not(any(feature = "sqlite", feature = "postgres")))]
+compile_error!("Either 'sqlite' or 'postgres' feature must be enabled");
+#[cfg(all(feature = "sqlite", feature = "postgres"))]
+compile_error!("Only one of 'sqlite' or 'postgres' features can be enabled");
+
 use crate::VERSION;
 
 use regex::Regex;
@@ -19,10 +24,6 @@ fn load_config() -> HashMap<String, String> {
     let mut conf = HashMap::new();
     for line in reader.lines() {
         let line = line.expect("Failed to read line");
-        if line.starts_with('#') {
-            continue;
-        }
-
         let parts: Vec<&str> = line.splitn(2, ":").collect();
 
         if parts.len() != 2 {
@@ -30,6 +31,10 @@ fn load_config() -> HashMap<String, String> {
         }
 
         let key = parts[0].trim().to_string();
+        if key.starts_with('#') || key.is_empty() {
+            continue;
+        }
+
         let value = parts[1]
             .trim()
             .trim_matches('"')
@@ -63,7 +68,10 @@ pub fn server_address() -> String {
 
 #[derive(Clone)]
 pub struct AppStateInner {
+    #[cfg(feature = "sqlite")]
     pub db_pool: sqlx::SqlitePool,
+    #[cfg(feature = "postgres")]
+    pub db_pool: sqlx::PgPool,
     #[cfg(feature = "web")]
     pub tera: Tera,
     pub deliver_queue: Arc<Semaphore>,
@@ -104,10 +112,18 @@ pub struct WebConfig {
     pub timezone: String,
 }
 
+#[cfg(feature = "sqlite")]
 async fn create_db_pool(conf: &HashMap<String, String>) -> sqlx::SqlitePool {
     let database_url = conf.get("database_url").expect("database_url must be set");
     println!("Connecting to SQLite database...");
     sqlx::SqlitePool::connect(database_url).await.unwrap()
+}
+
+#[cfg(feature = "postgres")]
+async fn create_db_pool(conf: &HashMap<String, String>) -> sqlx::PgPool {
+    let database_url = conf.get("database_url").expect("database_url must be set");
+    println!("Connecting to PostgreSQL database...");
+    sqlx::PgPool::connect(database_url).await.unwrap()
 }
 
 pub async fn create_app_state() -> AppState {

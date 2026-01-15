@@ -10,8 +10,8 @@ pub struct BoostRecord {
 pub async fn get(state: &AppState, user_id: i64, note_id: i64) -> Option<BoostRecord> {
     query_as(
         "SELECT id AS _id FROM notes
-        WHERE author_id = ?
-        AND boosted_id = ?",
+        WHERE author_id = $1
+        AND boosted_id = $2",
     )
     .bind(user_id)
     .bind(note_id)
@@ -36,7 +36,7 @@ pub async fn create(
 ) {
     query(
         "INSERT INTO notes (id, ap_url, author_id, boosted_id, boosted_username, boosted_created_at, content, attachments, parent_id, parent_author_username, created_at, is_public)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 1)",
     )
     .bind(id)
     .bind(ap_url)
@@ -57,8 +57,8 @@ pub async fn create(
 pub async fn delete(state: &AppState, user_id: i64, note_id: i64) {
     query(
         "DELETE FROM notes
-        WHERE author_id = ?
-        AND boosted_id = ?",
+        WHERE author_id = $1
+        AND boosted_id = $2",
     )
     .bind(user_id)
     .bind(note_id)

@@ -21,7 +21,7 @@ pub struct UserRecord {
     pub follower_count: i64,
 }
 pub async fn get_by_username(state: &AppState, username: &str) -> Option<UserRecord> {
-    query_as("SELECT * FROM users WHERE username = ?")
+    query_as("SELECT * FROM users WHERE username = $1")
         .bind(username)
         .fetch_optional(&state.db_pool)
         .await
@@ -29,7 +29,7 @@ pub async fn get_by_username(state: &AppState, username: &str) -> Option<UserRec
 }
 
 pub async fn get_by_ap_url(state: &AppState, ap_url: &str) -> Option<UserRecord> {
-    query_as("SELECT * FROM users WHERE ap_url = ?")
+    query_as("SELECT * FROM users WHERE ap_url = $1")
         .bind(ap_url)
         .fetch_optional(&state.db_pool)
         .await
@@ -37,7 +37,7 @@ pub async fn get_by_ap_url(state: &AppState, ap_url: &str) -> Option<UserRecord>
 }
 
 pub async fn get_by_id(state: &AppState, id: i64) -> UserRecord {
-    query_as("SELECT * FROM users WHERE id = ?")
+    query_as("SELECT * FROM users WHERE id = $1")
         .bind(id)
         .fetch_one(&state.db_pool)
         .await
@@ -60,7 +60,7 @@ pub async fn create(
 ) {
     query(
         "INSERT INTO users (username, password_hash, ap_url, inbox_url, private_key, public_key, display_name, bio, created_at, updated_at, is_local)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
     )
     .bind(username)
     .bind(password_hash)
@@ -91,7 +91,7 @@ pub async fn get_temp_sign_user(state: &AppState) -> TempSignUserRecord {
 }
 
 pub async fn update_profile(state: &AppState, user_id: i64, display_name: &str, bio: &str) {
-    query("UPDATE users SET display_name = ?, bio = ? WHERE id = ?")
+    query("UPDATE users SET display_name = $1, bio = $2 WHERE id = $3")
         .bind(display_name)
         .bind(bio)
         .bind(user_id)
@@ -101,7 +101,7 @@ pub async fn update_profile(state: &AppState, user_id: i64, display_name: &str, 
 }
 
 pub async fn update_password(state: &AppState, user_id: i64, password_hash: &str) {
-    query("UPDATE users SET password_hash = ? WHERE id = ?")
+    query("UPDATE users SET password_hash = $1 WHERE id = $2")
         .bind(password_hash)
         .bind(user_id)
         .execute(&state.db_pool)
@@ -110,7 +110,7 @@ pub async fn update_password(state: &AppState, user_id: i64, password_hash: &str
 }
 
 pub async fn update_date(state: &AppState, id: i64, updated_at: &str) {
-    query("UPDATE users SET updated_at = ? WHERE id = ?")
+    query("UPDATE users SET updated_at = $1 WHERE id = $2")
         .bind(updated_at)
         .bind(id)
         .execute(&state.db_pool)
@@ -119,7 +119,7 @@ pub async fn update_date(state: &AppState, id: i64, updated_at: &str) {
 }
 
 pub async fn increment_note_count(state: &AppState, id: i64) {
-    query("UPDATE users SET note_count = note_count + 1 WHERE id = ?")
+    query("UPDATE users SET note_count = note_count + 1 WHERE id = $1")
         .bind(id)
         .execute(&state.db_pool)
         .await
@@ -127,7 +127,7 @@ pub async fn increment_note_count(state: &AppState, id: i64) {
 }
 
 pub async fn decrement_note_count(state: &AppState, id: i64) {
-    query("UPDATE users SET note_count = note_count - 1 WHERE id = ? AND note_count > 0")
+    query("UPDATE users SET note_count = note_count - 1 WHERE id = $1 AND note_count > 0")
         .bind(id)
         .execute(&state.db_pool)
         .await
@@ -135,7 +135,7 @@ pub async fn decrement_note_count(state: &AppState, id: i64) {
 }
 
 pub async fn increment_following_count(state: &AppState, id: i64) {
-    query("UPDATE users SET following_count = following_count + 1 WHERE id = ?")
+    query("UPDATE users SET following_count = following_count + 1 WHERE id = $1")
         .bind(id)
         .execute(&state.db_pool)
         .await
@@ -143,7 +143,7 @@ pub async fn increment_following_count(state: &AppState, id: i64) {
 }
 
 pub async fn decrement_following_count(state: &AppState, id: i64) {
-    query("UPDATE users SET following_count = following_count - 1 WHERE id = ? AND following_count > 0")
+    query("UPDATE users SET following_count = following_count - 1 WHERE id = $1 AND following_count > 0")
         .bind(id)
         .execute(&state.db_pool)
         .await
@@ -151,7 +151,7 @@ pub async fn decrement_following_count(state: &AppState, id: i64) {
 }
 
 pub async fn increment_follower_count(state: &AppState, id: i64) {
-    query("UPDATE users SET follower_count = follower_count + 1 WHERE id = ?")
+    query("UPDATE users SET follower_count = follower_count + 1 WHERE id = $1")
         .bind(id)
         .execute(&state.db_pool)
         .await
@@ -160,7 +160,7 @@ pub async fn increment_follower_count(state: &AppState, id: i64) {
 
 pub async fn decrement_follower_count(state: &AppState, id: i64) {
     query(
-        "UPDATE users SET follower_count = follower_count - 1 WHERE id = ? AND follower_count > 0",
+        "UPDATE users SET follower_count = follower_count - 1 WHERE id = $1 AND follower_count > 0",
     )
     .bind(id)
     .execute(&state.db_pool)
@@ -183,7 +183,7 @@ pub async fn count_total(state: &AppState) -> i64 {
 
 pub async fn count_active(state: &AppState, since: &str) -> i64 {
     query_as::<_, CountRecord>(
-        "SELECT COUNT(*) as count FROM users WHERE is_local = 1 AND updated_at >= ?",
+        "SELECT COUNT(*) as count FROM users WHERE is_local = 1 AND updated_at >= $1",
     )
     .bind(since)
     .fetch_one(&state.db_pool)

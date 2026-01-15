@@ -1,11 +1,13 @@
 domain: example.com
 
+# Required for tls feature
 tls:
   cert_path: ./server.crt
   key_path: ./server.key
 
 server:
   database_url: sqlite://./tinyap.db
+  # database_url: postgresql://user:password@localhost/tinyap
   host: 127.0.0.1
   port: 8080
 
@@ -18,6 +20,7 @@ config:
   deliver_queue_size: 10
   token_ttl_days: 90
 
+# Required for web feature
 web_config:
   allow_signup: true
   max_sessions_per_user: 10

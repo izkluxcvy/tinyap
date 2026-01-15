@@ -10,8 +10,8 @@ pub struct LikeRecord {
 pub async fn get(state: &AppState, user_id: i64, note_id: i64) -> Option<LikeRecord> {
     query_as(
         "SELECT id AS _id FROM likes
-        WHERE user_id = ?
-        AND note_id = ?",
+        WHERE user_id = $1
+        AND note_id = $2",
     )
     .bind(user_id)
     .bind(note_id)
@@ -23,7 +23,7 @@ pub async fn get(state: &AppState, user_id: i64, note_id: i64) -> Option<LikeRec
 pub async fn create(state: &AppState, user_id: i64, note_id: i64) {
     query(
         "INSERT INTO likes (user_id, note_id)
-        VALUES (?, ?)",
+        VALUES ($1, $2)",
     )
     .bind(user_id)
     .bind(note_id)
@@ -35,8 +35,8 @@ pub async fn create(state: &AppState, user_id: i64, note_id: i64) {
 pub async fn delete(state: &AppState, user_id: i64, note_id: i64) {
     query(
         "DELETE FROM likes
-        WHERE user_id = ?
-        AND note_id = ?",
+        WHERE user_id = $1
+        AND note_id = $2",
     )
     .bind(user_id)
     .bind(note_id)

@@ -10,18 +10,18 @@ CREATE TABLE users (
     bio TEXT DEFAULT '',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
-    is_local INTEGER NOT NULL,
-    note_count INTEGER NOT NULL DEFAULT 0,
-    following_count INTEGER NOT NULL DEFAULT 0,
-    follower_count INTEGER NOT NULL DEFAULT 0
+    is_local BIGINT NOT NULL,
+    note_count BIGINT NOT NULL DEFAULT 0,
+    following_count BIGINT NOT NULL DEFAULT 0,
+    follower_count BIGINT NOT NULL DEFAULT 0
 );
 CREATE INDEX idx_users_is_local ON users(is_local);
 
 CREATE TABLE follows (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    follower_id INTEGER NOT NULL,
-    followee_id INTEGER NOT NULL,
-    pending INTEGER NOT NULL,
+    follower_id BIGINT NOT NULL,
+    followee_id BIGINT NOT NULL,
+    pending BIGINT NOT NULL,
     UNIQUE(follower_id, followee_id),
     FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (followee_id) REFERENCES users(id) ON DELETE CASCADE
@@ -30,7 +30,7 @@ CREATE TABLE follows (
 CREATE table notes (
     id BIGINT PRIMARY KEY,
     ap_url TEXT NOT NULL UNIQUE,
-    author_id INTEGER NOT NULL,
+    author_id BIGINT NOT NULL,
     boosted_id BIGINT,
     boosted_username TEXT,
     boosted_created_at TEXT,
@@ -39,9 +39,9 @@ CREATE table notes (
     parent_id BIGINT,
     parent_author_username TEXT,
     created_at TEXT NOT NULL,
-    is_public INTEGER NOT NULL,
-    like_count INTEGER NOT NULL DEFAULT 0,
-    boost_count INTEGER NOT NULL DEFAULT 0,
+    is_public BIGINT NOT NULL,
+    like_count BIGINT NOT NULL DEFAULT 0,
+    boost_count BIGINT NOT NULL DEFAULT 0,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (boosted_id) REFERENCES notes(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_id) REFERENCES notes(id) ON DELETE CASCADE
@@ -53,7 +53,7 @@ CREATE INDEX idx_notes_created_at_id ON notes(created_at, id);
 
 CREATE TABLE likes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
+    user_id BIGINT NOT NULL,
     note_id BIGINT NOT NULL,
     UNIQUE(user_id, note_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -62,9 +62,9 @@ CREATE TABLE likes (
 
 CREATE TABLE notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    event_type INTEGER NOT NULL,
-    sender_id INTEGER NOT NULL,
-    recipient_id INTEGER NOT NULL,
+    event_type BIGINT NOT NULL,
+    sender_id BIGINT NOT NULL,
+    recipient_id BIGINT NOT NULL,
     note_id BIGINT,
     created_at TEXT NOT NULL,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -78,7 +78,7 @@ CREATE INDEX idx_notifications_created_at ON notifications(created_at);
 CREATE TABLE sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id TEXT NOT NULL UNIQUE,
-    user_id INTEGER NOT NULL,
+    user_id BIGINT NOT NULL,
     expires_at TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -94,7 +94,7 @@ CREATE TABLE oauth_apps (
 
 CREATE TABLE oauth_authorizations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
+    user_id BIGINT NOT NULL,
     client_id BIGINT NOT NULL,
     code TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -103,7 +103,7 @@ CREATE TABLE oauth_authorizations (
 
 CREATE TABLE oauth_tokens (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
+    user_id BIGINT NOT NULL,
     client_id BIGINT NOT NULL,
     token TEXT NOT NULL UNIQUE,
     expires_at TEXT NOT NULL,

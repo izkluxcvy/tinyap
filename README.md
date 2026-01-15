@@ -37,7 +37,7 @@ $ watch -n 360 'echo $(date "+%F %T"),$(cat /sys/fs/cgroup/system.slice/tinyap.s
 ## Requirements
 
 - Rust
-- SQLite3
+- SQLite or PostgreSQL
 - Http**S**
 
 ## Installation
@@ -45,14 +45,19 @@ $ watch -n 360 'echo $(date "+%F %T"),$(cat /sys/fs/cgroup/system.slice/tinyap.s
 Clone git repo.
 
 ```sh
-$ git clone https://github.com/izkluxcvy/tinyap.git
+$ git clone --depth 1 https://github.com/izkluxcvy/tinyap.git
 $ cd tinyap
 ```
 
 Create database.
 
 ```sh
+$ # for SQLite
 $ sqlite3 tinyap.db < schema.sql
+
+$ # for PostgreSQL
+$ psql -U postgres -c "CREATE DATABASE tinyap"
+$ sed -e "s/INTEGER PRIMARY KEY AUTOINCREMENT/SERIAL PRIMARY KEY/g" schema.sql | psql -U postgres -d tinyap
 ```
 
 Configure your config.yaml.
@@ -64,7 +69,7 @@ $ vi config.yaml
 Build and run
 
 ```sh
-$ cargo build --release --features=web,api
+$ cargo build --release --features=sqlite,web,api
 
 $ mv target/release/tinyap ./
 $ cargo clean
@@ -75,6 +80,8 @@ $ ./tinyap serve
 
 ### Build feature flags:
 
+- `sqlite`: use SQLite for DB (must be exclusive with postgres)
+- `postgres`: use PostgreSQL for DB
 - `web`: text-based tiny Web UI
 - `api`: mastodon-compatible API
 - `tls`: tinyap as a TLS termination
