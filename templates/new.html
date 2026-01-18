@@ -13,7 +13,7 @@
     {% if parent %}
     <pre><hr><a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.display_name }}@{{ parent.username }}</a> (<a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
 {{ parent.content | safe }}{% if parent.attachments %}
-
+---Attachments---
 {{ parent.attachments | safe }}{% endif %}
 ---Reply---</pre>
     {% endif %}

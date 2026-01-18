@@ -13,10 +13,10 @@
     {% for note in notes %}{% if note.boosted_id %}
     <pre><hr><a href="/@{{ note.username }}">{{ note.display_name }}@{{ note.username }}</a> boosted:
 <a href="/@{{ note.boosted_username }}">@{{ note.boosted_username }}</a> (<a href="/@{{ note.boosted_username }}/{{ note.boosted_id }}">{{ note.boosted_created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>){% else %}
-    <pre><hr><a href="/@{{ note.username }}">{{ note.display_name }}@{{ note.username }}</a> (<a href="/@{{ note.username }}/{{ note.id }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>){% endif %}
-{% if note.parent_id %}<small>Reply to <a href="/@{{ note.parent_author_username }}">@{{ note.parent_author_username }}</a></small>
-{% endif %}{{ note.content | safe }}{% if note.attachments %}
-
+    <pre><hr>{% if note.parent_id %}<small>Reply to <a href="/@{{ note.parent_author_username }}">@{{ note.parent_author_username }}</a></small>
+{% endif %}<a href="/@{{ note.username }}">{{ note.display_name }}@{{ note.username }}</a> (<a href="/@{{ note.username }}/{{ note.id }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>){% endif %}
+{{ note.content | safe }}{% if note.attachments %}
+---Attachments---
 {{ note.attachments | safe }}{% endif %}</pre>
     {% else %}
     <pre>No notes yet.</pre>

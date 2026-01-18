@@ -11,15 +11,15 @@
     <h3>Note Detail</h3>
 
     <hr>
-    <pre>{% if parent %}<a href="/@{{ parent.username }}">{{ parent.display_name }}@{{ parent.username }}</a> (<a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
-{% if parent.parent_id %}<small>Reply to <a href="/@{{ parent.parent_author_username }}">@{{ parent.parent_author_username }}</a></small>
-{% endif %}{{ parent.content | safe }}{% if parent.attachments %}
-
+    <pre>{% if parent %}{% if parent.parent_id %}<small>Reply to <a href="/@{{ parent.parent_author_username }}">@{{ parent.parent_author_username }}</a></small>
+{% endif %}<a href="/@{{ parent.username }}">{{ parent.display_name }}@{{ parent.username }}</a> (<a href="/@{{ parent.username }}/{{ parent.id }}">{{ parent.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
+{{ parent.content | safe }}{% if parent.attachments %}
+---Attachments---
 {{ parent.attachments | safe }}{% endif %}
 <hr>---Reply---
 {% endif %}<a href="/@{{ note.username }}">{{ note.display_name }}@{{ note.username }}</a> (<a href="/@{{ note.username }}/{{ note.id }}">{{ note.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
 {{ note.content | safe }}{% if note.attachments %}
-
+---Attachments---
 {{ note.attachments | safe }}{% endif %}</pre>
 
     <a href="/new?parent_id={{ note.id }}">Reply</a>
@@ -55,7 +55,7 @@
     {% for reply in replies %}
     <pre><a href="/@{{ reply.username }}">{{ reply.display_name }}@{{ reply.username }}</a> (<a href="/@{{ reply.username }}/{{ reply.id }}">{{ reply.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone) }}</a>)
 {{ reply.content | safe }}{% if reply.attachments %}
-
+---Attachments---
 {{ reply.attachments | safe }}{% endif %}</pre>
     {% endfor %}
     {% endif %}
