@@ -15,6 +15,9 @@ pub async fn parse() {
         "serve" => cli::serve::serve().await,
         "useradd" => cli::useradd::useradd(args[2..].to_vec()).await,
         "passwd" => cli::passwd::passwd(args[2..].to_vec()).await,
+        "block" => cli::block::block(args[2..].to_vec()).await,
+        "unblock" => cli::block::unblock(args[2..].to_vec()).await,
+        "blocklist" => cli::block::list().await,
         _ => println!("Use --help to show available commands."),
     }
 }

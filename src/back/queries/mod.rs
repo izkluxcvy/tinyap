@@ -1,3 +1,4 @@
+pub mod block;
 pub mod boost;
 pub mod follow;
 pub mod like;

@@ -7,6 +7,7 @@ mod like;
 mod undo;
 
 use crate::back::init::AppState;
+use crate::back::queries;
 use crate::back::utils;
 
 use axum::{
@@ -25,6 +26,7 @@ use rsa::{
 use serde_json::Value;
 use sha2::Sha256;
 use std::collections::HashMap;
+use url::Url;
 
 pub async fn post(
     State(state): State<AppState>,
@@ -32,30 +34,27 @@ pub async fn post(
     headers: HeaderMap,
     Json(activity): Json<Value>,
 ) -> impl IntoResponse {
+    // Verify domain
+    let domain = match verify_domain(&state, &activity).await {
+        Ok(domain) => domain,
+        Err(e) => {
+            println!("Domain verification failed: {}", e);
+            return (StatusCode::FORBIDDEN, e).into_response();
+        }
+    };
+
     // Verify signature
-    if let Err(e) = verify_signature(&state, &uri, &headers).await {
+    if let Err(e) = verify_signature(&state, &uri, &headers, &domain).await {
+        println!("Signature verification failed: {}", e);
         return (StatusCode::UNAUTHORIZED, e).into_response();
     }
 
     println!("Received activity:\n{}", activity);
 
-    // Check required fields
-    let Some(actor) = activity["actor"].as_str() else {
-        return (StatusCode::BAD_REQUEST, "missing actor").into_response();
-    };
-
+    // Extract activity type
     let Some(activity_type) = activity["type"].as_str() else {
         return (StatusCode::BAD_REQUEST, "missing type").into_response();
     };
-
-    // Prevent loopback activity
-    if actor.contains("localhost")
-        || actor.contains("127.0.0.1")
-        || actor.contains("[::1]")
-        || actor.contains(&state.domain)
-    {
-        return (StatusCode::BAD_REQUEST, "loopback not allowed").into_response();
-    }
 
     match activity_type {
         "Follow" => follow::follow(&state, &activity).await,
@@ -81,7 +80,41 @@ pub async fn post(
     (StatusCode::OK, "activity received").into_response()
 }
 
-async fn verify_signature(state: &AppState, uri: &Uri, headers: &HeaderMap) -> Result<(), String> {
+async fn verify_domain(state: &AppState, activity: &Value) -> Result<String, String> {
+    // Extract actor domain
+    let Some(actor) = activity["actor"].as_str() else {
+        return Err("missing actor".to_string());
+    };
+    let Ok(actor_url) = Url::parse(actor) else {
+        return Err("invalid actor URL".to_string());
+    };
+    let Some(domain) = actor_url.domain() else {
+        return Err("invalid actor domain".to_string());
+    };
+
+    // Prevent loopback activity
+    if domain == "localhost"
+        || domain == "127.0.0.1"
+        || domain == "[::1]"
+        || domain == &state.domain
+    {
+        return Err("loopback not allowed".to_string());
+    }
+
+    // Check if domain is blocked
+    if queries::block::get(state, domain).await.is_some() {
+        return Err("domain is blocked".to_string());
+    }
+
+    Ok(domain.to_string())
+}
+
+async fn verify_signature(
+    state: &AppState,
+    uri: &Uri,
+    headers: &HeaderMap,
+    domain: &str,
+) -> Result<(), String> {
     // Get Signature header
     let Some(sig_header) = headers.get("Signature") else {
         return Err("missing Signature header".to_string());
@@ -105,6 +138,9 @@ async fn verify_signature(state: &AppState, uri: &Uri, headers: &HeaderMap) -> R
     let Some(key_id) = sig_map.get("keyId") else {
         return Err("missing keyId".to_string());
     };
+    if !key_id.contains(domain) {
+        return Err("mismatched keyId domain".to_string());
+    }
 
     let Some(signed_headers) = sig_map.get("headers") else {
         return Err("missing headers".to_string());

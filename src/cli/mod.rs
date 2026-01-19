@@ -1,3 +1,4 @@
+mod block;
 mod help;
 pub mod parse;
 mod passwd;
