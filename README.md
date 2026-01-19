@@ -7,10 +7,11 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 
 ## Features
 
-- Tiny memory usage
 - Federate with remote users
 - Create text note
 - Follow, Reply, Like, Boost, Undo them
+- Block domain
+- Tiny memory usage
 - Tiny web UI
 - Mastodon-compatible API
 

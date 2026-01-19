@@ -52,7 +52,7 @@ pub fn gen_secure_token() -> String {
 *  [                       64 bits ID                       ]
 *  [ 0 |      44 bits timestamp      |    19 bits random    ]
 *
-*  No worries until year 2500
+*  Ok until year 2500
 */
 const EPOCH: i64 = 1767225600000; // 2026-01-01
 const RANDOM_BITS: i8 = 19;
