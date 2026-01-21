@@ -223,12 +223,34 @@ pub async fn parse_from_json(
     if let Some(note_attachments) = note_json["attachment"].as_array() {
         attachments = Some("".to_string());
         for attachment in note_attachments {
+            // Attachment type
+            let attachment_type: &str;
+            if let Some(media_type) = attachment["mediaType"].as_str() {
+                if media_type.starts_with("image/") {
+                    attachment_type = "image";
+                } else if media_type.starts_with("gifv/") {
+                    attachment_type = "gifv";
+                } else if media_type.starts_with("video/") {
+                    attachment_type = "video";
+                } else if media_type.starts_with("audio/") {
+                    attachment_type = "audio";
+                } else {
+                    attachment_type = "unknown";
+                }
+
+                attachments
+                    .as_mut()
+                    .unwrap()
+                    .push_str(&format!("{}: ", attachment_type));
+            }
+
+            // Attachment url
             if let Some(url) = attachment["url"].as_str() {
                 attachments
                     .as_mut()
                     .unwrap()
                     .push_str(&utils::parse_content(state, url));
-                attachments.as_mut().unwrap().push_str("\n");
+                attachments.as_mut().unwrap().push_str("<br>");
             }
         }
     }

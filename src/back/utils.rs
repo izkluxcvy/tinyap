@@ -139,14 +139,25 @@ pub fn attachments_to_value(
             vec![]
         } else {
             let mut ret: Vec<serde_json::Value> = vec![];
-            for url in attachments.split("\n") {
+            for attachment in attachments.split("<br>") {
+                let parts = attachment.splitn(2, ": ").collect::<Vec<&str>>();
+                let attachment_type: &str;
+                let url: &str;
+                if parts.len() == 2 {
+                    attachment_type = parts[0];
+                    url = parts[1];
+                } else {
+                    attachment_type = "image";
+                    url = parts[0];
+                }
+
                 let url = strip_content(&state, url);
                 if url.is_empty() {
                     continue;
                 }
                 ret.push(serde_json::json!({
                     "id": url,
-                    "type": "image",
+                    "type": attachment_type,
                     "url": url,
                     "preview_url": url,
                     "description": "",
