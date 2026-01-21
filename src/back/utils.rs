@@ -190,7 +190,7 @@ pub async fn signed_deliver(
     recipient_inbox: &str,
     body: &str,
 ) {
-    println!("Delivering to {}:\n{}", recipient_inbox, body);
+    println!("Delivering to {}: {}", recipient_inbox, body);
 
     // Sign
     let date = date_now_http_format();

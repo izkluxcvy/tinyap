@@ -34,6 +34,8 @@ pub async fn post(
     headers: HeaderMap,
     Json(activity): Json<Value>,
 ) -> impl IntoResponse {
+    println!("Received activity: {}", activity);
+
     // Verify domain
     let domain = match verify_domain(&state, &activity).await {
         Ok(domain) => domain,
@@ -48,8 +50,6 @@ pub async fn post(
         println!("Signature verification failed: {}", e);
         return (StatusCode::UNAUTHORIZED, e).into_response();
     }
-
-    println!("Received activity:\n{}", activity);
 
     // Extract activity type
     let Some(activity_type) = activity["type"].as_str() else {
@@ -192,6 +192,7 @@ async fn verify_signature(
     };
 
     // Verify
+    let public_key_pem = public_key_pem.trim();
     let Ok(public_key) = RsaPublicKey::from_public_key_pem(public_key_pem) else {
         return Err("invalid public key".to_string());
     };
