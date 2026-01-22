@@ -12,6 +12,11 @@ pub async fn get_v1(State(state): State<AppState>) -> Json<Value> {
         "description": &state.metadata.instance_description,
         "email": "",
         "version": VERSION,
+        "configuration": {
+            "statuses": {
+                "max_characters": state.config.max_note_chars,
+            }
+        },
     }))
 }
 
@@ -23,6 +28,11 @@ pub async fn get_v2(State(state): State<AppState>) -> Json<Value> {
         "version": VERSION,
         "registrations": {
             "enabled": false,
+        },
+        "configuration": {
+            "statuses": {
+                "max_characters": state.config.max_note_chars,
+            }
         },
         "thumbnail": {},
         "contact": {
