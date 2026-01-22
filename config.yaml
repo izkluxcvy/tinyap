@@ -22,6 +22,8 @@ config:
 
 # Required for web feature
 web_config:
+  # temoplates and static directory
+  web_dir: ./
   allow_signup: true
   max_sessions_per_user: 10
   max_timeline_items: 30

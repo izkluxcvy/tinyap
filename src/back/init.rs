@@ -8,6 +8,7 @@ use crate::VERSION;
 use regex::Regex;
 use reqwest::Client;
 use std::collections::HashMap;
+use std::env::var;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::sync::Arc;
@@ -18,7 +19,12 @@ use tokio::sync::Semaphore;
 pub type AppState = Arc<AppStateInner>;
 
 fn load_config() -> HashMap<String, String> {
-    let file = File::open("config.yaml").expect("Failed to open config.yaml");
+    // ./config.yaml or /etc/tinyap/config.yaml or $TINYAP_CONFIG
+    let config_path = var("TINYAP_CONFIG").unwrap_or_else(|_| "config.yaml".to_string());
+    let file = match File::open(config_path) {
+        Ok(f) => f,
+        Err(_) => File::open("/etc/tinyap/config.yaml").expect("Failed to open config file"),
+    };
     let reader = BufReader::new(file);
 
     let mut conf = HashMap::new();
@@ -132,7 +138,12 @@ pub async fn create_app_state() -> AppState {
     let db_pool = create_db_pool(&conf).await;
 
     #[cfg(feature = "web")]
-    let tera = Tera::new("templates/**/*").unwrap();
+    let web_dir = conf
+        .get("web_dir")
+        .expect("web_dir must be set")
+        .to_string();
+    #[cfg(feature = "web")]
+    let tera = Tera::new(&format!("{}/templates/**/*", web_dir)).unwrap();
 
     let domain = conf.get("domain").expect("domain must be set").to_string();
 

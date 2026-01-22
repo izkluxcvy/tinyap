@@ -1,4 +1,6 @@
 /target
+/deb
+*.deb
 *.db
 server.crt
 server.csr

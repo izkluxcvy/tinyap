@@ -87,6 +87,14 @@ $ ./tinyap serve
 - `api`: mastodon-compatible API
 - `tls`: tinyap as a TLS termination
 
+### Config file path
+
+You can place in `./config.yaml` or `/etc/tinyap/config.yaml` or `$TINYAP_CONFIG`
+
+```sh
+$ TINYAP_CONFIG=/path/to/config.yaml ./tinyap serve
+```
+
 ## Customizing Web UI
 
 ### templates/
