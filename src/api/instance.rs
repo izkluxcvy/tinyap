@@ -15,6 +15,7 @@ pub async fn get_v1(State(state): State<AppState>) -> Json<Value> {
         "configuration": {
             "statuses": {
                 "max_characters": state.config.max_note_chars,
+                "max_media_attachments": 0,
             }
         },
     }))
@@ -32,6 +33,7 @@ pub async fn get_v2(State(state): State<AppState>) -> Json<Value> {
         "configuration": {
             "statuses": {
                 "max_characters": state.config.max_note_chars,
+                "max_media_attachments": 0,
             }
         },
         "thumbnail": {},
