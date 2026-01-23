@@ -49,7 +49,10 @@ async fn web_routes() -> Router<init::AppState> {
         .route("/local", get(web::timeline::get_local))
         .route("/federated", get(web::timeline::get_federated))
         .route("/search", get(web::search::get).post(web::search::post))
-        .nest_service("/static", ServeDir::new("static"))
+        .nest_service(
+            "/static",
+            ServeDir::new(&format!("{}/static", init::web_dir())),
+        )
 }
 
 #[cfg(feature = "api")]

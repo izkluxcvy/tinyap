@@ -132,18 +132,21 @@ async fn create_db_pool(conf: &HashMap<String, String>) -> sqlx::PgPool {
     sqlx::PgPool::connect(database_url).await.unwrap()
 }
 
+#[cfg(feature = "web")]
+pub fn web_dir() -> String {
+    let conf = load_config();
+    conf.get("web_dir")
+        .expect("web_dir must be set")
+        .to_string()
+}
+
 pub async fn create_app_state() -> AppState {
     let conf = load_config();
 
     let db_pool = create_db_pool(&conf).await;
 
     #[cfg(feature = "web")]
-    let web_dir = conf
-        .get("web_dir")
-        .expect("web_dir must be set")
-        .to_string();
-    #[cfg(feature = "web")]
-    let tera = Tera::new(&format!("{}/templates/**/*", web_dir)).unwrap();
+    let tera = Tera::new(&format!("{}/templates/**/*", web_dir())).unwrap();
 
     let domain = conf.get("domain").expect("domain must be set").to_string();
 
