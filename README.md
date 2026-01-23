@@ -1,4 +1,4 @@
-## TinyAP v1.alpha
+## TinyAP
 micro-blogging software built on ActivityPub, part of the Fediverse.
 
 NoJS, Fast, Lightweight.
@@ -37,11 +37,32 @@ $ watch -n 360 'echo $(date "+%F %T"),$(cat /sys/fs/cgroup/system.slice/tinyap.s
 
 ## Requirements
 
-- Rust
+- Rust (for building from source)
 - SQLite or PostgreSQL
 - Http**S**
 
 ## Installation
+
+### Debian package
+
+Download .deb package from [Releases](https://github.com/izkluxcvy/tinyap/releases/)
+
+Install TinyAP
+
+```sh
+$ sudo apt install ./tinyap_amd64.deb
+```
+
+Configure and run
+
+```sh
+$ sudo su - tinyap
+$ vi /etc/tinyap/config.yaml
+$ exit
+$ sudo systemctl enable --now tinyap.service
+```
+
+### Build from source
 
 Clone git repo.
 
