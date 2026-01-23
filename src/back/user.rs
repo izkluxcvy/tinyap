@@ -142,6 +142,12 @@ pub async fn fetch_remote(
     };
 
     let display_name = user_json["name"].as_str().unwrap_or(username);
+    let display_name = if display_name.is_empty() {
+        username
+    } else {
+        display_name
+    };
+
     // Merge attachments to bio
     let mut bio = user_json["summary"].as_str().unwrap_or("").to_string();
     if let Some(attachments) = user_json["attachment"].as_array() {
