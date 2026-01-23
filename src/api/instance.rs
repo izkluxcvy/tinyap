@@ -1,4 +1,5 @@
 use crate::VERSION;
+use crate::api::accounts::account_json;
 use crate::back::init::AppState;
 
 use axum::{Json, extract::State};
@@ -22,6 +23,18 @@ pub async fn get_v1(State(state): State<AppState>) -> Json<Value> {
 }
 
 pub async fn get_v2(State(state): State<AppState>) -> Json<Value> {
+    let admin_account = account_json(
+        &state,
+        &state.metadata.admin_username,
+        &state.metadata.admin_username,
+        "0000-01-01T00:00:00Z",
+        "",
+        0,
+        0,
+        0,
+        "0000-01-01T00:00:00Z",
+    );
+
     Json(json!({
         "domain": &state.domain,
         "title": &state.metadata.instance_name,
@@ -45,6 +58,7 @@ pub async fn get_v2(State(state): State<AppState>) -> Json<Value> {
         "thumbnail": {},
         "contact": {
             "email": &state.metadata.admin_email,
+            "account": admin_account,
         },
     }))
 }
