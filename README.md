@@ -51,14 +51,13 @@ Install TinyAP
 
 ```sh
 $ sudo apt install ./tinyap_amd64.deb
+$ tinyap --version
 ```
 
 Configure and run
 
 ```sh
-$ sudo su - tinyap
-$ vi /etc/tinyap/config.yaml
-$ exit
+$ sudo vi /etc/tinyap/config.yaml
 $ sudo systemctl enable --now tinyap.service
 ```
 
