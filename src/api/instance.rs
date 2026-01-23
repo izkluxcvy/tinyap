@@ -34,7 +34,13 @@ pub async fn get_v2(State(state): State<AppState>) -> Json<Value> {
             "statuses": {
                 "max_characters": state.config.max_note_chars,
                 "max_media_attachments": 0,
-            }
+            },
+            "polls": {
+                "max_options": 0,
+                "max_characters_per_option": 0,
+                "min_expiration": 0,
+                "max_expiration": 0,
+            },
         },
         "thumbnail": {},
         "contact": {
