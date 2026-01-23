@@ -10,7 +10,7 @@ pub async fn get_v1(State(state): State<AppState>) -> Json<Value> {
         "title": &state.metadata.instance_name,
         "short_description": "",
         "description": &state.metadata.instance_description,
-        "email": "",
+        "email": &state.metadata.admin_email,
         "version": VERSION,
         "configuration": {
             "statuses": {
@@ -38,7 +38,7 @@ pub async fn get_v2(State(state): State<AppState>) -> Json<Value> {
         },
         "thumbnail": {},
         "contact": {
-            "email": "",
+            "email": &state.metadata.admin_email,
         },
     }))
 }

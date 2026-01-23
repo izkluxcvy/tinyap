@@ -9,7 +9,9 @@
     <h3>Welcome to {{ instance_name }}</h3>
 
     <pre>{{ instance_description | safe }}
-
+{% if admin_username %}Admin: <a href="/@{{ admin_username }}">@{{ admin_username }}</a>
+{% endif %}{% if admin_email %}Contact: <a href="mailto:{{ admin_email }}">{{ admin_email }}</a>
+{% endif %}
 <a href="/local">Local Timeline</a>
 <a href="/federated">Federated Timeline</a>
 <a href="/home">Home</a>

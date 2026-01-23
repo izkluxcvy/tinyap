@@ -101,6 +101,8 @@ pub struct Re {
 pub struct Metadata {
     pub instance_name: String,
     pub instance_description: String,
+    pub admin_username: String,
+    pub admin_email: String,
 }
 
 #[derive(Clone)]
@@ -158,6 +160,16 @@ pub async fn create_app_state() -> AppState {
     let instance_description = conf
         .get("instance_description")
         .expect("instance_description must be set")
+        .to_string();
+
+    let admin_username = conf
+        .get("admin_username")
+        .unwrap_or(&"".to_string())
+        .to_string();
+
+    let admin_email = conf
+        .get("admin_email")
+        .unwrap_or(&"".to_string())
         .to_string();
 
     #[cfg(feature = "web")]
@@ -226,6 +238,8 @@ pub async fn create_app_state() -> AppState {
         metadata: Metadata {
             instance_name: instance_name,
             instance_description: instance_description,
+            admin_username: admin_username,
+            admin_email: admin_email,
         },
         config: Config {
             max_note_chars: max_note_chars,
