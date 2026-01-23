@@ -110,3 +110,14 @@ pub async fn delete_expired_tokens(state: &AppState, date_now: &str) {
         .await
         .unwrap();
 }
+
+pub async fn delete_unused_apps(state: &AppState) {
+    query(
+        "DELETE FROM oauth_apps
+        WHERE client_id NOT IN (SELECT DISTINCT client_id FROM oauth_authorizations)
+        AND client_id NOT IN (SELECT DISTINCT client_id FROM oauth_tokens)",
+    )
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}

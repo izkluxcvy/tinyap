@@ -123,6 +123,9 @@ pub async fn post(
     let date_now = utils::date_now();
     queries::oauth::delete_expired_tokens(&state, &date_now).await;
 
+    // Delete unused apps
+    queries::oauth::delete_unused_apps(&state).await;
+
     Json(json!({
         "access_token": token,
         "token_type": "Bearer",
