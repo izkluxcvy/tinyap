@@ -82,10 +82,10 @@ pub async fn get_statuses(
     Query(query): Query<StatusesQuery>,
 ) -> Json<Value> {
     // Return empty if pinned is true
-    if let Some(pinned) = query.pinned {
-        if pinned {
-            return Json(json!([]));
-        }
+    if let Some(pinned) = query.pinned
+        && pinned
+    {
+        return Json(json!([]));
     }
 
     // Extract limit

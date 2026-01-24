@@ -22,10 +22,10 @@ pub async fn get(
     auth_user: MaybeAuthUser,
 ) -> impl IntoResponse {
     // Redirect to json path if requested
-    if let Some(accept_header) = headers.get("Accept") {
-        if accept_header.to_str().unwrap_or("").contains("json") {
-            return Redirect::to(&format!("/users/{}", username)).into_response();
-        }
+    if let Some(accept_header) = headers.get("Accept")
+        && accept_header.to_str().unwrap_or("").contains("json")
+    {
+        return Redirect::to(&format!("/users/{}", username)).into_response();
     }
 
     // Get user

@@ -34,6 +34,6 @@ pub async fn follow(state: &AppState, activity: &Value) {
         return;
     };
     if existing.pending != 0 {
-        follow::accept(&state, object.id, actor.id).await;
+        follow::accept(state, object.id, actor.id).await;
     }
 }

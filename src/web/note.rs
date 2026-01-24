@@ -20,10 +20,10 @@ pub async fn get(
     };
 
     // Redirect to json path if requested
-    if let Some(accept_header) = headers.get("Accept") {
-        if accept_header.to_str().unwrap_or("").contains("json") {
-            return Redirect::to(&format!("/notes/{}", id)).into_response();
-        }
+    if let Some(accept_header) = headers.get("Accept")
+        && accept_header.to_str().unwrap_or("").contains("json")
+    {
+        return Redirect::to(&format!("/notes/{}", id)).into_response();
     }
 
     // Get note
@@ -67,11 +67,7 @@ pub async fn get(
         }
 
         // Check is_you
-        if auth_user_id == author.id {
-            is_you = true;
-        } else {
-            is_you = false;
-        }
+        is_you = auth_user_id == author.id;
     } else {
         is_liked = false;
         is_boosted = false;

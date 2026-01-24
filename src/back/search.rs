@@ -11,16 +11,16 @@ pub async fn search(state: &AppState, q: &str) -> Result<String, String> {
         // Search user
         let username = q.trim_start_matches("@");
         if let Some(_existing) = queries::user::get_by_username(state, username).await {
-            return Ok(format!("/@{}", username));
+            Ok(format!("/@{}", username))
         } else {
             // Fetch remote user
             let Some(ap_url) = resolve_acct(state, username).await else {
                 return Err("User not found".to_string());
             };
             if let Err(e) = user::add_remote(state, &ap_url).await {
-                return Err(format!("Failed to add remote user: {}", e));
+                Err(format!("Failed to add remote user: {}", e))
             } else {
-                return Ok(format!("/@{}", username));
+                Ok(format!("/@{}", username))
             }
         }
     } else {
@@ -29,11 +29,9 @@ pub async fn search(state: &AppState, q: &str) -> Result<String, String> {
             Ok(note_id) => {
                 let note = queries::note::get_by_id(state, note_id).await.unwrap();
                 let author = queries::user::get_by_id(state, note.author_id).await;
-                return Ok(format!("/@{}/{}", author.username, note.id));
+                Ok(format!("/@{}/{}", author.username, note.id))
             }
-            Err(e) => {
-                return Err(format!("Failed to fetch remote note: {}", e));
-            }
+            Err(e) => Err(format!("Failed to fetch remote note: {}", e)),
         }
     }
 }
@@ -57,9 +55,7 @@ async fn resolve_acct(state: &AppState, acct: &str) -> Option<String> {
     let resp = resp.unwrap();
     let resp_json: Value = resp.json().await.ok()?;
 
-    let Some(links) = resp_json["links"].as_array() else {
-        return None;
-    };
+    let links = resp_json["links"].as_array()?;
     for link in links {
         if link["rel"] == "self" {
             return link["href"].as_str().map(|s| s.to_string());

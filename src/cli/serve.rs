@@ -51,7 +51,7 @@ async fn web_routes() -> Router<init::AppState> {
         .route("/search", get(web::search::get).post(web::search::post))
         .nest_service(
             "/static",
-            ServeDir::new(&format!("{}/static", init::web_dir())),
+            ServeDir::new(format!("{}/static", init::web_dir())),
         )
 }
 

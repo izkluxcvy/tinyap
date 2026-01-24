@@ -93,10 +93,7 @@ async fn verify_domain(state: &AppState, activity: &Value) -> Result<String, Str
     };
 
     // Prevent loopback activity
-    if domain == "localhost"
-        || domain == "127.0.0.1"
-        || domain == "[::1]"
-        || domain == &state.domain
+    if domain == "localhost" || domain == "127.0.0.1" || domain == "[::1]" || domain == state.domain
     {
         return Err("loopback not allowed".to_string());
     }

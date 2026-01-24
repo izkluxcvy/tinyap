@@ -151,7 +151,7 @@ pub async fn fetch_remote(
     // Merge attachments to bio
     let mut bio = user_json["summary"].as_str().unwrap_or("").to_string();
     if let Some(attachments) = user_json["attachment"].as_array() {
-        bio.push_str("\n");
+        bio.push('\n');
         for attachment in attachments {
             if let (Some(name), Some(url)) =
                 (attachment["name"].as_str(), attachment["value"].as_str())

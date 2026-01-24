@@ -79,7 +79,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
                 0,
                 &descendant.created_at,
             );
-            let status_json = status_json(
+            status_json(
                 &state,
                 descendant.id,
                 &descendant.username,
@@ -96,9 +96,7 @@ pub async fn get(State(state): State<AppState>, Path(id): Path<i64>) -> Json<Val
                 false,
                 descendant.parent_id,
                 descendant.parent_author_username,
-            );
-
-            status_json
+            )
         })
         .collect();
 

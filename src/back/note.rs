@@ -33,13 +33,13 @@ pub async fn add(
         attachments,
         parent_id,
         parent_author_username,
-        &created_at,
+        created_at,
         is_public,
     )
     .await;
 
     // Update updated_at
-    queries::user::update_date(state, author_id, &created_at).await;
+    queries::user::update_date(state, author_id, created_at).await;
 
     // Increment note count
     queries::user::increment_note_count(state, author_id).await;
@@ -118,7 +118,7 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<i64, String> {
     let Ok((note_ap_url, author_ap_url, content, attachments, in_reply_to, created_at, is_public)) =
         parse_from_json(state, &note_json).await
     else {
-        return Err(format!("Failed to parse note JSON"));
+        return Err("Failed to parse note JSON".to_string());
     };
 
     let content = utils::parse_content(state, &content);
@@ -143,14 +143,14 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<i64, String> {
 
     // Fetch parent note recursively
     if let Some(in_reply_to) = &in_reply_to {
-        let _res = add_remote(state, &in_reply_to).await;
+        let _res = add_remote(state, in_reply_to).await;
     }
 
     // Get parent author username
     let parent_id: Option<i64>;
     let parent_author_username: Option<String>;
     if let Some(in_reply_to) = &in_reply_to {
-        if let Some(parent) = queries::note::get_by_ap_url(state, &in_reply_to).await {
+        if let Some(parent) = queries::note::get_by_ap_url(state, in_reply_to).await {
             parent_id = Some(parent.id);
             let parent_author = queries::user::get_by_id(state, parent.author_id).await;
             parent_author_username = Some(parent_author.username);
@@ -255,11 +255,9 @@ pub async fn parse_from_json(
         }
     }
 
-    let in_reply_to = if let Some(in_reply_to) = note_json["inReplyTo"].as_str() {
-        Some(in_reply_to.to_string())
-    } else {
-        None
-    };
+    let in_reply_to = note_json["inReplyTo"]
+        .as_str()
+        .map(|in_reply_to| in_reply_to.to_string());
 
     let Some(created_at) = note_json["published"].as_str() else {
         return Err("Note object missing published date".to_string());

@@ -205,7 +205,7 @@ pub async fn create_app_state() -> AppState {
         .expect("deliver_queue_size must be an integer");
 
     let http_client = Client::builder()
-        .user_agent(&format!("TinyAP/{}", VERSION))
+        .user_agent(format!("TinyAP/{}", VERSION))
         .timeout(std::time::Duration::from_secs(10))
         .build()
         .unwrap();
@@ -224,33 +224,33 @@ pub async fn create_app_state() -> AppState {
         .expect("max_timeline_items must be an integer");
 
     Arc::new(AppStateInner {
-        db_pool: db_pool,
+        db_pool,
         #[cfg(feature = "web")]
-        tera: tera,
+        tera,
         deliver_queue: Arc::new(Semaphore::new(deliver_queue_size)),
-        http_client: http_client,
-        domain: domain,
+        http_client,
+        domain,
         re: Re {
             br: Regex::new(r"(?i)<br\s*/?>").unwrap(),
             tag: Regex::new(r"<[^>]+>").unwrap(),
             link: Regex::new(r"(https?:&#x2F;&#x2F;[^\s<>()]+)").unwrap(),
         },
         metadata: Metadata {
-            instance_name: instance_name,
-            instance_description: instance_description,
-            admin_username: admin_username,
-            admin_email: admin_email,
+            instance_name,
+            instance_description,
+            admin_username,
+            admin_email,
         },
         config: Config {
-            max_note_chars: max_note_chars,
-            token_ttl_days: token_ttl_days,
+            max_note_chars,
+            token_ttl_days,
         },
         #[cfg(feature = "web")]
         web_config: WebConfig {
-            allow_signup: allow_signup,
-            max_sessions_per_user: max_sessions_per_user,
-            max_timeline_items: max_timeline_items,
-            timezone: timezone,
+            allow_signup,
+            max_sessions_per_user,
+            max_timeline_items,
+            timezone,
         },
     })
 }

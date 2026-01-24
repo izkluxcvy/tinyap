@@ -31,10 +31,10 @@ pub async fn post_follow(
                 follow::deliver_follow(&state, auth_user.id, followee.id).await;
             }
 
-            return Redirect::to(&format!("/@{}", followee_username)).into_response();
+            Redirect::to(&format!("/@{}", followee_username)).into_response()
         }
-        Err(e) => return e.into_response(),
-    };
+        Err(e) => e.into_response(),
+    }
 }
 
 pub async fn post_unfollow(
@@ -54,8 +54,8 @@ pub async fn post_unfollow(
             if followee.is_local == 0 {
                 follow::deliver_unfollow(&state, auth_user.id, followee.id).await;
             }
-            return Redirect::to(&format!("/@{}", followee_username)).into_response();
+            Redirect::to(&format!("/@{}", followee_username)).into_response()
         }
-        Err(e) => return e.into_response(),
-    };
+        Err(e) => e.into_response(),
+    }
 }

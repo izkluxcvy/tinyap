@@ -36,8 +36,5 @@ pub async fn like(state: &AppState, activity: &Value) {
     };
 
     // Like
-    let res = like::like(state, actor.id, note.id).await;
-    if res.is_err() {
-        return;
-    }
+    let _ = like::like(state, actor.id, note.id).await;
 }

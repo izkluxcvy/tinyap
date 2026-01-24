@@ -41,8 +41,8 @@ pub fn timeline_json(state: &AppState, notes: Vec<queries::note::NoteWithAuthorR
                 0,
                 &note.created_at,
             );
-            let boosted_author_json = if let Some(boosted_username) = &note.boosted_username {
-                Some(account_json(
+            let boosted_author_json = note.boosted_username.as_ref().map(|boosted_username| {
+                account_json(
                     state,
                     boosted_username,
                     boosted_username,
@@ -52,10 +52,8 @@ pub fn timeline_json(state: &AppState, notes: Vec<queries::note::NoteWithAuthorR
                     0,
                     0,
                     "9999-01-01T00:00:00Z",
-                ))
-            } else {
-                None
-            };
+                )
+            });
 
             status_json(
                 state,

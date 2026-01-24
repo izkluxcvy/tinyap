@@ -104,7 +104,7 @@ pub fn strip_content(state: &AppState, content: &str) -> String {
         .replace("&#39;", "'")
         .replace("&#x2F;", "/");
 
-    let content = if content.chars().count() > state.config.max_note_chars {
+    if content.chars().count() > state.config.max_note_chars {
         let byte_end = content
             .char_indices()
             .nth(state.config.max_note_chars)
@@ -113,9 +113,7 @@ pub fn strip_content(state: &AppState, content: &str) -> String {
         content[..byte_end].to_string()
     } else {
         content
-    };
-
-    content
+    }
 }
 pub fn parse_content(state: &AppState, content: &str) -> String {
     let content = content.trim();
@@ -151,7 +149,7 @@ pub fn attachments_to_value(
                     url = parts[0];
                 }
 
-                let url = strip_content(&state, url);
+                let url = strip_content(state, url);
                 if url.is_empty() {
                     continue;
                 }

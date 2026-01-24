@@ -47,11 +47,11 @@ pub async fn get(
             &user.updated_at,
         );
 
-        return Json(json!({
+        Json(json!({
             "accounts": [account_json],
             "statuses": [],
             "hashtags": []
-        }));
+        }))
     } else {
         let note_id = parts[2].parse::<i64>().unwrap();
         let Some(note) = queries::note::get_with_author_by_id(&state, note_id).await else {
@@ -90,10 +90,10 @@ pub async fn get(
             note.parent_author_username,
         );
 
-        return Json(json!({
+        Json(json!({
             "accounts": [],
             "statuses": [status_json],
             "hashtags": []
-        }));
+        }))
     }
 }

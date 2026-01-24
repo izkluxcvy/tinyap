@@ -118,17 +118,15 @@ pub async fn get(
     let attachments = utils::attachments_to_value(&state, &note.attachments);
 
     // Check is_liked, is_boosted
-    let is_liked = if let Some(_like) = queries::like::get(&state, user.id, note.id).await {
-        true
-    } else {
-        false
-    };
+    let is_liked = matches!(
+        queries::like::get(&state, user.id, note.id).await,
+        Some(_like)
+    );
 
-    let is_boosted = if let Some(_boost) = queries::boost::get(&state, user.id, note.id).await {
-        true
-    } else {
-        false
-    };
+    let is_boosted = matches!(
+        queries::boost::get(&state, user.id, note.id).await,
+        Some(_boost)
+    );
 
     let account_json = account_json(
         &state,

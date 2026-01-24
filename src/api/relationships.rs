@@ -28,8 +28,8 @@ pub async fn get(
     // Check relationships
     let mut relationships: Vec<Value> = Vec::new();
     for username in usernames {
-        let is_following = following.iter().any(|u| &u.username == &username);
-        let is_followed_by = followers.iter().any(|u| &u.username == &username);
+        let is_following = following.iter().any(|u| u.username == username);
+        let is_followed_by = followers.iter().any(|u| u.username == username);
 
         relationships.push(json!({
             "id": username,

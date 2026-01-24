@@ -56,7 +56,7 @@ pub struct SessionRecord {
     pub user_id: i64,
 }
 pub async fn get(state: &AppState, session_id: &str, date_now: &str) -> Option<SessionRecord> {
-    let row = query_as(
+    query_as(
         "SELECT user_id FROM sessions
         WHERE session_id = $1
         AND expires_at > $2",
@@ -65,6 +65,5 @@ pub async fn get(state: &AppState, session_id: &str, date_now: &str) -> Option<S
     .bind(date_now)
     .fetch_optional(&state.db_pool)
     .await
-    .unwrap();
-    row
+    .unwrap()
 }

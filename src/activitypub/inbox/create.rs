@@ -30,7 +30,7 @@ pub async fn note(state: &AppState, activity: &Value) {
 
     // Fetch parent notes recursively
     if let Some(in_reply_to) = &in_reply_to {
-        let _ = note::add_remote(state, &in_reply_to).await;
+        let _ = note::add_remote(state, in_reply_to).await;
     }
 
     let parent_id: Option<i64>;

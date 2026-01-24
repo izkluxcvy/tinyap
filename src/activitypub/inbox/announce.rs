@@ -18,7 +18,7 @@ pub async fn announce(state: &AppState, activity: &Value) {
     let booster = if let Some(booster) = queries::user::get_by_ap_url(state, booster_ap_url).await {
         booster
     } else {
-        let _ = note::add_remote(state, &booster_ap_url).await;
+        let _ = note::add_remote(state, booster_ap_url).await;
         queries::user::get_by_ap_url(state, booster_ap_url)
             .await
             .unwrap()
@@ -28,7 +28,7 @@ pub async fn announce(state: &AppState, activity: &Value) {
     let note = if let Some(note) = queries::note::get_by_ap_url(state, note_ap_url).await {
         note
     } else {
-        let _ = note::add_remote(state, &note_ap_url).await;
+        let _ = note::add_remote(state, note_ap_url).await;
         let Some(note) = queries::note::get_by_ap_url(state, note_ap_url).await else {
             return;
         };
