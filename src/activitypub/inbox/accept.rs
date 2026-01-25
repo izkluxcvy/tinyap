@@ -16,6 +16,8 @@ pub async fn follow(state: &AppState, activity: &Value) {
         obj
     } else if let Some(obj) = activity["object"]["actor"].as_str() {
         obj
+    } else if let Some(obj) = activity["object"]["actor"]["id"].as_str() {
+        obj
     } else {
         return;
     };
