@@ -56,8 +56,8 @@ pub async fn get_following_in(
     follower_id: i64,
     followee_usernames: &Vec<String>,
 ) -> Vec<FollowUserRecord> {
-    let in_placeholder = (1..followee_usernames.len())
-        .map(|id| format!("${}", id + 1))
+    let in_placeholder = (0..followee_usernames.len())
+        .map(|id| format!("${}", id + 2))
         .collect::<Vec<String>>()
         .join(", ");
     let query_str = format!(
@@ -107,8 +107,8 @@ pub async fn get_followers_in(
     followee_id: i64,
     follower_usernames: &Vec<String>,
 ) -> Vec<FollowUserRecord> {
-    let in_placeholder = (1..follower_usernames.len())
-        .map(|id| format!("${}", id + 1))
+    let in_placeholder = (0..follower_usernames.len())
+        .map(|id| format!("${}", id + 2))
         .collect::<Vec<String>>()
         .join(", ");
     let query_str = format!(
