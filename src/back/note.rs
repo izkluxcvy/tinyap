@@ -259,21 +259,26 @@ pub async fn parse_from_json(
         .as_str()
         .map(|in_reply_to| in_reply_to.to_string());
 
-    let Some(created_at) = note_json["published"].as_str() else {
-        return Err("Note object missing published date".to_string());
-    };
+    let date_now = utils::date_now();
+    let created_at = note_json["published"].as_str().unwrap_or(&date_now);
 
     let created_at = utils::date_to_utc(created_at);
 
     let is_public = {
-        let Some(to_array) = note_json["to"].as_array() else {
-            return Err("Note object missing to field".to_string());
-        };
+        // to is str or array.
+        if let Some(to_str) = note_json["to"].as_str()
+            && to_str.contains("Public")
+        {
+            1
+        } else {
+            let Some(to_array) = note_json["to"].as_array() else {
+                return Err("Note object missing to field".to_string());
+            };
 
-        to_array
-            .iter()
-            .any(|v| v.as_str().unwrap() == "https://www.w3.org/ns/activitystreams#Public")
-            as i64
+            to_array
+                .iter()
+                .any(|v| v.as_str().unwrap().contains("Public")) as i64
+        }
     };
 
     Ok((
