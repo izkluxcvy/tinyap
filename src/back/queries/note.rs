@@ -94,22 +94,34 @@ pub async fn create(
     created_at: &str,
     is_public: i64,
 ) {
-    query(
-        "INSERT INTO notes (id, ap_url, author_id, content, attachments, parent_id, parent_author_username, created_at, is_public)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
-    )
-    .bind(id)
-    .bind(ap_url)
-    .bind(author_id)
-    .bind(content)
-    .bind(attachments)
-    .bind(parent_id)
-    .bind(parent_author_username)
-    .bind(created_at)
-    .bind(is_public)
-    .execute(&state.db_pool)
-    .await
-    .unwrap();
+    for attempt in 0..10 {
+        let res = query(
+            "INSERT INTO notes (id, ap_url, author_id, content, attachments, parent_id, parent_author_username, created_at, is_public)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+        )
+        .bind(id + attempt)
+        .bind(ap_url)
+        .bind(author_id)
+        .bind(content)
+        .bind(&attachments)
+        .bind(parent_id)
+        .bind(&parent_author_username)
+        .bind(created_at)
+        .bind(is_public)
+        .execute(&state.db_pool)
+        .await;
+
+        if res.is_ok() {
+            return;
+        } else {
+            println!(
+                "Failed to insert note with id {}: {:?}",
+                id + attempt,
+                res.err()
+            );
+        }
+    }
+    panic!("Failed to insert note");
 }
 
 pub async fn increment_like_count(state: &AppState, id: i64) {
