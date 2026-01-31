@@ -246,14 +246,12 @@ pub async fn parse_from_json(
 
             // Attachment url
             if let Some(url) = attachment["url"].as_str() {
-                attachments
-                    .as_mut()
-                    .unwrap()
-                    .push_str(&utils::parse_content(state, url));
-                attachments.as_mut().unwrap().push_str("<br>");
+                attachments.as_mut().unwrap().push_str(url);
+                attachments.as_mut().unwrap().push('\n');
             }
         }
     }
+    let attachments = attachments.map(|s| utils::parse_content(state, &s));
 
     let in_reply_to = note_json["inReplyTo"]
         .as_str()
