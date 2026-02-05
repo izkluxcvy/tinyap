@@ -25,7 +25,10 @@ pub async fn note(state: &AppState, activity: &Value) {
     if let Some(author) = queries::user::get_by_ap_url(state, &author_ap_url).await {
         let _ = user::update_remote(state, &author.ap_url).await;
     } else {
-        let _ = user::add_remote(state, &author_ap_url).await;
+        if let Err(e) = user::add_remote(state, &author_ap_url).await {
+            println!("Failed to add remote user {}: {}", author_ap_url, e);
+            return;
+        }
     }
 
     // Fetch parent notes recursively
