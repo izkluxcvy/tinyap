@@ -25,6 +25,8 @@ $ watch -n 360 'echo $(date "+%F %T"),$(cat /sys/fs/cgroup/system.slice/tinyap.s
 
 ![memory usage](memory_usage.webp)
 
+(Note that Argon2 password hasher costs 19MB memory)
+
 ### Tested clients
 
 - [Phanpy](https://phanpy.social/) for Web
