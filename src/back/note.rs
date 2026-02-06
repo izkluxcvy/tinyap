@@ -278,6 +278,18 @@ pub async fn parse_from_json(
                 .any(|v| v.as_str().unwrap().contains("Public")) as i64
         }
     };
+    // Check also cc
+    let is_public = if is_public == 1 {
+        1
+    } else {
+        if let Some(cc_array) = note_json["cc"].as_array() {
+            cc_array
+                .iter()
+                .any(|v| v.as_str().unwrap().contains("Public")) as i64
+        } else {
+            0
+        }
+    };
 
     Ok((
         note_ap_url.to_string(),
