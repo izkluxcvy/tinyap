@@ -102,10 +102,16 @@ pub async fn verify_password(state: &AppState, username: &str, password: &str) -
     };
 
     // Verify password
-    let argon2 = Argon2::default();
-    let parsed_hash = PasswordHash::new(&stored_hash).unwrap();
+    let password = password.to_string();
+    let valid = tokio::task::spawn_blocking(move || {
+        let argon2 = Argon2::default();
+        let parsed_hash = PasswordHash::new(&stored_hash).unwrap();
+        argon2.verify_password(password.as_bytes(), &parsed_hash)
+    })
+    .await
+    .unwrap();
 
-    match argon2.verify_password(password.as_bytes(), &parsed_hash) {
+    match valid {
         Ok(_) => Ok(user.id),
         Err(_) => Err(()),
     }
