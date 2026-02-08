@@ -35,4 +35,29 @@
         <button type="submit">Change Password</button>
     </form>
 
+	{% if oauth_tokens %}
+	<h3>Authorized Clients</h3>
+	<form>
+		<table>
+			<tr>
+				<td>Name</td>
+				<td>Expires At</td>
+				<td>Action</td>
+			</tr>
+			{% for token in oauth_tokens %}
+			<tr>
+				<td>{{ token.app_name }}</td>
+				<td>{{ token.expires_at }}</td>
+				<td>
+					<form action="/revoke_token" method="post">
+						<input type="hidden" name="client_id" value="{{ token.client_id }}">
+						<button type="submit">Revoke</button>
+					</form>
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</form>
+	{% endif %}
+
 </body>

@@ -22,7 +22,7 @@ async fn activitypub_routes() -> Router<init::AppState> {
 async fn web_routes() -> Router<init::AppState> {
     use crate::web;
     use tower_http::services::ServeDir;
-    Router::new()
+    let router = Router::new()
         .route("/", get(web::index::get))
         .route("/signup", get(web::signup::get).post(web::signup::post))
         .route("/login", get(web::login::get).post(web::login::post))
@@ -52,7 +52,12 @@ async fn web_routes() -> Router<init::AppState> {
         .nest_service(
             "/static",
             ServeDir::new(format!("{}/static", init::web_dir())),
-        )
+        );
+
+    #[cfg(feature = "api")]
+    let router = router.route("/revoke_token", post(web::profile::post_revoke_token));
+
+    router
 }
 
 #[cfg(feature = "api")]

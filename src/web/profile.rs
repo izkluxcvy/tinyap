@@ -13,10 +13,15 @@ pub async fn get(State(state): State<AppState>, user: AuthUser) -> impl IntoResp
     let user = queries::user::get_by_id(&state, user.id).await;
     let bio = utils::strip_content(&state, &user.bio);
 
+    #[cfg(feature = "api")]
+    let oauth_tokens = queries::oauth::get_tokens(&state, user.id).await;
+
     let mut context = tera::Context::new();
     context.insert("instance_name", &state.metadata.instance_name);
     context.insert("display_name", &user.display_name);
     context.insert("bio", &bio);
+    #[cfg(feature = "api")]
+    context.insert("oauth_tokens", &oauth_tokens);
     let rendered = state.tera.render("profile.html", &context).unwrap();
 
     Html(rendered)
@@ -69,4 +74,21 @@ pub async fn post_password(
     queries::session::delete_by_user_id(&state, user.id).await;
 
     Redirect::to("/login").into_response()
+}
+
+#[cfg(feature = "api")]
+#[derive(serde::Deserialize)]
+pub struct RevokeTokenForm {
+    pub client_id: i64,
+}
+#[cfg(feature = "api")]
+pub async fn post_revoke_token(
+    State(state): State<AppState>,
+    user: AuthUser,
+    Form(form): Form<RevokeTokenForm>,
+) -> impl IntoResponse {
+    // Delete OAuth app and all associated tokens
+    queries::oauth::delete_app(&state, form.client_id, user.id).await;
+
+    Redirect::to("/profile").into_response()
 }

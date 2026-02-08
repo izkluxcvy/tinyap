@@ -35,6 +35,19 @@ pub async fn get_app(state: &AppState, client_id: i64) -> Option<AppRecord> {
         .unwrap()
 }
 
+pub async fn delete_app(state: &AppState, client_id: i64, user_id: i64) {
+    query(
+        "DELETE FROM oauth_apps
+        WHERE client_id = $1
+        AND client_id IN (SELECT client_id FROM oauth_tokens WHERE user_id = $2)",
+    )
+    .bind(client_id)
+    .bind(user_id)
+    .execute(&state.db_pool)
+    .await
+    .unwrap();
+}
+
 pub async fn create_authorization(state: &AppState, user_id: i64, client_id: i64, code: &str) {
     query(
         "INSERT INTO oauth_authorizations (user_id, client_id, code)
@@ -103,6 +116,25 @@ pub async fn get_token(state: &AppState, token: &str, date_now: &str) -> Option<
         .unwrap()
 }
 
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct TokenWithAppRecord {
+    pub client_id: i64,
+    pub app_name: String,
+    pub expires_at: String,
+}
+pub async fn get_tokens(state: &AppState, user_id: i64) -> Vec<TokenWithAppRecord> {
+    query_as(
+        "SELECT a.client_id, a.app_name, t.expires_at
+        FROM oauth_tokens as t
+        JOIN oauth_apps as a ON t.client_id = a.client_id
+        WHERE t.user_id = $1",
+    )
+    .bind(user_id)
+    .fetch_all(&state.db_pool)
+    .await
+    .unwrap()
+}
+
 pub async fn delete_expired_tokens(state: &AppState, date_now: &str) {
     query("DELETE FROM oauth_tokens WHERE expires_at <= $1")
         .bind(date_now)
@@ -114,8 +146,7 @@ pub async fn delete_expired_tokens(state: &AppState, date_now: &str) {
 pub async fn delete_unused_apps(state: &AppState) {
     query(
         "DELETE FROM oauth_apps
-        WHERE client_id NOT IN (SELECT DISTINCT client_id FROM oauth_authorizations)
-        AND client_id NOT IN (SELECT DISTINCT client_id FROM oauth_tokens)",
+        WHERE client_id NOT IN (SELECT DISTINCT client_id FROM oauth_tokens)",
     )
     .execute(&state.db_pool)
     .await
