@@ -6,7 +6,7 @@ edition = "2024"
 [features]
 default = []
 sqlite = ["sqlx/sqlite"]
-postgres = ["sqlx/postgres"]
+postgres = ["sqlx/postgres", "sqlx/tls-rustls"]
 web = ["tower-http/fs"]
 api = ["tower-http/cors", "serde_urlencoded", "axum/multipart"]
 tls = ["axum-server/tls-rustls", "rustls"]
