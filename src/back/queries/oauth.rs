@@ -35,6 +35,7 @@ pub async fn get_app(state: &AppState, client_id: i64) -> Option<AppRecord> {
         .unwrap()
 }
 
+#[cfg(feature = "web")]
 pub async fn delete_app(state: &AppState, client_id: i64, user_id: i64) {
     query(
         "DELETE FROM oauth_apps
@@ -116,12 +117,14 @@ pub async fn get_token(state: &AppState, token: &str, date_now: &str) -> Option<
         .unwrap()
 }
 
+#[cfg(feature = "web")]
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct TokenWithAppRecord {
     pub client_id: i64,
     pub app_name: String,
     pub expires_at: String,
 }
+#[cfg(feature = "web")]
 pub async fn get_tokens(state: &AppState, user_id: i64) -> Vec<TokenWithAppRecord> {
     query_as(
         "SELECT a.client_id, a.app_name, t.expires_at
