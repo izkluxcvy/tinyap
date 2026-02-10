@@ -81,6 +81,7 @@ pub struct AppStateInner {
     #[cfg(feature = "web")]
     pub tera: Tera,
     pub deliver_queue: Arc<Semaphore>,
+    pub hash_queue: Arc<Semaphore>,
     pub http_client: Client,
     pub domain: String,
     pub re: Re,
@@ -204,6 +205,12 @@ pub async fn create_app_state() -> AppState {
         .parse::<usize>()
         .expect("deliver_queue_size must be an integer");
 
+    let hash_queue_size = conf
+        .get("hash_queue_size")
+        .expect("hash_queue_size must be set")
+        .parse::<usize>()
+        .expect("hash_queue_size must be an integer");
+
     let http_client = Client::builder()
         .user_agent(format!("TinyAP/{}", VERSION))
         .timeout(std::time::Duration::from_secs(10))
@@ -228,6 +235,7 @@ pub async fn create_app_state() -> AppState {
         #[cfg(feature = "web")]
         tera,
         deliver_queue: Arc::new(Semaphore::new(deliver_queue_size)),
+        hash_queue: Arc::new(Semaphore::new(hash_queue_size)),
         http_client,
         domain,
         re: Re {

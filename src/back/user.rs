@@ -33,10 +33,18 @@ pub async fn add(state: &AppState, username: &str, password: &str) -> Result<(),
     // Hash password
     let argon2 = Argon2::default();
     let salt = SaltString::generate(&mut OsRng);
-    let password_hash = argon2
-        .hash_password(password.as_bytes(), &salt)
-        .unwrap()
-        .to_string();
+
+    let _permit = state.hash_queue.acquire().await;
+    let password = password.to_string();
+    let password_hash = tokio::task::spawn_blocking(move || {
+        argon2
+            .hash_password(password.as_bytes(), &salt)
+            .unwrap()
+            .to_string()
+    })
+    .await
+    .unwrap();
+    drop(_permit);
 
     // Generate RSA key pair
     let private_key = RsaPrivateKey::new(&mut OsRng, 2048).unwrap();
@@ -81,10 +89,18 @@ pub async fn update_password(state: &AppState, user_id: i64, password: &str) {
     // Hash password
     let argon2 = Argon2::default();
     let salt = SaltString::generate(&mut OsRng);
-    let password_hash = argon2
-        .hash_password(password.as_bytes(), &salt)
-        .unwrap()
-        .to_string();
+
+    let _permit = state.hash_queue.acquire().await;
+    let password = password.to_string();
+    let password_hash = tokio::task::spawn_blocking(move || {
+        argon2
+            .hash_password(password.as_bytes(), &salt)
+            .unwrap()
+            .to_string()
+    })
+    .await
+    .unwrap();
+    drop(_permit);
 
     queries::user::update_password(state, user_id, &password_hash).await;
 }
@@ -102,6 +118,7 @@ pub async fn verify_password(state: &AppState, username: &str, password: &str) -
     };
 
     // Verify password
+    let _permit = state.hash_queue.acquire().await;
     let password = password.to_string();
     let valid = tokio::task::spawn_blocking(move || {
         let argon2 = Argon2::default();
@@ -110,6 +127,7 @@ pub async fn verify_password(state: &AppState, username: &str, password: &str) -
     })
     .await
     .unwrap();
+    drop(_permit);
 
     match valid {
         Ok(_) => Ok(user.id),
