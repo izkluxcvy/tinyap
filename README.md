@@ -122,7 +122,7 @@ $ TINYAP_CONFIG=/path/to/config.yaml ./tinyap serve
 ```nginx
 http {
     gzip  on;
-    limit_req_zone $binary_remote_addr zone=tinyap:3m rate=3r/s;
+    limit_req_zone $binary_remote_addr zone=tinyaplogin:3m rate=1r/s;
 
 	server {
         listen 80;
@@ -149,7 +149,7 @@ http {
         }
         location /login /oauth/authorize {
             proxy_pass http://127.0.0.1:8080;
-            limit_req zone=tinyap burst=5 nodelay;
+            limit_req zone=tinyaplogin burst=5 nodelay;
         }
 
         ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
