@@ -51,6 +51,14 @@ fn load_config() -> HashMap<String, String> {
     conf
 }
 
+pub fn hash_queue_size() -> usize {
+    let conf = load_config();
+    conf.get("hash_queue_size")
+        .expect("hash_queue_size must be set")
+        .parse::<usize>()
+        .expect("hash_queue_size must be an integer")
+}
+
 #[cfg(feature = "tls")]
 pub fn cert_files() -> (String, String) {
     let conf = load_config();
