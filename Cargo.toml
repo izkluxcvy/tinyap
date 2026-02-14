@@ -12,6 +12,8 @@ api = ["tower-http/cors", "serde_urlencoded", "axum/multipart"]
 tls = ["axum-server/tls-rustls", "rustls"]
 
 [dependencies]
+mimalloc = { version = "*", features = ["v3"] }
+
 tokio = { version = "1", features = ["full"] }
 async-recursion = "1"
 axum = { version = "0.8", features = ["json"] }
