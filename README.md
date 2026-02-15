@@ -92,7 +92,7 @@ $ vi config.yaml
 Build and run
 
 ```sh
-$ cargo build --release --features=sqlite,web,api
+$ cargo build --release --features=mimalloc,sqlite,web,api
 
 $ mv target/release/tinyap ./
 $ cargo clean
@@ -103,6 +103,7 @@ $ ./tinyap serve
 
 ### Build feature flags:
 
+- `mimalloc`: use mimalloc for memory allocator instead of system allocator
 - `sqlite`: use SQLite for DB (must be exclusive with postgres)
 - `postgres`: use PostgreSQL for DB
 - `web`: text-based tiny Web UI
