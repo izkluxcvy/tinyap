@@ -35,7 +35,7 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 
 ### Debian package
 
-Download .deb package from [Releases](https://github.com/izkluxcvy/tinyap/releases/)
+Download .deb package(features: mimalloc, sqlite, web, api) from [Releases](https://github.com/izkluxcvy/tinyap/releases/)
 
 Install TinyAP
 
