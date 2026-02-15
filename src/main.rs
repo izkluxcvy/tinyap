@@ -8,9 +8,9 @@ mod web;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-use mimalloc::MiMalloc;
+#[cfg(feature = "mimalloc")]
 #[global_allocator]
-static GLOBAL: MiMalloc = MiMalloc;
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 #[tokio::main]
 async fn main() {

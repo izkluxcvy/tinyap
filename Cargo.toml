@@ -5,6 +5,7 @@ edition = "2024"
 
 [features]
 default = []
+mimalloc = ["dep:mimalloc"]
 sqlite = ["sqlx/sqlite"]
 postgres = ["sqlx/postgres", "sqlx/tls-rustls"]
 web = ["tower-http/fs"]
@@ -12,7 +13,7 @@ api = ["tower-http/cors", "serde_urlencoded", "axum/multipart"]
 tls = ["axum-server/tls-rustls", "rustls"]
 
 [dependencies]
-mimalloc = { version = "*", features = ["v3"] }
+mimalloc = { version = "*", features = ["v3"], optional = true }
 
 tokio = { version = "1", features = ["full"] }
 async-recursion = "1"
