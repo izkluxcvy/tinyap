@@ -15,18 +15,6 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 - Tiny web UI
 - Mastodon-compatible API
 
-### Memory usage
-
-Real memory usage of `tinyap.izkluxcvy.foo`
-
-```sh
-$ watch -n 360 'echo $(date "+%F %T"),$(cat /sys/fs/cgroup/system.slice/tinyap.service/memory.current) >> memory.csv'
-```
-
-![memory usage](memory_usage.webp)
-
-(Note that Argon2 password hasher costs 19MB memory)
-
 ### Tested clients
 
 - [Phanpy](https://phanpy.social/) for Web
@@ -92,7 +80,7 @@ $ vi config.yaml
 Build and run
 
 ```sh
-$ cargo build --release --features=mimalloc,sqlite,web,api
+$ cargo build --release --features=sqlite,web,api
 
 $ mv target/release/tinyap ./
 $ cargo clean
