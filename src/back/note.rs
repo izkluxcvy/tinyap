@@ -302,9 +302,9 @@ pub async fn parse_from_json(
     ))
 }
 
-pub async fn delete(state: &AppState, id: i64) {
-    queries::note::delete(state, id).await;
-    queries::user::decrement_note_count(state, id).await;
+pub async fn delete(state: &AppState, note_id: i64, user_id: i64) {
+    queries::note::delete(state, note_id).await;
+    queries::user::decrement_note_count(state, user_id).await;
 }
 
 pub async fn deliver_delete(state: &AppState, id: i64) {

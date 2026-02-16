@@ -20,5 +20,5 @@ pub async fn note(state: &AppState, activity: &Value) {
     };
 
     // Delete
-    note::delete(state, note.id).await;
+    note::delete(state, note.id, note.author_id).await;
 }

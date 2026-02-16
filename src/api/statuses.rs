@@ -277,7 +277,7 @@ pub async fn delete(
     note::deliver_delete(&state, id).await;
 
     // Delete
-    note::delete(&state, id).await;
+    note::delete(&state, id, user.id).await;
 
     Json(json!({
         "id": note.id,

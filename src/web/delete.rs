@@ -27,7 +27,7 @@ pub async fn post(
     note::deliver_delete(&state, id).await;
 
     // Delete
-    note::delete(&state, id).await;
+    note::delete(&state, id, user.id).await;
 
     Redirect::to("/home").into_response()
 }
