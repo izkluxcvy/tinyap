@@ -101,6 +101,8 @@ $ ./tinyap --help
 $ ./tinyap serve
 ```
 
+For Linux/glibc, `MALLOC_MMAP_THRESHOLD_=131072` environment variable can suppress memory fragmentation.
+
 ### Build feature flags:
 
 - `mimalloc`: use mimalloc for memory allocator instead of system allocator
