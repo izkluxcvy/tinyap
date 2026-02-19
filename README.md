@@ -150,7 +150,11 @@ http {
             proxy_pass http://127.0.0.1:8080;
             expires 1d;
         }
-        location /login /oauth/authorize {
+        location /login {
+            proxy_pass http://127.0.0.1:8080;
+            limit_req zone=tinyaplogin burst=5 nodelay;
+        }
+        location /oauth/authorize {
             proxy_pass http://127.0.0.1:8080;
             limit_req zone=tinyaplogin burst=5 nodelay;
         }
