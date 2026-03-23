@@ -41,7 +41,9 @@ pub async fn get(
         <input type="hidden" name="redirect_uri" value="{}">
         <button type="submit">Authorize</button>
         </form>"#,
-        app.app_name, query.client_id, query.redirect_uri
+        utils::strip_content(&state, &app.app_name),
+        query.client_id,
+        utils::strip_content(&state, &query.redirect_uri)
     ))
     .into_response()
 }
