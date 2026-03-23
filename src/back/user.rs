@@ -21,8 +21,14 @@ pub async fn add(state: &AppState, username: &str, password: &str) -> Result<(),
         return Err("Username is too long (max 32 characters)".to_string());
     }
 
-    if !username.bytes().all(|a| u8::is_ascii_alphanumeric(&a)) {
-        return Err("Username can only contain alphanumeric characters".to_string());
+    if !username
+        .bytes()
+        .all(|a| u8::is_ascii_alphanumeric(&a) || a == b'.' || a == b'_')
+    {
+        return Err(
+            "Username can only contain alphanumeric characters, periods and underscores"
+                .to_string(),
+        );
     }
 
     let existing = queries::user::get_by_username(state, username).await;
