@@ -22,6 +22,13 @@ pub async fn follow(state: &AppState, activity: &Value) {
         return;
     };
 
+    // Remove fragment from URL
+    // Mitra send the id of follow activity.
+    let object_ap_url = object_ap_url
+        .split_once('#')
+        .map(|(url, _)| url)
+        .unwrap_or(object_ap_url);
+
     // Get user
     let Some(actor) = queries::user::get_by_ap_url(state, actor_ap_url).await else {
         return;
