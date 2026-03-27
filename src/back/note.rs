@@ -129,11 +129,12 @@ pub async fn deliver_create(state: &AppState, id: i64) {
     if let Some(parent_id) = note.parent_id {
         let parent = queries::note::get_by_id(state, parent_id).await.unwrap();
         let parent_author = queries::user::get_by_id(state, parent.author_id).await;
+        to.push(parent_author.ap_url.clone());
         mention_inboxes.push(parent_author.inbox_url);
         note_object["inReplyTo"] = json!(parent.ap_url);
         tag.push(json!({
             "type": "Mention",
-            "href": parent.ap_url,
+            "href": parent_author.ap_url,
             "name": &format!("@{}", parent_author.username),
         }));
     }
