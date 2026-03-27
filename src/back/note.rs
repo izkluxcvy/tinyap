@@ -45,44 +45,16 @@ pub async fn add(
     queries::user::increment_note_count(state, author_id).await;
 
     // Add notification for reply
-    let mut parent_author_id = 0;
     if let Some(parent_id) = parent_id {
         let parent = queries::note::get_by_id(state, parent_id).await.unwrap();
-        parent_author_id = parent.author_id;
         notification::add(
             state,
             notification::EventType::Reply,
             author_id,
-            parent_author_id,
+            parent.author_id,
             Some(parent_id),
         )
         .await;
-    }
-
-    // Add notification for mentions
-    let mention_usernames = utils::strip_content(state, &content)
-        .split_whitespace()
-        .filter(|word| word.starts_with('@'))
-        .map(|mention| {
-            mention
-                .trim_start_matches('@')
-                .trim_end_matches(&format!("@{}", state.domain))
-                .to_string()
-        })
-        .collect::<Vec<String>>();
-
-    let mentioned_users = queries::user::get_by_username_in(state, &mention_usernames).await;
-    for mentioned_user in mentioned_users {
-        if mentioned_user.is_local == 1 && mentioned_user.id != parent_author_id {
-            notification::add(
-                state,
-                notification::EventType::Mention,
-                author_id,
-                mentioned_user.id,
-                Some(id),
-            )
-            .await;
-        }
     }
 
     Ok(())
@@ -123,6 +95,18 @@ pub async fn deliver_create(state: &AppState, id: i64) {
             "href": mentioned_user.ap_url,
             "name": &format!("@{}", mentioned_user.username),
         }));
+
+        // Add notification for mention
+        if mentioned_user.is_local == 1 {
+            notification::add(
+                state,
+                notification::EventType::Mention,
+                note.author_id,
+                mentioned_user.id,
+                Some(id),
+            )
+            .await;
+        }
     }
 
     // Get parent

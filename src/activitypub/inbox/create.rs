@@ -1,5 +1,6 @@
 use crate::back::init::AppState;
 use crate::back::note;
+use crate::back::notification;
 use crate::back::queries;
 use crate::back::user;
 use crate::back::utils;
@@ -58,6 +59,44 @@ pub async fn note(state: &AppState, activity: &Value) {
         .await
         .unwrap();
 
+    // Extract mentions
+    let mentioned_usernames = if let Some(mentions) = note_object["tag"].as_array() {
+        mentions
+            .iter()
+            .filter_map(|tag| {
+                if tag["type"] == "Mention"
+                    && tag["name"].as_str().unwrap_or("").contains(&state.domain)
+                {
+                    tag["name"].as_str().map(|s| {
+                        s.trim_start_matches('@')
+                            .trim_end_matches(&format!("@{}", state.domain))
+                            .to_string()
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<String>>()
+    } else if let Some(mention) = note_object["tag"]["name"].as_str() {
+        if mention.contains(&state.domain) {
+            vec![
+                mention
+                    .trim_start_matches('@')
+                    .trim_end_matches(&format!("@{}", state.domain))
+                    .to_string(),
+            ]
+        } else {
+            vec![]
+        }
+    } else {
+        vec![]
+    };
+
+    let parent_author_uname = parent_author_username
+        .clone()
+        .unwrap_or_else(|| "".to_string());
+
+    // Create note
     let _ = note::add(
         state,
         id,
@@ -71,4 +110,24 @@ pub async fn note(state: &AppState, activity: &Value) {
         is_public,
     )
     .await;
+
+    // Add notifications for mentions
+    let mentioned_users = queries::user::get_by_username_in(state, &mentioned_usernames).await;
+    for mentioned_user in mentioned_users {
+        if mentioned_user.username == parent_author_uname {
+            continue;
+        }
+        println!(
+            "user {} mentioned user {} in note {}",
+            author.username, mentioned_user.username, note_ap_url
+        );
+        notification::add(
+            state,
+            notification::EventType::Mention,
+            author.id,
+            mentioned_user.id,
+            Some(id),
+        )
+        .await;
+    }
 }
