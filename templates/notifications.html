@@ -15,7 +15,8 @@
 <a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> followed you.{% elif notif.event_type == 2 %}
 <a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> replied to <a href="/@{{ username }}/{{ notif.note_id }}">your note</a>{% elif notif.event_type == 3 %}
 <a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> liked <a href="/@{{ username }}/{{ notif.note_id }}">your note</a>{% elif notif.event_type == 4 %}
-<a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> boosted <a href="/@{{ username }}/{{ notif.note_id }}">your note</a>{% endif %}</pre>
+<a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> boosted <a href="/@{{ username }}/{{ notif.note_id }}">your note</a>{% elif notif.event_type == 5 %}
+<a href="/@{{ notif.username }}">{{ notif.display_name }}@{{ notif.username }}</a> <a href="/@{{ username }}/{{ notif.note_id }}">mentioned</a> you{% endif %}</pre>
     {% else %}
     <pre>No notifications yet.</pre>
     {% endfor %}

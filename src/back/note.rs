@@ -45,16 +45,44 @@ pub async fn add(
     queries::user::increment_note_count(state, author_id).await;
 
     // Add notification for reply
+    let mut parent_author_id = 0;
     if let Some(parent_id) = parent_id {
         let parent = queries::note::get_by_id(state, parent_id).await.unwrap();
+        parent_author_id = parent.author_id;
         notification::add(
             state,
             notification::EventType::Reply,
             author_id,
-            parent.author_id,
+            parent_author_id,
             Some(parent_id),
         )
         .await;
+    }
+
+    // Add notification for mentions
+    let mention_usernames = utils::strip_content(state, &content)
+        .split_whitespace()
+        .filter(|word| word.starts_with('@'))
+        .map(|mention| {
+            mention
+                .trim_start_matches('@')
+                .trim_end_matches(&format!("@{}", state.domain))
+                .to_string()
+        })
+        .collect::<Vec<String>>();
+
+    let mentioned_users = queries::user::get_by_username_in(state, &mention_usernames).await;
+    for mentioned_user in mentioned_users {
+        if mentioned_user.is_local == 1 && mentioned_user.id != parent_author_id {
+            notification::add(
+                state,
+                notification::EventType::Mention,
+                author_id,
+                mentioned_user.id,
+                Some(id),
+            )
+            .await;
+        }
     }
 
     Ok(())
@@ -71,24 +99,49 @@ pub async fn deliver_create(state: &AppState, id: i64) {
         "type": "Note",
         "attributedTo": author.ap_url,
         "content": note.content,
-        "to": ["https://www.w3.org/ns/activitystreams#Public"],
         "published": note.created_at,
         "url": note_page_url,
     });
-    let parent_inbox_url: Option<String>;
+
+    let mut to: Vec<String> = vec!["https://www.w3.org/ns/activitystreams#Public".to_string()];
+    let mut tags: Vec<Value> = vec![];
+
+    // Get mentions
+    let mut mention_inboxes = Vec::new();
+    let mention_usernames = utils::strip_content(state, &note.content)
+        .split_whitespace()
+        .filter(|word| word.starts_with('@'))
+        .map(|mention| mention.trim_start_matches('@').to_string())
+        .collect::<Vec<String>>();
+
+    let mentioned_users = queries::user::get_by_username_in(state, &mention_usernames).await;
+    for mentioned_user in mentioned_users {
+        {
+            to.push(mentioned_user.ap_url.clone());
+            mention_inboxes.push(mentioned_user.inbox_url);
+            tags.push(json!({
+                "type": "Mention",
+                "href": mentioned_user.ap_url,
+                "name": &format!("@{}", mentioned_user.username),
+            }));
+        }
+    }
+
+    // Get parent
     if let Some(parent_id) = note.parent_id {
         let parent = queries::note::get_by_id(state, parent_id).await.unwrap();
         let parent_author = queries::user::get_by_id(state, parent.author_id).await;
-        parent_inbox_url = Some(parent_author.inbox_url.clone());
+        mention_inboxes.push(parent_author.inbox_url);
         note_object["inReplyTo"] = json!(parent.ap_url);
-        note_object["tag"] = json!({
+        tags.push(json!({
             "type": "Mention",
             "href": parent.ap_url,
-            "name": parent_author.username,
-        });
-    } else {
-        parent_inbox_url = None;
+            "name": &format!("@{}", parent_author.username),
+        }));
     }
+
+    note_object["to"] = json!(to);
+    note_object["tag"] = json!(tags);
 
     let create_id = format!("{}#create-{}", author.ap_url, utils::gen_unique_id());
     let create_activity = json!({
@@ -100,7 +153,7 @@ pub async fn deliver_create(state: &AppState, id: i64) {
     });
     let json_body = create_activity.to_string();
 
-    utils::deliver_to_followers(state, note.author_id, parent_inbox_url, &json_body).await;
+    utils::deliver_to_followers(state, note.author_id, mention_inboxes, &json_body).await;
 }
 
 #[async_recursion::async_recursion]
@@ -313,13 +366,23 @@ pub async fn deliver_delete(state: &AppState, id: i64) {
     };
     let author = queries::user::get_by_id(state, note.author_id).await;
 
-    let parent_inbox_url: Option<String>;
+    // Get mentions
+    let mut mention_inboxes = Vec::new();
+    let mention_usernames = utils::strip_content(state, &note.content)
+        .split_whitespace()
+        .filter(|word| word.starts_with('@'))
+        .map(|mention| mention.trim_start_matches('@').to_string())
+        .collect::<Vec<String>>();
+
+    let mentioned_users = queries::user::get_by_username_in(state, &mention_usernames).await;
+    for mentioned_user in mentioned_users {
+        mention_inboxes.push(mentioned_user.inbox_url);
+    }
+
     if let Some(parent_id) = note.parent_id {
         let parent = queries::note::get_by_id(state, parent_id).await.unwrap();
         let parent_author = queries::user::get_by_id(state, parent.author_id).await;
-        parent_inbox_url = Some(parent_author.inbox_url.clone());
-    } else {
-        parent_inbox_url = None;
+        mention_inboxes.push(parent_author.inbox_url);
     }
 
     let delete_id = format!("{}#delete-{}", author.ap_url, utils::gen_unique_id());
@@ -332,5 +395,5 @@ pub async fn deliver_delete(state: &AppState, id: i64) {
     });
     let json_body = delete_activity.to_string();
 
-    utils::deliver_to_followers(state, note.author_id, parent_inbox_url, &json_body).await;
+    utils::deliver_to_followers(state, note.author_id, mention_inboxes, &json_body).await;
 }

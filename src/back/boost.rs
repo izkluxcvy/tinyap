@@ -80,7 +80,7 @@ pub async fn deliver_boost(state: &AppState, user_id: i64, note_id: i64) {
     });
     let json_body = announce_activity.to_string();
 
-    utils::deliver_to_followers(state, user_id, Some(author.inbox_url), &json_body).await;
+    utils::deliver_to_followers(state, user_id, vec![author.inbox_url], &json_body).await;
 }
 
 pub async fn unboost(state: &AppState, user_id: i64, note_id: i64) -> Result<(), String> {
@@ -120,5 +120,5 @@ pub async fn deliver_unboost(state: &AppState, user_id: i64, note_id: i64) {
     });
     let json_body = unboost_activity.to_string();
 
-    utils::deliver_to_followers(state, user_id, Some(author.inbox_url), &json_body).await;
+    utils::deliver_to_followers(state, user_id, vec![author.inbox_url], &json_body).await;
 }

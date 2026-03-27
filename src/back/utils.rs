@@ -269,7 +269,7 @@ pub async fn signed_deliver(
 pub async fn deliver_to_followers(
     state: &AppState,
     sender_id: i64,
-    parent_inbox: Option<String>,
+    mention_inboxes: Vec<String>,
     body: &str,
 ) {
     let sender = queries::user::get_by_id(state, sender_id).await;
@@ -293,12 +293,13 @@ pub async fn deliver_to_followers(
         }
     }
 
-    // Also deliver to parent author if exists
-    if let Some(parent_inbox) = parent_inbox {
-        let url_parsed = Url::parse(&parent_inbox).unwrap();
+    // Also deliver to mentioned users
+    for mention_inbox in mention_inboxes {
+        let url_parsed = Url::parse(&mention_inbox).unwrap();
         let host = url_parsed.host_str().unwrap().to_string();
         if !already_delivered_hosts.contains(&host) {
-            signed_deliver(state, &sender.ap_url, &private_key, &parent_inbox, body).await;
+            signed_deliver(state, &sender.ap_url, &private_key, &mention_inbox, body).await;
+            already_delivered_hosts.push(host);
         }
     }
 }

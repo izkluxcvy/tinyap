@@ -7,6 +7,7 @@ pub enum EventType {
     Reply,
     Like,
     Boost,
+    Mention,
 }
 
 impl From<EventType> for i64 {
@@ -16,6 +17,7 @@ impl From<EventType> for i64 {
             EventType::Reply => 2,
             EventType::Like => 3,
             EventType::Boost => 4,
+            EventType::Mention => 5,
         }
     }
 }

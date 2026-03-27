@@ -28,6 +28,19 @@ pub async fn get_by_username(state: &AppState, username: &str) -> Option<UserRec
         .unwrap()
 }
 
+pub async fn get_by_username_in(state: &AppState, usernames: &Vec<String>) -> Vec<UserRecord> {
+    let in_placeholder = (0..usernames.len())
+        .map(|id| format!("${}", id + 1))
+        .collect::<Vec<String>>()
+        .join(", ");
+    let query_str = format!("SELECT * FROM users WHERE username IN ({})", in_placeholder);
+    let mut query = query_as::<_, UserRecord>(&query_str);
+    for username in usernames {
+        query = query.bind(username);
+    }
+    query.fetch_all(&state.db_pool).await.unwrap()
+}
+
 pub async fn get_by_ap_url(state: &AppState, ap_url: &str) -> Option<UserRecord> {
     query_as("SELECT * FROM users WHERE ap_url = $1")
         .bind(ap_url)

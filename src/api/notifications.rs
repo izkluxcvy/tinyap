@@ -52,6 +52,7 @@ pub async fn get(
                 2 => "mention",
                 3 => "favourite",
                 4 => "reblog",
+                5 => "mention",
                 _ => "unknown",
             };
 
