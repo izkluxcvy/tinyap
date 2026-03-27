@@ -9,7 +9,7 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 
 - Federate with remote users
 - Create text note
-- Follow, Reply, Like, Boost, Undo them
+- Follow, Reply, Mention, Like, Boost, Undo them
 - Block domain
 - Tiny memory usage
 - Tiny web UI
@@ -119,54 +119,6 @@ You can place in `./config.yaml` or `/etc/tinyap/config.yaml` or `$TINYAP_CONFIG
 ```sh
 $ TINYAP_CONFIG=/path/to/config.yaml ./tinyap serve
 ```
-
-### Example nginx.conf
-
-```nginx
-http {
-    gzip  on;
-    limit_req_zone $binary_remote_addr zone=tinyaplogin:3m rate=1r/s;
-
-	server {
-        listen 80;
-        server_name example.com;
-
-        return 301 https://$host$request_uri;
-    }
-
-    server {
-        listen 443 ssl;
-        http2 on;
-        server_name example.com;
-
-        location / {
-            proxy_pass http://127.0.0.1:8080;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real_IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-        location /static/style.css {
-            proxy_pass http://127.0.0.1:8080;
-            expires 1d;
-        }
-        location /login {
-            proxy_pass http://127.0.0.1:8080;
-            limit_req zone=tinyaplogin burst=5 nodelay;
-        }
-        location /oauth/authorize {
-            proxy_pass http://127.0.0.1:8080;
-            limit_req zone=tinyaplogin burst=5 nodelay;
-        }
-
-        ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
-    }
-
-}
-```
-
-You can also build with `tls` feature for tinyap as a TLS termination, using remote proxy like cloudflare without httpd like nginx.
 
 ## Customizing Web UI
 
