@@ -104,7 +104,7 @@ pub async fn deliver_create(state: &AppState, id: i64) {
     });
 
     let mut to: Vec<String> = vec!["https://www.w3.org/ns/activitystreams#Public".to_string()];
-    let mut tags: Vec<Value> = vec![];
+    let mut tag: Vec<Value> = vec![];
 
     // Get mentions
     let mut mention_inboxes = Vec::new();
@@ -116,15 +116,13 @@ pub async fn deliver_create(state: &AppState, id: i64) {
 
     let mentioned_users = queries::user::get_by_username_in(state, &mention_usernames).await;
     for mentioned_user in mentioned_users {
-        {
-            to.push(mentioned_user.ap_url.clone());
-            mention_inboxes.push(mentioned_user.inbox_url);
-            tags.push(json!({
-                "type": "Mention",
-                "href": mentioned_user.ap_url,
-                "name": &format!("@{}", mentioned_user.username),
-            }));
-        }
+        to.push(mentioned_user.ap_url.clone());
+        mention_inboxes.push(mentioned_user.inbox_url);
+        tag.push(json!({
+            "type": "Mention",
+            "href": mentioned_user.ap_url,
+            "name": &format!("@{}", mentioned_user.username),
+        }));
     }
 
     // Get parent
@@ -133,7 +131,7 @@ pub async fn deliver_create(state: &AppState, id: i64) {
         let parent_author = queries::user::get_by_id(state, parent.author_id).await;
         mention_inboxes.push(parent_author.inbox_url);
         note_object["inReplyTo"] = json!(parent.ap_url);
-        tags.push(json!({
+        tag.push(json!({
             "type": "Mention",
             "href": parent.ap_url,
             "name": &format!("@{}", parent_author.username),
@@ -141,7 +139,7 @@ pub async fn deliver_create(state: &AppState, id: i64) {
     }
 
     note_object["to"] = json!(to);
-    note_object["tag"] = json!(tags);
+    note_object["tag"] = json!(tag);
 
     let create_id = format!("{}#create-{}", author.ap_url, utils::gen_unique_id());
     let create_activity = json!({
