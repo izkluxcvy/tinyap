@@ -43,3 +43,7 @@ base64 = "0.22"
 url = "2"
 
 regex = "1"
+
+[profile.release]
+lto = true
+codegen-units = 1
