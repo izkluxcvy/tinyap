@@ -94,7 +94,8 @@ pub fn strip_content(state: &AppState, content: &str) -> String {
         .re
         .br
         .replace_all(content, "\n")
-        .replace("</p><p>", "\n\n");
+        .replace("</p><p>", "\n\n")
+        .replace("><", ">\n<");
     let content = state.re.tag.replace_all(&content, "");
     let content = content
         .replace("&amp;", "&")
