@@ -28,6 +28,16 @@ Joined: {{ user.created_at | date(format="%Y-%m-%d %H:%M:%S", timezone=timezone)
         <button type="submit">Pending..</button>
         {% endif %}
     </form>
+
+    {% if is_muting %}
+    <form action="/@{{ user.username }}/unmute" method="post">
+        <button type="submit">Unmute</button>
+    </form>
+    {% else %}
+    <form action="/@{{ user.username }}/mute" method="post">
+        <button type="submit">Mute</button>
+    </form>
+    {% endif %}
     {% endif %}
 
     {% for note in notes %}

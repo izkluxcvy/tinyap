@@ -27,6 +27,15 @@ CREATE TABLE follows (
     FOREIGN KEY (followee_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE mutes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    muter_id BIGINT NOT NULL,
+    mutee_id BIGINT NOT NULL,
+    UNIQUE(muter_id, mutee_id),
+    FOREIGN KEY (muter_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (mutee_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE table notes (
     id BIGINT PRIMARY KEY,
     ap_url TEXT NOT NULL UNIQUE,

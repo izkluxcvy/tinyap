@@ -7,6 +7,7 @@ pub mod index;
 pub mod like;
 pub mod login;
 pub mod logout;
+pub mod mute;
 pub mod new;
 pub mod note;
 pub mod notifications;

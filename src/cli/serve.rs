@@ -37,6 +37,8 @@ async fn web_routes() -> Router<init::AppState> {
         .route("/@{username}/unfollow", post(web::follow::post_unfollow))
         .route("/@{username}/following", get(web::following::get_following))
         .route("/@{username}/followers", get(web::following::get_followers))
+        .route("/@{username}/mute", post(web::mute::post_mute))
+        .route("/@{username}/unmute", post(web::mute::post_unmute))
         .route("/new", get(web::new::get).post(web::new::post))
         .route("/@{username}/{id}", get(web::note::get))
         .route("/@{username}/{id}/delete", post(web::delete::post))

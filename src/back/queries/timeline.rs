@@ -40,12 +40,21 @@ pub async fn get_home(
     query_as(
         "SELECT n.author_id, u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
         FROM notes AS n
+        -- Join authors
         JOIN users AS u ON n.author_id = u.id
+        -- Join following users
         LEFT JOIN follows AS f ON f.followee_id = u.id
         AND f.follower_id = $1
+        -- Join muting users
+        LEFT JOIN mutes AS m ON m.mutee_id = u.id
+        AND m.muter_id = $1
+        -- Where pagination
         WHERE ((n.created_at < $2)
         OR (n.created_at = $2 AND n.id <= $3))
+        -- Where folloing or self
         AND (f.follower_id = $1 OR u.id = $1)
+        -- Where not muting
+        AND m.id IS NULL
         ORDER BY n.created_at DESC, n.id DESC
         LIMIT $4",
     )

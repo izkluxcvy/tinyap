@@ -2,6 +2,7 @@ pub mod block;
 pub mod boost;
 pub mod follow;
 pub mod like;
+pub mod mute;
 pub mod note;
 pub mod notification;
 #[cfg(feature = "api")]

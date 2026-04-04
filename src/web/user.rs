@@ -71,6 +71,15 @@ pub async fn get(
         following_status = 0;
     }
 
+    // Check if auth user mutes this user
+    let is_muting = if let Some(auth_user_id) = auth_user.id {
+        queries::mute::get(&state, auth_user_id, user.id)
+            .await
+            .is_some()
+    } else {
+        false
+    };
+
     // Rendering
     let mut context = tera::Context::new();
     context.insert("instance_name", &state.metadata.instance_name);
@@ -78,6 +87,7 @@ pub async fn get(
     context.insert("domain", &state.domain);
     context.insert("user", &user);
     context.insert("following_status", &following_status);
+    context.insert("is_muting", &is_muting);
     context.insert("notes", &notes);
     context.insert("until_next", &until_next);
     context.insert("max_notes", &state.web_config.max_timeline_items);
