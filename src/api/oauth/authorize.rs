@@ -41,9 +41,9 @@ pub async fn get(
         <input type="hidden" name="redirect_uri" value="{}">
         <button type="submit">Authorize</button>
         </form>"#,
-        utils::strip_content(&state, &app.app_name),
+        tera::escape_html(&app.app_name),
         query.client_id,
-        utils::strip_content(&state, &query.redirect_uri)
+        tera::escape_html(&query.redirect_uri)
     ))
     .into_response()
 }
