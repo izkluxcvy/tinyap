@@ -6,8 +6,11 @@
 </head>
 
 <body>
+    {% include "parts/header.html" %}
+
     <h3>@{{ username }}'s {{ title }}</h3>
 
+    <hr>
     <pre>{% for user in users %}<a href="/@{{ user.username }}">{{ user.display_name }}@{{ user.username }}</a>
 {% endfor %}</pre>
 
