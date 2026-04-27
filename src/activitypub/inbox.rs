@@ -26,6 +26,7 @@ use rsa::{
 use serde_json::Value;
 use sha2::Sha256;
 use std::collections::HashMap;
+use tokio::task;
 use url::Url;
 
 pub async fn post(
@@ -189,14 +190,19 @@ async fn verify_signature(
     };
 
     // Verify
-    let public_key_pem = public_key_pem.trim();
-    let Ok(public_key) = RsaPublicKey::from_public_key_pem(public_key_pem) else {
-        return Err("invalid public key".to_string());
-    };
-    let verifying_key = VerifyingKey::<Sha256>::new(public_key);
+    let public_key_pem = public_key_pem.to_string();
+    task::spawn_blocking(move || {
+        let public_key_pem = public_key_pem.trim();
+        let Ok(public_key) = RsaPublicKey::from_public_key_pem(public_key_pem) else {
+            return Err("invalid public key".to_string());
+        };
+        let verifying_key = VerifyingKey::<Sha256>::new(public_key);
 
-    match verifying_key.verify(signing_string.as_bytes(), &signature) {
-        Ok(_) => Ok(()),
-        Err(_) => Err("signature verification failed".to_string()),
-    }
+        match verifying_key.verify(signing_string.as_bytes(), &signature) {
+            Ok(_) => Ok(()),
+            Err(_) => Err("signature verification failed".to_string()),
+        }
+    })
+    .await
+    .unwrap()
 }

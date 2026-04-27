@@ -208,42 +208,55 @@ pub async fn signed_deliver(
 ) {
     println!("Delivering to {}: {}", recipient_inbox, body);
 
-    // Sign
-    let date = date_now_http_format();
+    // Sign in blocking task
+    let (date, digest_value, signed_header) = {
+        let sender_ap_url = sender_ap_url.to_string();
+        let private_key = private_key.to_string();
+        let recipient_inbox = recipient_inbox.to_string();
+        let body = body.to_string();
 
-    let digest_value = {
-        let mut hasher = Sha256::new();
-        hasher.update(body.to_string().as_bytes());
-        let hash = hasher.finalize();
-        format!("SHA-256={}", general_purpose::STANDARD.encode(hash))
+        let date = date_now_http_format();
+
+        task::spawn_blocking(move || {
+            let digest_value = {
+                let mut hasher = Sha256::new();
+                hasher.update(body.as_bytes());
+                let hash = hasher.finalize();
+                format!("SHA-256={}", general_purpose::STANDARD.encode(hash))
+            };
+
+            let url_parsed = Url::parse(&recipient_inbox).unwrap();
+            let host = url_parsed.host_str().unwrap();
+            let path_and_query = {
+                let full = url_parsed.path();
+                match url_parsed.query() {
+                    Some(q) => format!("{}?{}", &full, q),
+                    None => full.to_string(),
+                }
+            };
+
+            let signing_string = format!(
+                "(request-target): post {}\nhost: {}\ndate: {}\ndigest: {}",
+                path_and_query, host, date, digest_value
+            );
+
+            let private_key = RsaPrivateKey::from_pkcs8_pem(&private_key).unwrap();
+            let signing_key = SigningKey::<Sha256>::new(private_key);
+
+            let signature = signing_key.sign(signing_string.as_bytes());
+            let signature_b64 = general_purpose::STANDARD.encode(signature.to_bytes());
+
+            let key_id = format!("{}#main-key", sender_ap_url);
+            let signed_header = format!(
+                r#"keyId="{}",algorithm="rsa-sha256",headers="(request-target) host date digest",signature="{}""#,
+                key_id, signature_b64
+            );
+
+            (date, digest_value, signed_header)
+        })
+        .await
+        .unwrap()
     };
-
-    let url_parsed = Url::parse(recipient_inbox).unwrap();
-    let host = url_parsed.host_str().unwrap();
-    let path_and_query = {
-        let full = url_parsed.path();
-        match url_parsed.query() {
-            Some(q) => format!("{}?{}", &full, q),
-            None => full.to_string(),
-        }
-    };
-
-    let signing_string = format!(
-        "(request-target): post {}\nhost: {}\ndate: {}\ndigest: {}",
-        path_and_query, host, date, digest_value
-    );
-
-    let private_key = RsaPrivateKey::from_pkcs8_pem(private_key).unwrap();
-    let signing_key = SigningKey::<Sha256>::new(private_key);
-
-    let signature = signing_key.sign(signing_string.as_bytes());
-    let signature_b64 = general_purpose::STANDARD.encode(signature.to_bytes());
-
-    let key_id = format!("{}#main-key", sender_ap_url);
-    let signed_header = format!(
-        r#"keyId="{}",algorithm="rsa-sha256",headers="(request-target) host date digest",signature="{}""#,
-        key_id, signature_b64
-    );
 
     // Deliver in background queue
     task::spawn({
