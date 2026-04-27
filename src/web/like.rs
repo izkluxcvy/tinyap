@@ -49,7 +49,10 @@ pub async fn post_unlike(
     let author = queries::user::get_by_id(&state, note.author_id).await;
 
     // Unlike
-    like::unlike(&state, user.id, id).await;
+    let res = like::unlike(&state, user.id, id).await;
+    if let Err(e) = res {
+        return e.into_response();
+    };
 
     // Deliver unlike
     if author.is_local == 0 {

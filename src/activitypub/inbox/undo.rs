@@ -50,7 +50,7 @@ pub async fn like(state: &AppState, activity: &Value) {
     };
 
     // Unlike
-    like::unlike(state, liker.id, note.id).await;
+    let _ = like::unlike(state, liker.id, note.id).await;
 }
 
 pub async fn announce(state: &AppState, activity: &Value) {

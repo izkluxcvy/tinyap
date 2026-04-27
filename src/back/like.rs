@@ -62,12 +62,19 @@ pub async fn deliver_like(state: &AppState, user_id: i64, note_id: i64) {
     .await;
 }
 
-pub async fn unlike(state: &AppState, user_id: i64, note_id: i64) {
+pub async fn unlike(state: &AppState, user_id: i64, note_id: i64) -> Result<(), String> {
+    // Check if liked
+    let existing = queries::like::get(state, user_id, note_id).await;
+    if existing.is_none() {
+        return Err("Not liked".to_string());
+    }
     // Unlike
     queries::like::delete(state, user_id, note_id).await;
 
     // Decrement like count
     queries::note::decrement_like_count(state, note_id).await;
+
+    Ok(())
 }
 
 pub async fn deliver_unlilke(state: &AppState, user_id: i64, note_id: i64) {
