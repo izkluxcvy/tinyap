@@ -279,20 +279,35 @@ pub async fn delete(
     // Delete
     note::delete(&state, id, user.id).await;
 
-    Json(json!({
-        "id": note.id,
-        "created_at": &note.created_at,
-        "in_reply_to_id": note.parent_id,
-        "visibility": "public",
-        "reblogs_count": note.boost_count,
-        "favourites_count": note.like_count,
-        "content": &note.content,
-        "account": {
-            "id": &note.username,
-            "username": &user.username,
-            "acct": &user.username,
-            "display_name": &user.display_name,
-        },
-        "media_attachments": [],
-    }))
+    let account_json = account_json(
+        &state,
+        &note.username,
+        &note.display_name,
+        &note.created_at,
+        "",
+        0,
+        0,
+        0,
+        &note.created_at,
+    );
+    let status_json = status_json(
+        &state,
+        note.id,
+        &note.username,
+        None,
+        None,
+        None,
+        &note.content,
+        &account_json,
+        &note.created_at,
+        &vec![],
+        note.like_count,
+        note.boost_count,
+        false,
+        false,
+        note.parent_id,
+        note.parent_author_username,
+    );
+
+    Json(status_json)
 }
