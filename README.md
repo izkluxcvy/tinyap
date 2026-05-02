@@ -34,6 +34,7 @@ $ watch -n 360 'echo $(date "+%F %T"),$(cat /sys/fs/cgroup/system.slice/tinyap.s
 - [Tokodon](https://apps.kde.org/tokodon/) for Linux, Windows
 - [Tuba](https://tuba.geopjr.dev/) for Linux, Windows
 - [Ice Cubes](https://apps.apple.com/us/app/ice-cubes-for-mastodon/id6444915884) for iOS, Mac
+- [Fedicat](https://fedicat.com/) for iOS
 - [Tusky](https://tusky.app/) for Android
 - [Toot](https://github.com/ihabunek/toot) for CLI, TUI
 
