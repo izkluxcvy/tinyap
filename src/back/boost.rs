@@ -84,6 +84,12 @@ pub async fn deliver_boost(state: &AppState, user_id: i64, note_id: i64) {
 }
 
 pub async fn unboost(state: &AppState, user_id: i64, note_id: i64) -> Result<(), String> {
+    // Check if boosted
+    let existing = queries::boost::get(state, user_id, note_id).await;
+    if existing.is_none() {
+        return Err("Not boosted".to_string());
+    }
+
     // Unboost
     queries::boost::delete(state, user_id, note_id).await;
 
