@@ -190,6 +190,7 @@ async fn verify_signature(
     };
 
     // Verify
+    let _permit = state.sign_queue.acquire().await.unwrap();
     let public_key_pem = public_key_pem.to_string();
     task::spawn_blocking(move || {
         let public_key_pem = public_key_pem.trim();
@@ -205,4 +206,5 @@ async fn verify_signature(
     })
     .await
     .unwrap()
+    // Drop _permit here
 }

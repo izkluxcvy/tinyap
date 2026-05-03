@@ -22,6 +22,7 @@ config:
   deliver_queue_size: 10
   # Each Argon2 hashing costs 19MB RAM.
   hash_queue_size: 1
+  sign_queue_size: 1
   token_ttl_days: 90
 
 # Required for web feature

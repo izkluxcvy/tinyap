@@ -209,6 +209,7 @@ pub async fn signed_deliver(
     println!("Delivering to {}: {}", recipient_inbox, body);
 
     // Sign in blocking task
+    let _permit = state.sign_queue.acquire().await.unwrap();
     let (date, digest_value, signed_header) = {
         let sender_ap_url = sender_ap_url.to_string();
         let private_key = private_key.to_string();
@@ -257,6 +258,7 @@ pub async fn signed_deliver(
         .await
         .unwrap()
     };
+    drop(_permit);
 
     // Deliver in background queue
     task::spawn({
