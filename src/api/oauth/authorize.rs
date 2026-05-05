@@ -13,6 +13,7 @@ pub struct AuthorizeQuery {
     pub response_type: String,
     pub client_id: i64,
     pub redirect_uri: String,
+    pub state: Option<String>,
 }
 
 pub async fn get(
@@ -39,11 +40,13 @@ pub async fn get(
         <input type="password" id="password" name="password"><br>
         <input type="hidden" name="client_id" value="{}">
         <input type="hidden" name="redirect_uri" value="{}">
+        <input type="hidden" name="state" value="{}">
         <button type="submit">Authorize</button>
         </form>"#,
         tera::escape_html(&app.app_name),
         query.client_id,
-        tera::escape_html(&query.redirect_uri)
+        tera::escape_html(&query.redirect_uri),
+        tera::escape_html(query.state.as_deref().unwrap_or(""))
     ))
     .into_response()
 }
@@ -54,6 +57,7 @@ pub struct AuthorizeForm {
     pub password: String,
     pub client_id: i64,
     pub redirect_uri: String,
+    pub state: String,
 }
 
 pub async fn post(
@@ -73,6 +77,13 @@ pub async fn post(
     if form.redirect_uri == "urn:ietf:wg:oauth:2.0:oob" {
         Html(format!(r#"<p>Your authorization code is: {}</p>"#, code)).into_response()
     } else {
+        if !form.state.is_empty() {
+            return Redirect::to(&format!(
+                "{}?code={}&state={}",
+                form.redirect_uri, code, &form.state
+            ))
+            .into_response();
+        }
         Redirect::to(&format!("{}?code={}", form.redirect_uri, code)).into_response()
     }
 }
