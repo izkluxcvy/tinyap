@@ -179,7 +179,11 @@ pub async fn fetch_remote(
     };
 
     // Merge attachments to bio
-    let mut bio = user_json["summary"].as_str().unwrap_or("").to_string();
+    let mut bio = user_json["summary"]
+        .as_str()
+        .unwrap_or("")
+        .trim_end_matches("</p>")
+        .to_string();
     if let Some(attachments) = user_json["attachment"].as_array() {
         bio.push('\n');
         for attachment in attachments {
