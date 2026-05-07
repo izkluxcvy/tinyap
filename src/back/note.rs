@@ -300,10 +300,8 @@ pub async fn parse_from_json(
 
     let is_public = {
         // to is str or array.
-        if let Some(to_str) = note_json["to"].as_str()
-            && to_str.contains("Public")
-        {
-            1
+        if let Some(to_str) = note_json["to"].as_str() {
+            if to_str.contains("Public") { 1 } else { 0 }
         } else {
             let Some(to_array) = note_json["to"].as_array() else {
                 return Err("Note object missing to field".to_string());
