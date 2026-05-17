@@ -328,42 +328,51 @@ pub async fn deliver_to_followers(
 }
 
 pub async fn signed_get(state: &AppState, url: &str) -> Result<reqwest::Response, String> {
-    let sender = queries::user::get_temp_sign_user(state).await;
-    let sender_ap_url = &sender.ap_url;
-    let private_key = sender.private_key.unwrap();
-    // Sign
-    let date = date_now_http_format();
+    // Sign in blocking task
+    let _permit = state.sign_queue.acquire().await.unwrap();
+    let (host, date, signed_header) = {
+        let sender = queries::user::get_temp_sign_user(state).await;
+        let sender_ap_url = sender.ap_url;
+        let private_key = sender.private_key.unwrap();
+        let date = date_now_http_format();
 
-    let Ok(url_parsed) = Url::parse(url) else {
-        return Err("Invalid URL".to_string());
+        let Ok(url_parsed) = Url::parse(url) else {
+            return Err("Invalid URL".to_string());
+        };
+        let Some(host) = url_parsed.host_str() else {
+            return Err("Host missing".to_string());
+        };
+        let host = host.to_string();
+        let path_and_query = {
+            let full = url_parsed.path();
+            match url_parsed.query() {
+                Some(q) => format!("{}?{}", &full, q),
+                None => full.to_string(),
+            }
+        };
+
+        task::spawn_blocking(move || {
+        let signing_string = format!(
+            "(request-target): get {}\nhost: {}\ndate: {}",
+            path_and_query, host, date
+        );
+
+        let private_key = RsaPrivateKey::from_pkcs8_pem(&private_key).unwrap();
+        let signing_key = SigningKey::<Sha256>::new(private_key);
+
+        let signature = signing_key.sign(signing_string.as_bytes());
+        let signature_b64 = general_purpose::STANDARD.encode(signature.to_bytes());
+
+        let key_id = format!("{}#main-key", sender_ap_url);
+        let signed_header = format!(
+            r#"keyId="{}",algorithm="rsa-sha256",headers="(request-target) host date",signature="{}""#,
+            key_id, signature_b64
+        );
+        (host, date, signed_header)
+        }).await
+        .unwrap()
     };
-    let Some(host) = url_parsed.host_str() else {
-        return Err("Host missing".to_string());
-    };
-    let path_and_query = {
-        let full = url_parsed.path();
-        match url_parsed.query() {
-            Some(q) => format!("{}?{}", &full, q),
-            None => full.to_string(),
-        }
-    };
-
-    let signing_string = format!(
-        "(request-target): get {}\nhost: {}\ndate: {}",
-        path_and_query, host, date
-    );
-
-    let private_key = RsaPrivateKey::from_pkcs8_pem(&private_key).unwrap();
-    let signing_key = SigningKey::<Sha256>::new(private_key);
-
-    let signature = signing_key.sign(signing_string.as_bytes());
-    let signature_b64 = general_purpose::STANDARD.encode(signature.to_bytes());
-
-    let key_id = format!("{}#main-key", sender_ap_url);
-    let signed_header = format!(
-        r#"keyId="{}",algorithm="rsa-sha256",headers="(request-target) host date",signature="{}""#,
-        key_id, signature_b64
-    );
+    drop(_permit);
 
     // Get
     let res = state.http_client
