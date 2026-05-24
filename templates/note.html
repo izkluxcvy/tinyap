@@ -2,7 +2,7 @@
 
 <head>
     {% include "parts/head.html" %}
-    <title>{{ note.display_name }}@{{ note.username }}: {{ note.content }} - {{ instance_name }}</title>
+    <title>{{ note.display_name }}@{{ note.username }}: {{ note.content | truncate(length=20) }} - {{ instance_name }}</title>
 </head>
 
 <body>
