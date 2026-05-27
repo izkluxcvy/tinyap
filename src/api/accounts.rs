@@ -1,4 +1,4 @@
-use crate::api::timeline::timeline_json;
+use crate::api::timeline::{build_link_header, timeline_json};
 use crate::back::init::AppState;
 use crate::back::queries;
 use crate::back::utils;
@@ -6,6 +6,8 @@ use crate::back::utils;
 use axum::{
     Json,
     extract::{Path, Query, State},
+    http::HeaderMap,
+    response::IntoResponse,
 };
 use serde_json::{Value, json};
 
@@ -80,12 +82,12 @@ pub async fn get_statuses(
     State(state): State<AppState>,
     Path(username): Path<String>,
     Query(query): Query<StatusesQuery>,
-) -> Json<Value> {
+) -> impl IntoResponse {
     // Return empty if pinned is true
     if let Some(pinned) = query.pinned
         && pinned
     {
-        return Json(json!([]));
+        return Json(json!([])).into_response();
     }
 
     // Extract limit
@@ -97,13 +99,18 @@ pub async fn get_statuses(
 
     // Get user
     let Some(user) = queries::user::get_by_username(&state, &username).await else {
-        return Json(json!({"error": "User not found"}));
+        return Json(json!({"error": "User not found"})).into_response();
     };
 
     // Get notes by user
     let notes = queries::timeline::get_user(&state, user.id, &until_date, until_id, limit).await;
 
+    let mut headers = HeaderMap::new();
+    if let (Some(first), Some(last)) = (notes.first(), notes.last()) {
+        let link = build_link_header(&state.domain, "/api/v1/timelines/public", last.id, first.id);
+        headers.insert("Link", link.parse().unwrap());
+    }
     let notes_json = timeline_json(&state, notes);
 
-    Json(json!(notes_json))
+    (headers, Json(notes_json)).into_response()
 }

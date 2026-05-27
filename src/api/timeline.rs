@@ -13,7 +13,7 @@ use axum::{
 };
 use serde_json::Value;
 
-fn build_link_header(domain: &str, path: &str, oldest_id: i64, newest_id: i64) -> String {
+pub fn build_link_header(domain: &str, path: &str, oldest_id: i64, newest_id: i64) -> String {
     let base = format!("https://{}{}", domain, path);
     format!(
         "<{}?max_id={}>; rel=\"next\", <{}?since_id={}>; rel=\"prev\"",
