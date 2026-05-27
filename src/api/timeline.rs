@@ -8,8 +8,29 @@ use crate::back::utils;
 use axum::{
     Json,
     extract::{Query, State},
+    http::HeaderMap,
+    response::IntoResponse,
 };
 use serde_json::Value;
+
+fn build_link_header(
+    domain: &str,
+    path: &str,
+    extra_params: &str,
+    oldest_id: i64,
+    newest_id: i64,
+) -> String {
+    let base = format!("https://{}{}", domain, path);
+    let extra = if extra_params.is_empty() {
+        String::new()
+    } else {
+        format!("&{}", extra_params)
+    };
+    format!(
+        "<{}?max_id={}{}>; rel=\"next\", <{}?since_id={}{}>; rel=\"prev\"",
+        base, oldest_id, extra, base, newest_id, extra,
+    )
+}
 
 #[derive(serde::Deserialize)]
 pub struct TimelineQuery {
@@ -83,7 +104,7 @@ pub async fn get_home(
     State(state): State<AppState>,
     Query(query): Query<TimelineQuery>,
     user: OAuthUser,
-) -> Json<Value> {
+) -> impl IntoResponse {
     let limit = extract_limit(query.limit).await;
 
     let notes = if let Some(max_id) = query.max_id {
@@ -94,18 +115,30 @@ pub async fn get_home(
         queries::timeline::get_home_since(&state, user.id, &since_date, since_id, limit).await
     };
 
-    let notes_json = timeline_json(&state, notes);
+    let mut headers = HeaderMap::new();
+    if let (Some(first), Some(last)) = (notes.first(), notes.last()) {
+        let link = build_link_header(
+            &state.domain,
+            "/api/v1/timelines/home",
+            "",
+            last.id,
+            first.id,
+        );
+        headers.insert("Link", link.parse().unwrap());
+    }
 
-    Json(notes_json)
+    let notes_json = timeline_json(&state, notes);
+    (headers, Json(notes_json))
 }
 
 pub async fn get_public(
     State(state): State<AppState>,
     Query(query): Query<TimelineQuery>,
-) -> Json<Value> {
+) -> impl IntoResponse {
     let limit = extract_limit(query.limit).await;
+    let is_local = query.local.unwrap_or(false);
 
-    let notes = if query.local.unwrap_or(false) {
+    let notes = if is_local {
         if let Some(max_id) = query.max_id {
             let (until_date, until_id) = utils::extract_until_id(&state, Some(max_id)).await;
             queries::timeline::get_local(&state, &until_date, until_id, limit).await
@@ -123,7 +156,19 @@ pub async fn get_public(
         }
     };
 
-    let notes_json = timeline_json(&state, notes);
+    let extra_params = if is_local { "local=true" } else { "" };
+    let mut headers = HeaderMap::new();
+    if let (Some(first), Some(last)) = (notes.first(), notes.last()) {
+        let link = build_link_header(
+            &state.domain,
+            "/api/v1/timelines/public",
+            extra_params,
+            last.id,
+            first.id,
+        );
+        headers.insert("Link", link.parse().unwrap());
+    }
 
-    Json(notes_json)
+    let notes_json = timeline_json(&state, notes);
+    (headers, Json(notes_json))
 }
