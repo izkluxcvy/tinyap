@@ -13,22 +13,11 @@ use axum::{
 };
 use serde_json::Value;
 
-fn build_link_header(
-    domain: &str,
-    path: &str,
-    extra_params: &str,
-    oldest_id: i64,
-    newest_id: i64,
-) -> String {
+fn build_link_header(domain: &str, path: &str, oldest_id: i64, newest_id: i64) -> String {
     let base = format!("https://{}{}", domain, path);
-    let extra = if extra_params.is_empty() {
-        String::new()
-    } else {
-        format!("&{}", extra_params)
-    };
     format!(
-        "<{}?max_id={}{}>; rel=\"next\", <{}?since_id={}{}>; rel=\"prev\"",
-        base, oldest_id, extra, base, newest_id, extra,
+        "<{}?max_id={}>; rel=\"next\", <{}?since_id={}>; rel=\"prev\"",
+        base, oldest_id, base, newest_id,
     )
 }
 
@@ -117,13 +106,7 @@ pub async fn get_home(
 
     let mut headers = HeaderMap::new();
     if let (Some(first), Some(last)) = (notes.first(), notes.last()) {
-        let link = build_link_header(
-            &state.domain,
-            "/api/v1/timelines/home",
-            "",
-            last.id,
-            first.id,
-        );
+        let link = build_link_header(&state.domain, "/api/v1/timelines/home", last.id, first.id);
         headers.insert("Link", link.parse().unwrap());
     }
 
@@ -156,16 +139,9 @@ pub async fn get_public(
         }
     };
 
-    let extra_params = if is_local { "local=true" } else { "" };
     let mut headers = HeaderMap::new();
     if let (Some(first), Some(last)) = (notes.first(), notes.last()) {
-        let link = build_link_header(
-            &state.domain,
-            "/api/v1/timelines/public",
-            extra_params,
-            last.id,
-            first.id,
-        );
+        let link = build_link_header(&state.domain, "/api/v1/timelines/public", last.id, first.id);
         headers.insert("Link", link.parse().unwrap());
     }
 
