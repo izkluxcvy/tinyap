@@ -68,7 +68,8 @@ async fn api_routes() -> Router<init::AppState> {
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods(Any)
-        .allow_headers(Any);
+        .allow_headers(Any)
+        .expose_headers(Any);
 
     Router::new()
         .route("/api/v1/instance", get(api::instance::get_v1))
