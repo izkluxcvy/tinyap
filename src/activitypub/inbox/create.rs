@@ -92,9 +92,7 @@ pub async fn note(state: &AppState, activity: &Value) {
         vec![]
     };
 
-    let parent_author_uname = parent_author_username
-        .clone()
-        .unwrap_or_else(|| "".to_string());
+    let parent_author_uname = parent_author_username.clone().unwrap_or_default();
 
     // Create note
     let _ = note::add(
