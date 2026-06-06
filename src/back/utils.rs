@@ -105,13 +105,13 @@ pub fn strip_content(state: &AppState, content: &str) -> String {
         .replace("</li>", "\n");
     let content = state.re.tag.replace_all(&content, "");
     let content = content
-        .replace("&amp;", "&")
         .replace("&lt;", "<")
         .replace("&gt;", ">")
         .replace("&quot;", "\"")
         .replace("&#39;", "'")
         .replace("&#x27;", "'")
-        .replace("&#x2F;", "/");
+        .replace("&#x2F;", "/")
+        .replace("&amp;", "&");
 
     if content.chars().count() > state.config.max_note_chars {
         let byte_end = content
