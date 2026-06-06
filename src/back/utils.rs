@@ -110,6 +110,7 @@ pub fn strip_content(state: &AppState, content: &str) -> String {
         .replace("&gt;", ">")
         .replace("&quot;", "\"")
         .replace("&#39;", "'")
+        .replace("&#x27;", "'")
         .replace("&#x2F;", "/");
 
     if content.chars().count() > state.config.max_note_chars {
