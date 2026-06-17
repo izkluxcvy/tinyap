@@ -212,9 +212,9 @@ pub async fn fetch_remote(
 }
 
 pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<(), String> {
-    let Ok((username, ap_url, inbox_url, display_name, bio)) = fetch_remote(state, ap_url).await
-    else {
-        return Err("Failed to fetch remote user".to_string());
+    let res = fetch_remote(state, ap_url).await;
+    let Ok((username, ap_url, inbox_url, display_name, bio)) = res else {
+        return Err(format!("Failed to fetch remote user: {}", res.unwrap_err()));
     };
 
     queries::user::create(
