@@ -155,8 +155,13 @@ pub async fn fetch_remote(
         return Err("Fetched object is not valid JSON".to_string());
     };
 
-    if user_json["type"] != "Person" {
-        return Err("Fetched object is not a Person".to_string());
+    if user_json["type"] != "Application"
+        && user_json["type"] != "Group"
+        && user_json["type"] != "Organization"
+        && user_json["type"] != "Person"
+        && user_json["type"] != "Service"
+    {
+        return Err("Fetched object type is not valid".to_string());
     }
 
     let Some(username) = user_json["preferredUsername"].as_str() else {
