@@ -44,7 +44,8 @@ pub fn account_json(
         "source": {
             "privacy": "public",
             "sensitive": false,
-            "note": "",
+            // Raw content of bio
+            "note": utils::strip_content(state, bio),
             "fields": []
         }
     })

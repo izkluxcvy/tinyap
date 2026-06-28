@@ -2,7 +2,6 @@ use crate::api::auth::OAuthUser;
 use crate::back::init::AppState;
 use crate::back::queries;
 use crate::back::user;
-use crate::back::utils;
 
 use axum::{
     Json,
@@ -40,7 +39,6 @@ pub async fn patch(
 
     let display_name = req.display_name.unwrap_or(user.display_name);
     let bio = req.note.unwrap_or(user.bio);
-    let bio = utils::parse_content(&state, &bio);
 
     user::update_profile(&state, user.id, &display_name, &bio).await;
 
