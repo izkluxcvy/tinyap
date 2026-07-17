@@ -23,7 +23,7 @@ pub async fn note(state: &AppState, activity: &Value) {
     let author = queries::user::get_by_id(state, note.author_id).await;
 
     // Check ownership
-    if note.author_id != author.id {
+    if author.ap_url != activity["actor"].as_str().unwrap_or("") {
         return;
     }
 
