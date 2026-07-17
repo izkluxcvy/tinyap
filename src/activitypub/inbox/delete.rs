@@ -19,6 +19,14 @@ pub async fn note(state: &AppState, activity: &Value) {
         return;
     };
 
+    // Get author
+    let author = queries::user::get_by_id(state, note.author_id).await;
+
+    // Check ownership
+    if note.author_id != author.id {
+        return;
+    }
+
     // Delete
     note::delete(state, note.id, note.author_id).await;
 }
