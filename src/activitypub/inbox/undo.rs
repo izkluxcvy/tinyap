@@ -15,6 +15,11 @@ pub async fn follow(state: &AppState, activity: &Value) {
         return;
     };
 
+    // Check ownership
+    if follower_ap_url != activity["actor"].as_str().unwrap_or("") {
+        return;
+    }
+
     // Get users
     let Some(follower) = queries::user::get_by_ap_url(state, follower_ap_url).await else {
         return;
@@ -39,6 +44,11 @@ pub async fn like(state: &AppState, activity: &Value) {
         return;
     };
 
+    // Check ownership
+    if liker_ap_url != activity["actor"].as_str().unwrap_or("") {
+        return;
+    }
+
     // Get user
     let Some(liker) = queries::user::get_by_ap_url(state, liker_ap_url).await else {
         return;
@@ -61,6 +71,11 @@ pub async fn announce(state: &AppState, activity: &Value) {
     let Some(note_ap_url) = activity["object"]["object"].as_str() else {
         return;
     };
+
+    // Check ownership
+    if booster_ap_url != activity["actor"].as_str().unwrap_or("") {
+        return;
+    }
 
     // Get user
     let Some(booster) = queries::user::get_by_ap_url(state, booster_ap_url).await else {

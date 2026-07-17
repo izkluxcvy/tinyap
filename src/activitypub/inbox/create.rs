@@ -16,6 +16,11 @@ pub async fn note(state: &AppState, activity: &Value) {
         return;
     };
 
+    // Check ownership
+    if author_ap_url != activity["actor"].as_str().unwrap_or("") {
+        return;
+    }
+
     // Check if already exists
     let existing = queries::note::get_by_ap_url(state, &note_ap_url).await;
     if existing.is_some() {
