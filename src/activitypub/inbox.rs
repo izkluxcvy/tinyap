@@ -26,7 +26,7 @@ use rsa::{
 use serde_json::Value;
 use sha2::Sha256;
 use std::collections::HashMap;
-use time::{OffsetDateTime, format_description::well_known::Rfc3339};
+use time::{OffsetDateTime, PrimitiveDateTime};
 use tokio::task;
 use url::Url;
 
@@ -135,12 +135,17 @@ async fn verify_signature(
     }
 
     // Check Date
-    let Some(date) = sig_map.get("date") else {
+    let Some(date) = headers.get("Date") else {
         return Err("missing date".to_string());
     };
-    let Ok(date) = OffsetDateTime::parse(date, &Rfc3339) else {
+    let Ok(date) = date.to_str() else {
         return Err("invalid date".to_string());
     };
+    let format = time::format_description::parse(utils::HTTP_DATE_FORMAT).unwrap();
+    let Ok(date) = PrimitiveDateTime::parse(date, &format) else {
+        return Err("invalid date".to_string());
+    };
+    let date = date.assume_utc();
     let now = OffsetDateTime::now_utc();
     if (now - date).whole_seconds().abs() > SIGNATURE_MAX_AGE {
         return Err("signature expired".to_string());

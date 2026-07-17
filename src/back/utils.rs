@@ -26,11 +26,12 @@ pub fn date_plus_days(days: i64) -> String {
     date.format(&Rfc3339).unwrap()
 }
 
+pub const HTTP_DATE_FORMAT: &str =
+    "[weekday repr:short], [day] [month repr:short] [year] [hour repr:24]:[minute]:[second] GMT";
+
 pub fn date_now_http_format() -> String {
     let now = OffsetDateTime::now_utc();
-    let format = time::format_description::parse(
-        "[weekday repr:short], [day] [month repr:short] [year] [hour repr:24]:[minute]:[second] GMT"
-    ).unwrap();
+    let format = time::format_description::parse(HTTP_DATE_FORMAT).unwrap();
     now.format(&format).unwrap()
 }
 
