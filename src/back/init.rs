@@ -221,6 +221,7 @@ pub async fn create_app_state() -> AppState {
     let http_client = Client::builder()
         .user_agent(format!("TinyAP/{}", VERSION))
         .timeout(std::time::Duration::from_secs(10))
+        .dns_resolver(Arc::new(SsrfSafeResolver))
         .build()
         .unwrap();
 
@@ -269,4 +270,50 @@ pub async fn create_app_state() -> AppState {
             timezone,
         },
     })
+}
+
+use reqwest::dns::{Addrs, Name, Resolve, Resolving};
+use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
+
+fn resolve_is_disallowed(ip: &IpAddr) -> bool {
+    match ip {
+        IpAddr::V4(v4) => {
+            v4.is_private()
+                || v4.is_loopback()
+                || v4.is_link_local()
+                || v4.is_broadcast()
+                || v4.is_documentation()
+                || v4.is_unspecified()
+        }
+        IpAddr::V6(v6) => {
+            v6.is_loopback()
+                || v6.is_unspecified()
+                || v6.is_multicast()
+                || v6.is_unicast_link_local()
+                || v6.is_unique_local()
+        }
+    }
+}
+
+struct SsrfSafeResolver;
+impl Resolve for SsrfSafeResolver {
+    fn resolve(&self, name: Name) -> Resolving {
+        Box::pin(async move {
+            let host = name.as_str().to_string();
+            let addrs =
+                tokio::task::spawn_blocking(move || (host.as_str(), 0u16).to_socket_addrs())
+                    .await??;
+
+            let filtered: Vec<SocketAddr> = addrs
+                .filter(|addr| !resolve_is_disallowed(&addr.ip()))
+                .collect();
+
+            if filtered.is_empty() {
+                return Err("Resolved address is disallowed".into());
+            }
+
+            let iter: Addrs = Box::new(filtered.into_iter());
+            Ok(iter)
+        })
+    }
 }
