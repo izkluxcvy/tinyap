@@ -30,6 +30,11 @@ pub async fn get(
         return "Invalid client_id".into_response();
     };
 
+    // Check redirect_uri
+    if app.redirect_uri != query.redirect_uri {
+        return "Mismatched redirect_uri".into_response();
+    }
+
     // Render
     Html(format!(
         r#"<h3>Authorize for {}</h3>
@@ -67,6 +72,14 @@ pub async fn post(
     let Ok(user_id) = user::verify_password(&state, &form.username, &form.password).await else {
         return "Invalid username or password".into_response();
     };
+
+    // Check app
+    let Some(app) = queries::oauth::get_app(&state, form.client_id).await else {
+        return "Invalid client_id".into_response();
+    };
+    if app.redirect_uri != form.redirect_uri {
+        return "Mismatched redirect_uri".into_response();
+    }
 
     // Generate authorization code
     let code = utils::gen_secure_token();

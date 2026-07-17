@@ -25,10 +25,11 @@ pub async fn create_app(
 #[derive(sqlx::FromRow)]
 pub struct AppRecord {
     pub app_name: String,
+    pub redirect_uri: String,
     pub client_secret: String,
 }
 pub async fn get_app(state: &AppState, client_id: i64) -> Option<AppRecord> {
-    query_as("SELECT app_name, client_secret FROM oauth_apps WHERE client_id = $1")
+    query_as("SELECT app_name, redirect_uri, client_secret FROM oauth_apps WHERE client_id = $1")
         .bind(client_id)
         .fetch_optional(&state.db_pool)
         .await
