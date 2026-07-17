@@ -136,7 +136,13 @@ async fn verify_signature(
     let Some(key_id) = sig_map.get("keyId") else {
         return Err("missing keyId".to_string());
     };
-    if !key_id.contains(domain) {
+    let Some(key_id_url) = Url::parse(key_id).ok() else {
+        return Err("invalid keyId URL".to_string());
+    };
+    let Some(key_id_domain) = key_id_url.domain() else {
+        return Err("invalid keyId domain".to_string());
+    };
+    if key_id_domain != domain {
         return Err("mismatched keyId domain".to_string());
     }
 
