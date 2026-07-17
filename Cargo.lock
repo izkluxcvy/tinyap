@@ -2385,7 +2385,7 @@ dependencies = [
 
 [[package]]
 name = "tinyap"
-version = "0.1.11"
+version = "0.1.12"
 dependencies = [
  "argon2",
  "async-recursion",
