@@ -139,8 +139,13 @@ pub async fn deliver_create(state: &AppState, id: i64) {
     utils::deliver_to_followers(state, note.author_id, mention_inboxes, &json_body).await;
 }
 
+const MAX_RECURSION_DEPTH: u32 = 16;
 #[async_recursion::async_recursion]
-pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<i64, String> {
+pub async fn add_remote(state: &AppState, ap_url: &str, depth: u32) -> Result<i64, String> {
+    if depth > MAX_RECURSION_DEPTH {
+        return Err("Max recursion depth reached".to_string());
+    }
+
     // Fetch
     let Ok(res) = utils::signed_get(state, ap_url).await else {
         return Err("Failed to fetch remote note".to_string());
@@ -179,7 +184,7 @@ pub async fn add_remote(state: &AppState, ap_url: &str) -> Result<i64, String> {
 
     // Fetch parent note recursively
     if let Some(in_reply_to) = &in_reply_to {
-        let _res = add_remote(state, in_reply_to).await;
+        let _res = add_remote(state, in_reply_to, depth + 1).await;
     }
 
     // Get parent author username

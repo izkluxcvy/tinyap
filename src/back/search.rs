@@ -25,7 +25,7 @@ pub async fn search(state: &AppState, q: &str) -> Result<String, String> {
         }
     } else {
         // Search note
-        match note::add_remote(state, q).await {
+        match note::add_remote(state, q, 0).await {
             Ok(note_id) => {
                 let note = queries::note::get_by_id(state, note_id).await.unwrap();
                 let author = queries::user::get_by_id(state, note.author_id).await;
