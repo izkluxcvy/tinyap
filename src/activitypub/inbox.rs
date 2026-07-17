@@ -26,6 +26,7 @@ use rsa::{
 use serde_json::Value;
 use sha2::Sha256;
 use std::collections::HashMap;
+use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 use tokio::task;
 use url::Url;
 
@@ -107,6 +108,7 @@ async fn verify_domain(state: &AppState, activity: &Value) -> Result<String, Str
     Ok(domain.to_string())
 }
 
+const SIGNATURE_MAX_AGE: i64 = 3600; // 1 hour
 async fn verify_signature(
     state: &AppState,
     uri: &Uri,
@@ -130,6 +132,18 @@ async fn verify_signature(
         let k = k.trim().to_string();
         let v = v.trim().trim_matches('"').to_string();
         sig_map.insert(k, v);
+    }
+
+    // Check Date
+    let Some(date) = sig_map.get("date") else {
+        return Err("missing date".to_string());
+    };
+    let Ok(date) = OffsetDateTime::parse(date, &Rfc3339) else {
+        return Err("invalid date".to_string());
+    };
+    let now = OffsetDateTime::now_utc();
+    if (now - date).whole_seconds().abs() > SIGNATURE_MAX_AGE {
+        return Err("signature expired".to_string());
     }
 
     // Extract required fields
