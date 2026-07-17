@@ -188,7 +188,12 @@ async fn verify_signature(
         return Err("invalid request URI".to_string());
     };
     let mut signing_lines = Vec::new();
+    let mut has_date = false;
     for header in signed_headers {
+        if header == "date" {
+            has_date = true;
+        }
+
         if header == "(request-target)" {
             signing_lines.push(format!("(request-target): post {}", path_and_query));
         } else {
@@ -200,6 +205,9 @@ async fn verify_signature(
             };
             signing_lines.push(format!("{}: {}", header.to_lowercase(), value));
         }
+    }
+    if !has_date {
+        return Err("missing signed header: date".to_string());
     }
     let signing_string = signing_lines.join("\n");
 
