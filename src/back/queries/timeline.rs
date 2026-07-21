@@ -15,7 +15,7 @@ pub async fn get_user(
         FROM notes AS n
         JOIN users AS u ON n.author_id = u.id
         WHERE ((n.created_at < $1)
-        OR (n.created_at = $1 AND n.id <= $2))
+        OR (n.created_at = $1 AND n.id < $2))
         AND u.id = $3
         AND n.is_public = 1
         ORDER BY n.created_at DESC, n.id DESC
@@ -44,7 +44,7 @@ pub async fn get_home(
         LEFT JOIN follows AS f ON f.followee_id = u.id
         AND f.follower_id = $1
         WHERE ((n.created_at < $2)
-        OR (n.created_at = $2 AND n.id <= $3))
+        OR (n.created_at = $2 AND n.id < $3))
         AND (f.follower_id = $1 OR u.id = $1)
         ORDER BY n.created_at DESC, n.id DESC
         LIMIT $4",
@@ -69,7 +69,7 @@ pub async fn get_local(
         FROM notes AS n
         JOIN users AS u ON n.author_id = u.id
         WHERE ((n.created_at < $1)
-        OR (n.created_at = $1 AND n.id <= $2))
+        OR (n.created_at = $1 AND n.id < $2))
         AND u.is_local = 1
         AND n.is_public = 1
         ORDER BY n.created_at DESC, n.id DESC
@@ -94,7 +94,7 @@ pub async fn get_federated(
         FROM notes AS n
         JOIN users AS u ON n.author_id = u.id
         WHERE ((n.created_at < $1)
-        OR (n.created_at = $1 AND n.id <= $2))
+        OR (n.created_at = $1 AND n.id < $2))
         AND n.is_public = 1
         ORDER BY n.created_at DESC, n.id DESC
         LIMIT $3",
