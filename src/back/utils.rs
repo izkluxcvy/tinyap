@@ -109,6 +109,7 @@ pub fn strip_content(state: &AppState, content: &str) -> String {
         .replace("&lt;", "<")
         .replace("&gt;", ">")
         .replace("&quot;", "\"")
+        .replace("&#039;", "'")
         .replace("&#39;", "'")
         .replace("&#x27;", "'")
         .replace("&#x2F;", "/")
