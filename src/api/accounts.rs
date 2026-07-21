@@ -108,7 +108,12 @@ pub async fn get_statuses(
 
     let mut headers = HeaderMap::new();
     if let (Some(first), Some(last)) = (notes.first(), notes.last()) {
-        let link = build_link_header(&state.domain, "/api/v1/timelines/public", last.id, first.id);
+        let link = build_link_header(
+            &state.domain,
+            &format!("/api/v1/accounts/{}/statuses", &username),
+            last.id,
+            first.id,
+        );
         headers.insert("Link", link.parse().unwrap());
     }
     let notes_json = timeline_json(&state, notes);
