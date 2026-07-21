@@ -103,6 +103,8 @@ pub fn strip_content(state: &AppState, content: &str) -> String {
         .replace("</h2>", "\n")
         .replace("</h3>", "\n")
         .replace("</pre>", "\n")
+        .replace("<blockquote>", "\n")
+        .replace("</blockquote>", "\n")
         .replace("</li>", "\n");
     let content = state.re.tag.replace_all(&content, "");
     let content = content
