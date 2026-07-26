@@ -36,11 +36,10 @@ pub fn date_now_http_format() -> String {
 }
 
 pub fn date_to_utc(date: &str) -> String {
-    // let parsed = OffsetDateTime::parse(date, &Rfc3339).unwrap().to_utc();
     let Ok(parsed) = OffsetDateTime::parse(date, &Rfc3339) else {
         return date_now();
     };
-    parsed.format(&Rfc3339).unwrap()
+    parsed.to_utc().format(&Rfc3339).unwrap()
 }
 
 // Generate a secure token with 64 random alphanumeric characters
