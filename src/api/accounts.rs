@@ -29,6 +29,7 @@ pub fn account_json(
         "acct": username,
         "display_name": display_name,
         "avatar": avatar_placeholder,
+        "avatar_static": avatar_placeholder,
         "header": avatar_placeholder,
         "created_at": created_at,
         "note": bio,
