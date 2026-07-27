@@ -63,7 +63,7 @@ pub async fn post_favourite(
         &vec![],
         note.like_count + 1,
         note.boost_count,
-        false,
+        true,
         false,
         note.parent_id,
         None,
