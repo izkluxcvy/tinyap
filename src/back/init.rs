@@ -124,9 +124,24 @@ pub struct WebConfig {
 
 #[cfg(feature = "sqlite")]
 async fn create_db_pool(conf: &HashMap<String, String>) -> sqlx::SqlitePool {
+    use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
+    use std::str::FromStr;
     let database_url = conf.get("database_url").expect("database_url must be set");
     println!("Connecting to SQLite database...");
-    sqlx::SqlitePool::connect(database_url).await.unwrap()
+
+    // Set cache_size to 1MB (default: 2MB)
+    let options = SqliteConnectOptions::from_str(database_url)
+        .unwrap()
+        .pragma("cache_size", "-1000");
+    // SQLite allows only one writer at a time, so a large pool will just multiple per-connection
+    // caches without improving real concurrency.
+    SqlitePoolOptions::new()
+        .max_connections(3)
+        .min_connections(1)
+        .idle_timeout(None)
+        .connect_with(options)
+        .await
+        .unwrap()
 }
 
 #[cfg(feature = "postgres")]
