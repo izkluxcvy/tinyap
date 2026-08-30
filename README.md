@@ -121,6 +121,36 @@ You can place in `./config.yaml` or `/etc/tinyap/config.yaml` or `$TINYAP_CONFIG
 $ TINYAP_CONFIG=/path/to/config.yaml ./tinyap serve
 ```
 
+### Setup full text search
+
+For SQLite (FTS5):
+
+```sh
+$ sqlite3 tinyap.db
+..
+sqlite> .exit
+```
+
+```sql
+CREATE VIRTUAL TABLE notes_fts USING fts5("content", content='notes', content_rowid='id', tokenize="unicode61 tokenchars '#'");
+CREATE TRIGGER notes_ai AFTER INSERT ON notes BEGIN INSERT INTO notes_fts(rowid, content) VALUES (new.id, new.content); END;
+CREATE TRIGGER notes_ad AFTER DELETE ON notes BEGIN INSERT INTO notes_fts(notes_fts, rowid, content) VALUES ('delete', old.id, old.content); END;
+INSERT INTO notes_fts(rowid, content) SELECT id, content FROM notes;
+```
+
+For PostgreSQL:
+
+```sh
+$ psql -U postgres -d tinyap
+..
+tinyap=# \q
+```
+
+```sql
+ALTER TABLE notes ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (to_tsvector('english', coalesce(content, ''))) STORED;
+CREATE INDEX idx_notes_search_vector ON notes USING GIN (search_vector);
+```
+
 ## Customizing Web UI
 
 ### templates/

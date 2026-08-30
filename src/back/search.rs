@@ -1,39 +1,109 @@
 use crate::back::init::AppState;
 use crate::back::note;
 use crate::back::queries;
+use crate::back::queries::note::NoteWithAuthorRecord;
+use crate::back::queries::user::UserRecord;
 use crate::back::user;
 use crate::back::utils;
 
 use serde_json::Value;
 
-pub async fn search(state: &AppState, q: &str) -> Result<String, String> {
-    if q.starts_with("@") {
+#[derive(Default)]
+pub struct SearchResult {
+    pub user: Option<UserRecord>,
+    pub note: Option<NoteWithAuthorRecord>,
+    pub notes: Vec<NoteWithAuthorRecord>,
+}
+
+pub async fn search(
+    state: &AppState,
+    q: &str,
+    until_date: &str,
+    until_id: i64,
+    limit: i64,
+) -> Result<SearchResult, String> {
+    let q = q.trim();
+
+    if let Some(username) = q.strip_prefix("@") {
         // Search user
-        let username = q.trim_start_matches("@");
-        if let Some(_existing) = queries::user::get_by_username(state, username).await {
-            Ok(format!("/@{}", username))
-        } else {
-            // Fetch remote user
-            let Some(ap_url) = resolve_acct(state, username).await else {
-                return Err("User not found".to_string());
-            };
-            if let Err(e) = user::add_remote(state, &ap_url).await {
-                Err(format!("Failed to add remote user: {}", e))
-            } else {
-                Ok(format!("/@{}", username))
+        let user = match queries::user::get_by_username(state, username).await {
+            Some(user) => user,
+            None => {
+                // Fetch remote user
+                let Some(ap_url) = resolve_acct(state, username).await else {
+                    return Err("User not found".to_string());
+                };
+                if let Err(e) = user::add_remote(state, &ap_url).await {
+                    return Err(format!("Failed to add remote user: {}", e));
+                }
+                let Some(user) = queries::user::get_by_username(state, username).await else {
+                    return Err("User not found".to_string());
+                };
+                user
             }
-        }
-    } else {
+        };
+
+        Ok(SearchResult {
+            user: Some(user),
+            ..Default::default()
+        })
+    } else if q.starts_with("http://") || q.starts_with("https://") {
         // Search note
-        match note::add_remote(state, q, 0).await {
-            Ok(note_id) => {
-                let note = queries::note::get_by_id(state, note_id).await.unwrap();
-                let author = queries::user::get_by_id(state, note.author_id).await;
-                Ok(format!("/@{}/{}", author.username, note.id))
-            }
-            Err(e) => Err(format!("Failed to fetch remote note: {}", e)),
+        let note_id = match note::add_remote(state, q, 0).await {
+            Ok(note_id) => note_id,
+            Err(e) => return Err(format!("Failed to fetch remote note: {}", e)),
+        };
+        let Some(note) = queries::note::get_with_author_by_id(state, note_id).await else {
+            return Err("Note not found".to_string());
+        };
+
+        Ok(SearchResult {
+            note: Some(note),
+            ..Default::default()
+        })
+    } else {
+        // Full text search
+        Ok(SearchResult {
+            notes: search_notes(state, q, until_date, until_id, limit).await,
+            ..Default::default()
+        })
+    }
+}
+
+async fn search_notes(
+    state: &AppState,
+    q: &str,
+    until_date: &str,
+    until_id: i64,
+    limit: i64,
+) -> Vec<NoteWithAuthorRecord> {
+    if q.is_empty() {
+        return Vec::new();
+    }
+
+    match queries::timeline::get_search(state, &to_match_query(q), until_date, until_id, limit)
+        .await
+    {
+        Ok(notes) => notes,
+        Err(e) => {
+            eprintln!("Failed to search notes: {}", e);
+            Vec::new()
         }
     }
+}
+
+#[cfg(feature = "sqlite")]
+fn to_match_query(q: &str) -> String {
+    q.split_whitespace()
+        .map(|term| format!("\"{}\"", term.replace("\"", "\"\"")))
+        .collect::<Vec<String>>()
+        .join(" AND ")
+}
+
+#[cfg(feature = "postgres")]
+fn to_match_query(q: &str) -> String {
+    // websearch_to_tsquery() accepts any input
+    q.to_string()
 }
 
 async fn resolve_acct(state: &AppState, acct: &str) -> Option<String> {

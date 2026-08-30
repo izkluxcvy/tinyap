@@ -48,7 +48,7 @@ async fn web_routes() -> Router<init::AppState> {
         .route("/home", get(web::timeline::get_home))
         .route("/local", get(web::timeline::get_local))
         .route("/federated", get(web::timeline::get_federated))
-        .route("/search", get(web::search::get).post(web::search::post))
+        .route("/search", get(web::search::get))
         .nest_service(
             "/static",
             ServeDir::new(format!("{}/static", init::web_dir())),

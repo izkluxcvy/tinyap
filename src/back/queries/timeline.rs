@@ -186,3 +186,60 @@ pub async fn get_federated_since(
     .await
     .unwrap()
 }
+
+#[cfg(feature = "sqlite")]
+pub async fn get_search(
+    state: &AppState,
+    query: &str,
+    until_date: &str,
+    until_id: i64,
+    limit: i64,
+) -> Result<Vec<NoteWithAuthorRecord>, sqlx::Error> {
+    query_as(
+        "SELECT n.author_id, u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
+        FROM notes AS n
+        JOIN notes_fts AS fts ON n.id = fts.rowid
+        JOIN users AS u ON n.author_id = u.id
+        WHERE ((n.created_at < $1)
+        OR (n.created_at = $1 AND n.id < $2))
+        AND fts.content MATCH $3
+        AND n.is_public = 1
+        AND n.boosted_id IS NULL
+        ORDER BY n.created_at DESC, n.id DESC
+        LIMIT $4",
+    )
+    .bind(until_date)
+    .bind(until_id)
+    .bind(query)
+    .bind(limit)
+    .fetch_all(&state.db_pool)
+    .await
+}
+
+#[cfg(feature = "postgres")]
+pub async fn get_search(
+    state: &AppState,
+    query: &str,
+    until_date: &str,
+    until_id: i64,
+    limit: i64,
+) -> Result<Vec<NoteWithAuthorRecord>, sqlx::Error> {
+    query_as(
+        "SELECT n.author_id, u.display_name, u.username, n.id, n.boosted_id, n.boosted_username, n.boosted_created_at, n.content, n.attachments, n.parent_id, n.parent_author_username, n.created_at, n.is_public, n.like_count, n.boost_count
+        FROM notes AS n
+        JOIN users AS u ON n.author_id = u.id
+        WHERE ((n.created_at < $1)
+        OR (n.created_at = $1 AND n.id < $2))
+        AND n.search_vector @@ websearch_to_tsquery('english', $3)
+        AND n.is_public = 1
+        AND n.boosted_id IS NULL
+        ORDER BY n.created_at DESC, n.id DESC
+        LIMIT $4",
+    )
+    .bind(until_date)
+    .bind(until_id)
+    .bind(query)
+    .bind(limit)
+    .fetch_all(&state.db_pool)
+    .await
+}
