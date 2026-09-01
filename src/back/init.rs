@@ -139,7 +139,6 @@ async fn create_db_pool(conf: &HashMap<String, String>) -> sqlx::SqlitePool {
         .max_connections(3)
         .min_connections(1)
         .idle_timeout(None)
-        .max_lifetime(None)
         .connect_with(options)
         .await
         .unwrap()
