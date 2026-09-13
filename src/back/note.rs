@@ -52,7 +52,7 @@ pub async fn add(
             notification::EventType::Reply,
             author_id,
             parent.author_id,
-            Some(parent_id),
+            Some(id),
         )
         .await;
     }

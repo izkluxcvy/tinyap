@@ -28,17 +28,6 @@ pub async fn get(
 
     // Get user
     let user = queries::user::get_by_id(&state, user.id).await;
-    let user_json = account_json(
-        &state,
-        &user.username,
-        &user.display_name,
-        &user.created_at,
-        &user.bio,
-        user.follower_count,
-        user.following_count,
-        user.note_count,
-        &user.updated_at,
-    );
 
     // Get notifications
     let notifications = queries::notification::get_with_note(&state, user.id, &since, limit).await;
@@ -76,7 +65,7 @@ pub async fn get(
                     None,
                     None,
                     notif.content.as_ref().unwrap_or(&"".to_string()),
-                    &user_json,
+                    &account_json,
                     notif.note_created_at.as_ref().unwrap_or(&"".to_string()),
                     &attachments,
                     notif.like_count.unwrap_or(0),
