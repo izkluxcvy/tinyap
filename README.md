@@ -19,10 +19,6 @@ Demo: [@alice@tinyap.izkluxcvy.foo](https://tinyap.izkluxcvy.foo/@alice)
 
 Real memory usage of `tinyap.izkluxcvy.foo`
 
-```sh
-$ watch -n 360 'echo $(date "+%F %T"),$(cat /sys/fs/cgroup/system.slice/tinyap.service/memory.current) >> memory.csv'
-```
-
 ![memory usage](memory_usage.webp)
 
 (Note that Argon2 password hasher costs 19MB memory)
