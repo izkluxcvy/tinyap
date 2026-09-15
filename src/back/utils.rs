@@ -274,8 +274,8 @@ pub async fn signed_deliver(
         async move {
             let _permit = deliver_queue.acquire().await.unwrap();
 
-            let _res = http_client
-                .post(inbox)
+            let res = http_client
+                .post(&inbox)
                 .header("Date", date)
                 .header("Digest", digest_value)
                 .header("Signature", signed_header)
@@ -286,9 +286,16 @@ pub async fn signed_deliver(
 
             drop(_permit);
 
-            // let status = _res.as_ref().unwrap().status();
-            // let body = _res.unwrap().text().await.unwrap();
-            // println!("{}, response: {}", status, body);
+            if let Ok(res) = res {
+                let status = res.status();
+                if !status.is_success() {
+                    let body = res.text().await.unwrap_or_default();
+                    println!(
+                        "Failed to deliver to {}: {}, response: {}",
+                        inbox, status, body
+                    );
+                }
+            }
         }
     });
 }
