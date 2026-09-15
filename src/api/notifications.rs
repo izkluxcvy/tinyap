@@ -28,6 +28,17 @@ pub async fn get(
 
     // Get user
     let user = queries::user::get_by_id(&state, user.id).await;
+    let user_json = account_json(
+        &state,
+        &user.username,
+        &user.display_name,
+        &user.created_at,
+        &user.bio,
+        user.follower_count,
+        user.following_count,
+        user.note_count,
+        &user.updated_at,
+    );
 
     // Get notifications
     let notifications = queries::notification::get_with_note(&state, user.id, &since, limit).await;
@@ -57,6 +68,11 @@ pub async fn get(
                 &notif.created_at,
             );
             let status_json = if let Some(note_id) = notif.note_id {
+                let status_account = if event_type == "favourite" || event_type == "reblog" {
+                    &user_json
+                } else {
+                    &account_json
+                };
                 Some(status_json(
                     &state,
                     note_id,
@@ -65,7 +81,7 @@ pub async fn get(
                     None,
                     None,
                     notif.content.as_ref().unwrap_or(&"".to_string()),
-                    &account_json,
+                    status_account,
                     notif.note_created_at.as_ref().unwrap_or(&"".to_string()),
                     &attachments,
                     notif.like_count.unwrap_or(0),
