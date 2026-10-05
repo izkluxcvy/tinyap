@@ -10,7 +10,7 @@ use axum::{
 
 pub async fn get(
     State(state): State<AppState>,
-    Path((username, id)): Path<(String, String)>,
+    Path((_username, id)): Path<(String, String)>,
     headers: HeaderMap,
     user: MaybeAuthUser,
 ) -> impl IntoResponse {
@@ -31,15 +31,11 @@ pub async fn get(
         return "Note not found".into_response();
     };
 
-    // Get author
-    let Some(author) = queries::user::get_by_username(&state, &username).await else {
-        return "Author not found".into_response();
-    };
-
     // Check privacy
     if note.is_public == 0 {
         if let Some(auth_user_id) = user.id {
-            let Some(_follow) = queries::follow::get(&state, auth_user_id, author.id).await else {
+            let Some(_follow) = queries::follow::get(&state, auth_user_id, note.author_id).await
+            else {
                 return "Private note".into_response();
             };
         } else {
@@ -67,7 +63,7 @@ pub async fn get(
         }
 
         // Check is_you
-        is_you = auth_user_id == author.id;
+        is_you = auth_user_id == note.author_id;
     } else {
         is_liked = false;
         is_boosted = false;
